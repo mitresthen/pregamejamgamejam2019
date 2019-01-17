@@ -77,16 +77,6 @@ impl AudioEngine {
         let mixer = AudioMixer::new();
 
         let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
-            let wav = AudioSpecWAV::load_wav("test.wav")
-                .expect("Could not load test WAV file");
-
-            let cvt = AudioCVT::new(
-                    wav.format, wav.channels, wav.freq,
-                    spec.format, spec.channels, spec.freq)
-                .expect("Could not convert WAV file");
-
-            let data = cvt.convert(wav.buffer().to_vec());
-
             // initialize the audio callback
             mixer.clone()
         }).unwrap();
