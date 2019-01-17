@@ -1,8 +1,9 @@
 extern crate sdl2;
 extern crate stb_image;
 
-use stb_image::image::LoadResult;
 use std::path::Path;
+use stb_image::image::LoadResult;
+use stb_image::image;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -11,10 +12,15 @@ use sdl2::rect::Point;
 use std::time::Duration;
 use sdl2::pixels;
 
-use stb_image::image;
-
+mod drawable;
+mod animated_sprite;
 mod audio_engine;
+mod texture_registry;
+
 use audio_engine::AudioEngine;
+use drawable::{DrawContext, Drawable};
+use animated_sprite::AnimatedSprite;
+use texture_registry::TextureRegistry;
 
 fn hsl2rgb_f64(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
     if s == 0. { (l, l, l) }
@@ -72,8 +78,8 @@ fn main() -> Result<(), String> {
         LoadResult::ImageF32(_) => panic!("Is float"),
         _ => panic!("Failed to load image")
     };
-    
-    
+
+
     // animation sheet and extras are available from
     // https://opengameart.org/content/a-platformer-in-the-forest
     //let temp_surface = sdl2::surface::Surface::load_bmp(Path::new("assets/characters.bmp"))?;
@@ -82,11 +88,20 @@ fn main() -> Result<(), String> {
         png_img.width as u32,
         png_img.height as u32,
         png_img.width as u32 * 4,
-        sdl2::pixels::PixelFormatEnum::ABGR8888
+        sdl2::pixels::PixelFormatEnum::BGRA8888
     ).unwrap();
 
     let texture = texture_creator.create_texture_from_surface(&temp_surface)
         .map_err(|e| e.to_string())?;
+
+    let mut texture_registry = TextureRegistry::new(&texture_creator);
+
+    let mut sprite =
+        AnimatedSprite::new(32, texture_registry.load("src/resources/image/characters.png").unwrap()).unwrap();
+
+    sprite.set_scale(4);
+    sprite.set_position(100, 100);
+
 
     let frames_per_anim = 24;
     let sprite_tile_size = (32,32);
@@ -149,9 +164,13 @@ fn main() -> Result<(), String> {
         i += 0.01;
         canvas.set_draw_color(pixels::Color::RGB((r * 255.) as u8, (g * 255.) as u8, (b * 255.) as u8));
 
-        canvas.present();
+        {
+            let mut draw_ctx = DrawContext::new(&mut canvas, &texture_registry);
+            sprite.next_frame();
+            sprite.draw(&mut draw_ctx);
+        }
 
-        std::thread::sleep(Duration::from_millis(100));
+        canvas.present();
     }
 
     Ok(())
