@@ -1,0 +1,7 @@
+[package]
+name = "gamejam"
+version = "0.1.0"
+authors = ["are"]
+
+[dependencies]
+sdl2 = "0.32.1"
