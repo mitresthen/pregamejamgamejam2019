@@ -47,7 +47,7 @@ fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     
-    let window = video_subsystem.window("SDL2", 1320, 768)
+    let window = video_subsystem.window("PiplonBuzz", 1320, 768)
         .position_centered().opengl().build().map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas()
@@ -88,7 +88,7 @@ fn main() -> Result<(), String> {
     let texture = texture_creator.create_texture_from_surface(&temp_surface)
         .map_err(|e| e.to_string())?;
 
-    let frames_per_anim = 24;
+    let frames_per_anim = 23;
     let sprite_tile_size = (32,32);
 
     // Baby - walk animation
