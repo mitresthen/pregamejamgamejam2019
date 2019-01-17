@@ -3,6 +3,11 @@ name = "gamejam"
 version = "0.1.0"
 authors = ["are"]
 
-[dependencies]
+[target.'cfg(windows)'.dependencies]
 sdl2 = { version = "0.32.1", features = ["bundled"] }
+
+[target.'cfg(unix)'.dependencies]
+sdl2 = { version = "0.31.0" }
+
+[dependencies]
 stb_image = "0.2.1"
