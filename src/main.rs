@@ -13,7 +13,7 @@ fn main() {
         .build()
         .map_err(|e| e.to_string()).unwrap();
 
-    let mut canvas = window.into_canvas().build().map_err(|e| e.to_string()).unwrap();
+    let mut canvas = window.into_canvas().accelerated().build().map_err(|e| e.to_string()).unwrap();
 
     canvas.set_draw_color(pixels::Color::RGB(0, 0, 0));
     canvas.clear();
