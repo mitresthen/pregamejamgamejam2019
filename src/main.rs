@@ -4,6 +4,7 @@ extern crate stb_image;
 use std::path::Path;
 use stb_image::image::LoadResult;
 use stb_image::image;
+use std::f64;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
@@ -53,7 +54,7 @@ fn main() -> Result<(), String> {
     let sdl_context = sdl2::init()?;
     let video_subsystem = sdl_context.video()?;
     
-    let window = video_subsystem.window("SDL2", 1320, 768)
+    let window = video_subsystem.window("PiplonBuzz", 1320, 768)
         .position_centered().opengl().build().map_err(|e| e.to_string())?;
 
     let mut canvas = window.into_canvas()
@@ -103,7 +104,7 @@ fn main() -> Result<(), String> {
     sprite.set_position(100, 100);
 
 
-    let frames_per_anim = 24;
+    let frames_per_anim = 23;
     let sprite_tile_size = (32,32);
 
     // Baby - walk animation
@@ -161,7 +162,12 @@ fn main() -> Result<(), String> {
         canvas.copy_ex(&texture, Some(source_rect_3), Some(dest_rect_3), 0.0, None, true, false)?;
 
         let (r, g, b) = hsl2rgb_f64(i % 1., 1., 0.5);
-        i += 0.01;
+        i += (ticks as f64) / (10000000 as f64);
+        if i > f64::MAX / (2 as f64)
+        {
+            i = i % (1 as f64);
+        }
+        
         canvas.set_draw_color(pixels::Color::RGB((r * 255.) as u8, (g * 255.) as u8, (b * 255.) as u8));
 
         {
@@ -171,6 +177,7 @@ fn main() -> Result<(), String> {
         }
 
         canvas.present();
+        std::thread::sleep(Duration::from_millis(10));
     }
 
     Ok(())
