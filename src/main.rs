@@ -4,6 +4,9 @@ use sdl2::pixels;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
+mod audio_engine;
+use audio_engine::AudioEngine;
+
 fn hsl2rgb_f64(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
     if s == 0. { (l, l, l) }
     else {
@@ -50,6 +53,10 @@ fn main() {
 
     let mut events = sdl_context.event_pump().unwrap();
     let mut i = 0f64;
+
+    let mut audio_engine = AudioEngine::new(sdl_context.audio().unwrap());
+
+    audio_engine.play_sound_from_file("src/resources/music/personal_space.wav");
 
     'main: loop {
         let (r, g, b) = hsl2rgb_f64(i % 1., 1., 0.5);
