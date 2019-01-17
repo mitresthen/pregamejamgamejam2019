@@ -5,3 +5,4 @@ authors = ["are"]
 
 [dependencies]
 sdl2 = { version = "0.32.1", features = ["bundled"] }
+stb_image = "0.2.1"
