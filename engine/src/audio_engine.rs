@@ -1,11 +1,20 @@
 use std::sync::{Arc, Mutex};
 
 use sdl2::AudioSubsystem;
-use sdl2::audio::{AudioFormat, AudioDevice, AudioCallback, AudioSpecDesired,AudioSpecWAV,AudioCVT};
+use sdl2::audio::{AudioFormat, AudioDevice, AudioCallback, AudioSpecDesired,AudioSpecWAV};
+
+use super::Error;
 
 pub struct SoundInstance {
     data: Vec<f32>,
     position: usize,
+}
+
+#[derive(Debug)]
+pub enum WavError {
+    Not16Bit,
+    NotStereo,
+    Not44100Hz
 }
 
 impl SoundInstance {
@@ -61,7 +70,7 @@ impl AudioCallback for AudioMixer {
 
 
 pub struct AudioEngine {
-    audio_device: AudioDevice<AudioMixer>,
+    _audio_device: AudioDevice<AudioMixer>,
     mixer: AudioMixer,
 }
 
@@ -77,6 +86,10 @@ impl AudioEngine {
         let mixer = AudioMixer::new();
 
         let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
+            if spec.format != AudioFormat::F32LSB {
+                panic!("Audio device opened with wrong AudioFormat. Expected Float 32. Got {:?}", spec.format);
+            }
+
             // initialize the audio callback
             mixer.clone()
         }).unwrap();
@@ -84,29 +97,28 @@ impl AudioEngine {
         device.resume();
 
         AudioEngine {
-            audio_device: device,
+            _audio_device: device,
             mixer: mixer
         }
     }
 
-    pub fn play_sound_from_file(&mut self, filename: &str) {
+    pub fn play_sound_from_file(&mut self, filename: &str) -> Result<(), Error> {
         use std::slice;
         use std::mem;
         use std::i16;
 
-        let wav = AudioSpecWAV::load_wav(filename)
-            .expect("Could not load test WAV file");
+        let wav = AudioSpecWAV::load_wav(filename)?;
 
         if wav.format != AudioFormat::S16LSB {
-            panic!("Gamejam games only support signed 16-bit audio wav files");
+            return Err(Error::WavError(WavError::Not16Bit));
         }
 
         if wav.channels != 2 {
-            panic!("Gamejam games only support stereo audio files");
+            return Err(Error::WavError(WavError::NotStereo));
         }
 
         if wav.freq != 44100 {
-            panic!("Gamejam games only support 44100hz audio");
+            return Err(Error::WavError(WavError::Not44100Hz));
         }
 
         let pcm_stereo_16 : &[i16]= unsafe {
@@ -121,6 +133,8 @@ impl AudioEngine {
         let pcm_mono_float = pcm_stereo_float.chunks(2).map(|lr| (lr[0] + lr[1]) / 2.0).collect();
 
         self.play_sound(pcm_mono_float);
+
+        Ok(())
     }
 
     pub fn play_sound(&mut self, data: Vec<f32>) {

@@ -1,18 +1,17 @@
-extern crate stb_image;
-
 use std::path::Path;
 use stb_image::image::LoadResult;
 use stb_image::image;
 
 use std::collections::BTreeMap;
 
-use sdl2::render::TextureCreator;
-use sdl2::video::WindowContext;
+use super::Error;
 
-#[derive(Debug)]
-pub enum TextureError {
-    IO,
-    UnsupportedPixelFormat
+mod sdl {
+pub use sdl2::render::TextureCreator;
+pub use sdl2::render::Texture;
+pub use sdl2::video::WindowContext;
+pub use sdl2::surface::Surface;
+pub use sdl2::pixels::PixelFormatEnum;
 }
 
 pub struct Texture {
@@ -27,37 +26,37 @@ impl Texture {
 }
 
 pub struct TextureData<'t> {
-    surface: sdl2::surface::Surface<'static>,
-    texture: sdl2::render::Texture<'t>
+    //surface: sdl::Surface<'static>,
+    texture: sdl::Texture<'t>
 }
 
 pub struct TextureRegistry<'t> {
     textures: BTreeMap<usize, TextureData<'t>>,
-    texture_creator: &'t TextureCreator<WindowContext>
+    texture_creator: &'t sdl::TextureCreator<sdl::WindowContext>
 }
 
 impl<'t> TextureRegistry<'t> {
-    pub fn new(texture_creator: &'t TextureCreator<WindowContext>) -> TextureRegistry<'t> {
+    pub fn new(texture_creator: &'t sdl::TextureCreator<sdl::WindowContext>) -> TextureRegistry<'t> {
         TextureRegistry {
             textures: BTreeMap::new(),
             texture_creator: texture_creator
         }
     }
-    pub fn load(&mut self, path: &str) -> Result<Texture, TextureError> {
-        let mut png_img = match image::load(Path::new("src/resources/image/characters.png")) {
+    pub fn load(&mut self, path: &str) -> Result<Texture, Error> {
+        let png_img = match image::load(Path::new(path)) {
             LoadResult::ImageU8(bytes) => { bytes },
             LoadResult::ImageF32(_) => panic!("Is float"),
-            _ => return Err(TextureError::IO)
+            _ => return Err(Error::IO { path: Some(path.to_string()) })
         };
 
         let mut surface =
-            sdl2::surface::Surface::new(
+            sdl::Surface::new(
                 png_img.width as u32,
                 png_img.height as u32,
                 match png_img.depth {
-                    3 => sdl2::pixels::PixelFormatEnum::BGR888,
-                    4 => sdl2::pixels::PixelFormatEnum::ABGR8888,
-                    _ => return Err(TextureError::UnsupportedPixelFormat)
+                    3 => sdl::PixelFormatEnum::BGR888,
+                    4 => sdl::PixelFormatEnum::ABGR8888,
+                    _ => return Err(Error::UnsupportedPixelFormat)
                 }
             ).unwrap();
 
@@ -74,7 +73,7 @@ impl<'t> TextureRegistry<'t> {
 
         let texture_data =
             TextureData {
-                surface: surface,
+    //            surface: surface,
                 texture: texture
             };
 
@@ -91,7 +90,7 @@ impl<'t> TextureRegistry<'t> {
         Ok(out_texture)
     }
 
-    pub fn get_internal_texture(&self, texture: &Texture) -> &sdl2::render::Texture {
+    pub fn get_internal_texture(&self, texture: &Texture) -> &sdl::Texture {
         &self.textures.get(&texture.index).unwrap().texture
     }
 }

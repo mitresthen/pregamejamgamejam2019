@@ -1,5 +1,6 @@
 extern crate sdl2;
 extern crate stb_image;
+extern crate engine;
 
 use std::path::Path;
 use stb_image::image::LoadResult;
@@ -13,15 +14,10 @@ use sdl2::rect::Point;
 use std::time::Duration;
 use sdl2::pixels;
 
-mod drawable;
-mod animated_sprite;
-mod audio_engine;
-mod texture_registry;
-
-use audio_engine::AudioEngine;
-use drawable::{DrawContext, Drawable};
-use animated_sprite::AnimatedSprite;
-use texture_registry::TextureRegistry;
+use engine::audio_engine::AudioEngine;
+use engine::drawable::{DrawContext, Drawable};
+use engine::animated_sprite::AnimatedSprite;
+use engine::texture_registry::TextureRegistry;
 
 fn hsl2rgb_f64(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
     if s == 0. { (l, l, l) }
@@ -44,7 +40,7 @@ fn hsl2rgb_f64(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
     }
 }
 
-fn hsl2rgb_u8(h: u8, s: u8, l: u8) -> (u8, u8, u8) {
+fn _hsl2rgb_u8(h: u8, s: u8, l: u8) -> (u8, u8, u8) {
     let (r, g, b) = hsl2rgb_f64((h as f64) / 255., (s as f64) / 255., (l as f64) / 255.);
     ((r * 255.) as u8, (g * 255.) as u8, (b * 255.) as u8)
 }

@@ -1,18 +1,7 @@
-extern crate stb_image;
-
-use std::path::Path;
-use stb_image::image::LoadResult;
-use stb_image::image;
-
 use drawable::{DrawContext, Drawable};
 use texture_registry::Texture;
 
-#[derive(Debug)]
-pub enum SpriteError {
-    IO,
-    UnsupportedPixelFormat,
-    TileSizeError
-}
+use super::Error;
 
 pub struct AnimatedSprite {
     texture: Texture,
@@ -27,12 +16,12 @@ pub struct AnimatedSprite {
 }
 
 impl AnimatedSprite {
-    pub fn new(tile_size: i32, texture: Texture) -> Result<AnimatedSprite, SpriteError> {
+    pub fn new(tile_size: i32, texture: Texture) -> Result<AnimatedSprite, Error> {
         let width = texture.width();
         let height = texture.height();
 
         if width % tile_size != 0 || height % tile_size != 0 {
-            return Err(SpriteError::TileSizeError);
+            return Err(Error::InvalidTileSize);
         }
 
         let mode_count = height / tile_size;
@@ -63,6 +52,13 @@ impl AnimatedSprite {
         self.position_y = y;
     }
 
+    pub fn set_mode(&mut self, mode: i32) {
+        if mode < 0 || mode >= self.mode_count {
+            panic!("Mode out of range");
+        }
+        self.current_mode = mode;
+    }
+
     pub fn set_scale(&mut self, scale: i32) {
         self.scale = scale;
     }
@@ -70,7 +66,7 @@ impl AnimatedSprite {
 
 impl Drawable for AnimatedSprite {
     fn draw(&self, ctx: &mut DrawContext) {
-        let f = (self.current_frame % self.frame_count);
+        let f = self.current_frame % self.frame_count;
         let m = self.current_mode;
         let ts = self.tile_size;
         let s = self.scale;
