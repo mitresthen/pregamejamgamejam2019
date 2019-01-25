@@ -6,7 +6,9 @@ use std::collections::HashSet;
 pub mod audio_engine;
 pub mod drawable;
 pub mod animated_sprite;
+pub mod movable_object;
 pub mod texture_registry;
+pub mod bounding_box;
 pub mod timer;
 pub mod vector;
 pub mod rect;
@@ -60,6 +62,8 @@ pub struct Engine<'t> {
     audio_engine: audio_engine::AudioEngine,
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
+    pub paused: bool,
+    last_paused_change: timer::Timer,
 }
 
 pub trait GameInterface : Sized {
@@ -69,7 +73,7 @@ pub trait GameInterface : Sized {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
 
-    fn on_key_down(&mut self, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 }
 
 impl<'t> Engine<'t> {
@@ -130,6 +134,14 @@ impl<'t> Engine<'t> {
 
     pub fn get_height(&self) -> u32 { self.height }
 
+    pub fn try_to_change_paused(&mut self) {
+        if self.last_paused_change.get_time() > 1.0
+        {
+            self.paused = !self.paused;
+            self.last_paused_change.reset();
+        }
+    }
+
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
@@ -154,6 +166,8 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
+                paused: false,
+                last_paused_change: timer::Timer::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -176,7 +190,7 @@ impl<'t> Engine<'t> {
                         }
                         engine.on_key_down(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },
@@ -185,7 +199,7 @@ impl<'t> Engine<'t> {
                     } => {
                         engine.on_key_up(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },

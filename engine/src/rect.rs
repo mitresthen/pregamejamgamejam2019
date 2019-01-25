@@ -21,4 +21,8 @@ impl Rect2D {
 
         result
     }
+
+    pub fn center(&self) -> Vec2 {
+        (self.min + self.max) * 0.5
+    }
 }
