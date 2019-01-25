@@ -38,6 +38,7 @@ impl MovableObject {
         self.player_velocity = self.player_velocity + (self.acceleration * dt * 5.0);
         self.player_position = self.player_position + (self.player_velocity * dt);
         self.acceleration = Vec2::new();
+        self.bounding_box.centre = self.player_position;
         Ok(true)
     }
 

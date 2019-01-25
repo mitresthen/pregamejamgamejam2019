@@ -6,7 +6,7 @@ use super::Error;
 pub struct BoundingBox {
     width: i32, 
     height: i32,
-    centre: Vec2
+    pub centre: Vec2
 }
 
 impl BoundingBox {
@@ -25,7 +25,7 @@ impl BoundingBox {
     }
 
     pub fn overlaps(&self, other: BoundingBox) -> bool {
-        (self.centre.x - other.centre.x).abs() <= ((self.width/2) + (other.width/2)) as f32 ||
+        (self.centre.x - other.centre.x).abs() <= ((self.width/2) + (other.width/2)) as f32 &&
             (self.centre.y - other.centre.y).abs() <= ((self.height/2) + (other.height/2)) as f32
     }
 }
