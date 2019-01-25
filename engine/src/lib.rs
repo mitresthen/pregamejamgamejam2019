@@ -44,6 +44,8 @@ pub struct Engine<'t> {
     texture_registry: texture_registry::TextureRegistry<'t>,
     audio_engine: audio_engine::AudioEngine,
     keys_down: HashSet<Keycode>,
+    pub paused: bool,
+    last_paused_change: timer::Timer,
 }
 
 pub trait GameInterface : Sized {
@@ -53,7 +55,7 @@ pub trait GameInterface : Sized {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
 
-    fn on_key_down(&mut self, keycode: Keycode) -> Result<bool, Error>;
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error>;
 }
 
 impl<'t> Engine<'t> {
@@ -83,6 +85,14 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.play_sound_from_file(filename)?)
     }
 
+    pub fn try_to_change_paused(&mut self) {
+        if self.last_paused_change.get_time() > 1.0
+        {
+            self.paused = !self.paused;
+            self.last_paused_change.reset();
+        }
+    }
+
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
@@ -104,6 +114,8 @@ impl<'t> Engine<'t> {
                 texture_registry: texture_registry,
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
+                paused: false,
+                last_paused_change: timer::Timer::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -122,7 +134,7 @@ impl<'t> Engine<'t> {
                     } => {
                         engine.on_key_down(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },
@@ -131,7 +143,7 @@ impl<'t> Engine<'t> {
                     } => {
                         engine.on_key_up(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },
