@@ -14,9 +14,9 @@ use sdl2::rect::Point;
 use std::time::Duration;
 use sdl2::pixels;
 
+use engine::prelude::*;
 use engine::audio_engine::AudioEngine;
-use engine::drawable::{DrawContext, Drawable};
-use engine::animated_sprite::AnimatedSprite;
+use engine::drawable::{Drawable, DrawContext};
 use engine::texture_registry::TextureRegistry;
 
 fn hsl2rgb_f64(h: f64, s: f64, l: f64) -> (f64, f64, f64) {
@@ -96,8 +96,8 @@ fn main() -> Result<(), String> {
     let mut sprite =
         AnimatedSprite::new(32, texture_registry.load("src/resources/image/characters.png").unwrap()).unwrap();
 
-    sprite.set_scale(4);
-    sprite.set_position(100, 100);
+    sprite.set_scale(4.0);
+    sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
 
     let frames_per_anim = 23;
@@ -167,8 +167,9 @@ fn main() -> Result<(), String> {
         canvas.set_draw_color(pixels::Color::RGB((r * 255.) as u8, (g * 255.) as u8, (b * 255.) as u8));
 
         {
-            let mut draw_ctx = DrawContext::new(&mut canvas, &texture_registry);
-            sprite.next_frame();
+            let camera_transform = Transform::new();
+            let mut draw_ctx = DrawContext::new(&mut canvas, &texture_registry, &camera_transform);
+            sprite.step_time(0.01);
             sprite.draw(&mut draw_ctx);
         }
 

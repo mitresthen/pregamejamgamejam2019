@@ -17,8 +17,8 @@ impl GameInterface for ExampleGame {
         let filename = "assets/characters.png";
         let texture = ctx.get_texture_registry().load(filename)?;
         let mut sprite = AnimatedSprite::new(32, texture)?;
-        sprite.set_scale(4);
-        sprite.set_position(100, 100);
+        sprite.set_scale(4.0);
+        sprite.set_position(Vec2 { x: 100.0, y: 100.0 });
 
         ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
@@ -53,7 +53,14 @@ impl GameInterface for ExampleGame {
         self.player_velocity = self.player_velocity + (acceleration * dt * 5.0);
         self.player_position = self.player_position + (self.player_velocity * dt);
 
-        self.sprite.set_position(self.player_position.x as i32, self.player_position.y as i32);
+        let mut screen_bounds = ctx.get_screen_bounds();
+        let sprite_size = self.sprite.calculate_size();
+        screen_bounds.min = screen_bounds.min;
+        screen_bounds.max = screen_bounds.max;
+
+        self.player_position = screen_bounds.wrap(self.player_position);
+
+        self.sprite.set_position(self.player_position);
         self.sprite.step_time(dt * 0.1 * self.player_velocity.len());
         ctx.draw(&self.sprite);
         Ok(true)

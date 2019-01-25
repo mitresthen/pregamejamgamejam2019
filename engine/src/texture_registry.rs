@@ -6,6 +6,9 @@ use std::collections::BTreeMap;
 
 use super::Error;
 
+use extent::Extent;
+use offset::Offset;
+
 mod sdl {
 pub use sdl2::render::TextureCreator;
 pub use sdl2::render::Texture;
@@ -16,13 +19,35 @@ pub use sdl2::pixels::PixelFormatEnum;
 
 pub struct Texture {
     index: usize,
-    width: i32,
-    height: i32
+    offset: Offset,
+    extent: Extent,
 }
 
 impl Texture {
-    pub fn width(&self) -> i32 { self.width }
-    pub fn height(&self) -> i32 { self.height }
+    pub fn extent(&self) -> Extent { self.extent }
+    pub fn offset(&self) -> Offset { self.offset }
+    pub fn sub_texture(&self, offset: Offset, extent: Extent)
+        -> Result<Texture, Error>
+    {
+        if offset.x < 0 || offset.y < 0 {
+            return Err(Error::FatalError("Negative offset for sub texture".to_string()));
+        }
+
+        let max_extent = offset + extent;
+
+        if max_extent.x > self.extent.width || max_extent.y > self.extent.height {
+            return Err(Error::FatalError("Subtexture extent exceeds that of the parent texture".to_string()));
+        }
+
+        let texture =
+            Texture {
+                index: self.index,
+                offset: self.offset + offset,
+                extent: extent
+            };
+
+        Ok(texture)
+    }
 }
 
 pub struct TextureData<'t> {
@@ -83,8 +108,8 @@ impl<'t> TextureRegistry<'t> {
         let out_texture =
             Texture {
                 index: index,
-                width: png_img.width as i32,
-                height: png_img.height as i32
+                extent: Extent::new(png_img.width as i32, png_img.height as i32),
+                offset: Offset::new(),
             };
 
         Ok(out_texture)
