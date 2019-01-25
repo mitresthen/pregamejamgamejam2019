@@ -1,11 +1,10 @@
 extern crate engine;
 
 use engine::prelude::*;
+use std::vec::Vec;
 
-struct ExampleGame {
-    sprite: AnimatedSprite,
-    player_position: Vec2,
-    player_velocity: Vec2,
+pub struct ExampleGame{
+    moving_objects: Vec<MovableObject>,
 }
 
 impl GameInterface for ExampleGame {
@@ -22,40 +21,46 @@ impl GameInterface for ExampleGame {
 
         ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
+        let mainchar = MovableObject::new(sprite, 400.0).unwrap();
+
+        let mut game_objects: Vec<MovableObject> = Vec::new();
+        game_objects.push(mainchar);
+
         let game =
-            ExampleGame {
-                sprite: sprite,
-                player_position: Vec2::new(),
-                player_velocity: Vec2::new(),
+            ExampleGame 
+            {
+                moving_objects: game_objects,
             };
 
         Ok(game)
     }
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
-        let speed = 400.0;
-        let mut new_speed = Vec2::new();
 
-        if ctx.key_is_down(Keycode::Up) {
-            new_speed.y = -speed;
-        }
-        if ctx.key_is_down(Keycode::Down) {
-            new_speed.y = speed;
-        }
-        if ctx.key_is_down(Keycode::Left) {
-            new_speed.x = -speed;
-        }
-        if ctx.key_is_down(Keycode::Right) {
-            new_speed.x = speed;
+        for object in self.moving_objects.iter_mut() {
+            
+            let speed = 400.0;
+            let mut new_speed = Vec2::new();
+
+            if ctx.key_is_down(Keycode::Up) {
+                new_speed.y = -speed;
+            }
+            if ctx.key_is_down(Keycode::Down) {
+                new_speed.y = speed;
+            }
+            if ctx.key_is_down(Keycode::Left) {
+                new_speed.x = -speed;
+            }
+            if ctx.key_is_down(Keycode::Right) {
+                new_speed.x = speed;
+            }
+
+            object.set_target_velocity(new_speed);
+            object.update(dt);
+
+            ctx.draw(&object.animated_sprite);
         }
 
-        let acceleration = new_speed - self.player_velocity;
-        self.player_velocity = self.player_velocity + (acceleration * dt * 5.0);
-        self.player_position = self.player_position + (self.player_velocity * dt);
-
-        self.sprite.set_position(self.player_position.x as i32, self.player_position.y as i32);
-        self.sprite.step_time(dt * 0.1 * self.player_velocity.len());
-        ctx.draw(&self.sprite);
         Ok(true)
     }
 

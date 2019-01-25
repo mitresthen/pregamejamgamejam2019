@@ -1,20 +1,41 @@
-use drawable::{DrawContext, Drawable};
 use animated_sprite::AnimatedSprite;
 use vector::Vec2;
 
 use super::Error;
 
-pub struct MoveableObject {
-    animated_sprite: AnimatedSprite,
-    position: Vec2,
+pub struct MovableObject {
+    pub animated_sprite: AnimatedSprite, 
+    player_position: Vec2,
+    player_velocity: Vec2,
+    max_speed: f32,
+    acceleration: Vec2
 }
 
-impl MoveableObject {
-    pub fn new(sprite: AnimatedSprite, initial_pos: Vec2) -> Result<MoveableObject, Error> {
-        let moveable_object = 
-            MoveableObject {
-                animated_sprite = sprite,
-                position = initial_pos
-            }
+impl MovableObject {
+    pub fn new(sprite: AnimatedSprite, maximum_speed: f32) -> Result<MovableObject, Error> {
+        let movable_object = 
+            MovableObject {
+                animated_sprite: sprite,
+                player_position: Vec2::new(),
+                player_velocity: Vec2::new(),
+                max_speed: maximum_speed,
+                acceleration: Vec2::new()
+            };
+
+        Ok(movable_object)
+    }
+
+    pub fn update(&mut self, dt: f32) -> Result<bool, Error> {
+        self.animated_sprite.set_position(self.player_position.x as i32, self.player_position.y as i32);
+        self.animated_sprite.step_time(dt * 0.1 * self.player_velocity.len());        
+        self.player_velocity = self.player_velocity + (self.acceleration * dt * 5.0);
+        self.player_position = self.player_position + (self.player_velocity * dt);
+        self.acceleration = Vec2::new();
+        Ok(true)
+    }
+
+    pub fn set_target_velocity(&mut self, target_velocity: Vec2) {
+        let acceleration = target_velocity - self.player_velocity;
+        self.acceleration = acceleration;
     }
 }

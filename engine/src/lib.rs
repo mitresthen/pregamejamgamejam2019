@@ -6,6 +6,7 @@ use std::collections::HashSet;
 pub mod audio_engine;
 pub mod drawable;
 pub mod animated_sprite;
+pub mod movable_object;
 pub mod texture_registry;
 pub mod timer;
 pub mod vector;
