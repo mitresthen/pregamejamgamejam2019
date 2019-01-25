@@ -2,9 +2,10 @@ extern crate engine;
 
 use engine::prelude::*;
 
-
 struct ExampleGame {
-    sprite: AnimatedSprite
+    sprite: AnimatedSprite,
+    player_position: Vec2,
+    player_velocity: Vec2,
 }
 
 impl GameInterface for ExampleGame {
@@ -21,11 +22,39 @@ impl GameInterface for ExampleGame {
 
         ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
-        Ok(ExampleGame { sprite: sprite })
+        let game =
+            ExampleGame {
+                sprite: sprite,
+                player_position: Vec2::new(),
+                player_velocity: Vec2::new(),
+            };
+
+        Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine) -> Result<bool, Error> {
-        self.sprite.next_frame();
+    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        let speed = 400.0;
+        let mut new_speed = Vec2::new();
+
+        if ctx.key_is_down(Keycode::Up) {
+            new_speed.y = -speed;
+        }
+        if ctx.key_is_down(Keycode::Down) {
+            new_speed.y = speed;
+        }
+        if ctx.key_is_down(Keycode::Left) {
+            new_speed.x = -speed;
+        }
+        if ctx.key_is_down(Keycode::Right) {
+            new_speed.x = speed;
+        }
+
+        let acceleration = new_speed - self.player_velocity;
+        self.player_velocity = self.player_velocity + (acceleration * dt * 5.0);
+        self.player_position = self.player_position + (self.player_velocity * dt);
+
+        self.sprite.set_position(self.player_position.x as i32, self.player_position.y as i32);
+        self.sprite.step_time(dt * 0.1 * self.player_velocity.len());
         ctx.draw(&self.sprite);
         Ok(true)
     }
@@ -34,6 +63,8 @@ impl GameInterface for ExampleGame {
         if keycode == Keycode::Escape {
             return Ok(false);
         }
+
+
         Ok(true)
     }
 }

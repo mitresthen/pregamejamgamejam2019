@@ -7,7 +7,7 @@ pub struct AnimatedSprite {
     texture: Texture,
     tile_size: i32,
     current_mode: i32,
-    current_frame: i32,
+    current_frame: f32,
     mode_count: i32,
     frame_count: i32,
     position_x: i32,
@@ -32,7 +32,7 @@ impl AnimatedSprite {
                 texture: texture,
                 tile_size: tile_size,
                 current_mode: 0,
-                current_frame: 0,
+                current_frame: 0.0,
                 mode_count: mode_count,
                 frame_count: frame_count,
                 position_x: 0,
@@ -43,8 +43,11 @@ impl AnimatedSprite {
         Ok(animated_sprite)
     }
 
-    pub fn next_frame(&mut self) {
-        self.current_frame = (self.current_frame + 1) % self.frame_count;
+    pub fn step_time(&mut self, dt: f32) {
+        self.current_frame += dt;
+        while self.current_frame as i32 > self.frame_count {
+            self.current_frame -= self.frame_count as f32;
+        }
     }
 
     pub fn set_position(&mut self, x: i32, y: i32) {
@@ -66,7 +69,7 @@ impl AnimatedSprite {
 
 impl Drawable for AnimatedSprite {
     fn draw(&self, ctx: &mut DrawContext) {
-        let f = self.current_frame % self.frame_count;
+        let f = (self.current_frame as i32) % self.frame_count;
         let m = self.current_mode;
         let ts = self.tile_size;
         let s = self.scale;

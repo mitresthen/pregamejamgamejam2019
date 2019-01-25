@@ -1,15 +1,18 @@
 extern crate sdl2;
 extern crate stb_image;
 
+use std::collections::HashSet;
+
 pub mod audio_engine;
 pub mod drawable;
 pub mod animated_sprite;
 pub mod texture_registry;
+pub mod timer;
+pub mod vector;
 
 pub mod prelude;
 
 use sdl2::event::Event;
-use std::time::Duration;
 pub use sdl2::keyboard::Keycode;
 
 use audio_engine::WavError;
@@ -40,6 +43,7 @@ pub struct Engine<'t> {
     canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     texture_registry: texture_registry::TextureRegistry<'t>,
     audio_engine: audio_engine::AudioEngine,
+    keys_down: HashSet<Keycode>,
 }
 
 pub trait GameInterface : Sized {
@@ -47,7 +51,7 @@ pub trait GameInterface : Sized {
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
-    fn update(&mut self, ctx: &mut Engine) -> Result<bool, Error>;
+    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
 
     fn on_key_down(&mut self, keycode: Keycode) -> Result<bool, Error>;
 }
@@ -61,6 +65,18 @@ impl<'t> Engine<'t> {
         let mut ctx = drawable::DrawContext::new(&mut self.canvas, &mut self.texture_registry);
 
         drawable.draw(&mut ctx);
+    }
+
+    pub fn on_key_down(&mut self, keycode: Keycode) {
+        self.keys_down.insert(keycode);
+    }
+
+    pub fn on_key_up(&mut self, keycode: Keycode) {
+        self.keys_down.remove(&keycode);
+    }
+
+    pub fn key_is_down(&self, keycode: Keycode) -> bool {
+        self.keys_down.contains(&keycode)
     }
 
     pub fn play_sound(&mut self, filename: &str) -> Result<(), Error> {
@@ -86,10 +102,14 @@ impl<'t> Engine<'t> {
             Engine {
                 canvas: &mut canvas,
                 texture_registry: texture_registry,
-                audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?)
+                audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
+                keys_down: HashSet::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
+
+
+        let mut timer = timer::Timer::new();
 
         'main_loop: loop {
             for event in event_pump.poll_iter() {
@@ -100,6 +120,17 @@ impl<'t> Engine<'t> {
                     Event::KeyDown {
                         keycode: Some(key), ..
                     } => {
+                        engine.on_key_down(key);
+
+                        if !game.on_key_down(key)? {
+                            break 'main_loop;
+                        }
+                    },
+                    Event::KeyUp {
+                        keycode: Some(key), ..
+                    } => {
+                        engine.on_key_up(key);
+
                         if !game.on_key_down(key)? {
                             break 'main_loop;
                         }
@@ -109,12 +140,13 @@ impl<'t> Engine<'t> {
             }
 
             engine.canvas.clear();
-            if !game.update(&mut engine)? {
+            if !game.update(&mut engine, timer.get_time())? {
                 break 'main_loop;
             }
 
+            timer.reset();
+
             engine.canvas.present();
-            std::thread::sleep(Duration::from_millis(40));
         }
 
         Ok(())
