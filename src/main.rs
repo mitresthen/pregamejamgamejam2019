@@ -28,7 +28,15 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         grid.register_tile_type(
             RGBA { r: 255, g: 0, b: 0, a: 255 },
-            tr.load("src/resources/image/Wall Tile_3boxesHigh.png")?
+            tr.load("src/resources/image/wall_with_dark_top.png")?
+        );
+        grid.register_tile_type(
+            RGBA { r: 254, g: 0, b: 0, a: 255 },
+            tr.load("src/resources/image/wall_dark_only.png")?
+        );
+        grid.register_tile_type(
+            RGBA { r: 253, g: 0, b: 0, a: 255 },
+            tr.load("src/resources/image/single_dark_tile.png")?
         );
 
         let game =
@@ -43,7 +51,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,
-                    (1.0, 2.0)
+                    (0.5, 2.0)
                 ),
                 camera_velocity: Vec2::new(),
             };
@@ -54,7 +62,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn update(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<bool, Error>
     {
-        let target_velocity = self.camera_controller.poll(ctx) * 250.0;
+        let target_velocity = self.camera_controller.poll(ctx) * 1000.0;
 
         self.camera_velocity.approach(target_velocity, dt * 250.0);
 
