@@ -69,6 +69,7 @@ pub struct Engine<'t> {
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
     pub state: game_state::GameState,
+    pub last_game_state_change : timer::Timer,
 }
 
 pub trait GameInterface : Sized {
@@ -157,13 +158,19 @@ impl<'t> Engine<'t> {
 
     pub fn invert_paused_state(&mut self)
     {
-        self.state.invert_paused_state();
+        if self.last_game_state_change.get_time() >= 1.0
+        {
+            self.state.invert_paused_state();
+            self.last_game_state_change.reset();
+        }
     }
 
     // End showing the title screen - switch to Main Menu
     pub fn end_title_screen(&mut self) {
-        self.state.go_to(game_state::GAMEPLAY_STATE);
-        // self.state.go_to(game_state::MAIN_MENU_STATE);
+        if self.state.go_to(game_state::MAIN_MENU_STATE, self.last_game_state_change.get_time())
+        {
+            self.last_game_state_change.reset();
+        }
     }
 
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
@@ -190,7 +197,8 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE
+                state: game_state::TITLE_STATE,
+                last_game_state_change: timer::Timer::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -241,8 +249,13 @@ impl<'t> Engine<'t> {
                     // Title screen exists - show it.
                     Some(ref title_screen) => engine.draw(title_screen),
                     // No title screen defined - jump to next state.
-                    None               => engine.state.go_to(game_state::GAMEPLAY_STATE),
-                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
+                    None               => {
+                        if engine.state.go_to(game_state::GAMEPLAY_STATE, engine.last_game_state_change.get_time())
+                        {
+                            engine.last_game_state_change.reset();
+                        }
+                    },
+                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE, engine.last_game_state_change.get_time()),
                 }
             } else {
                 let dt = timer.get_time();

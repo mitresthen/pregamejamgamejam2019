@@ -1,16 +1,21 @@
 use std::fmt;
 
-// Game as a whole can be in those states:
-//              | gameplay_running | presents_menu | gameplay_displayed
-// Title Screen :                N |             N |                  N
-// Main Menu    :                N |             Y |                  N
-// Gameplay     :                Y |             N |                  Y
-// Pause Menu   :                N |             Y |                  Y
+use Engine;
 
+// Game as a whole can be in those states:
+//              | gameplay_running | presents_menu | gameplay_displayed | exit
+// Title Screen :                N |             N |                  N |    N
+// Main Menu    :                N |             Y |                  N |    N
+// Gameplay     :                Y |             N |                  Y |    N
+// Pause Menu   :                N |             Y |                  Y |    N
+// Exit         :                N |             N |                  N |    Y
+
+#[derive(Clone)]
 pub struct GameState {
     pub gameplay_running:   bool,
     pub presents_menu:      bool,
     pub gameplay_displayed: bool,
+    pub exit:               bool,
 }
 
 impl fmt::Display for GameState {
@@ -27,11 +32,16 @@ impl GameState {
         self.gameplay_displayed == ogs.gameplay_displayed
     }
 
-    pub fn go_to(&mut self, ogs: GameState)
+    pub fn go_to(&mut self, ogs: GameState, dt: f32) -> bool
     {
-        self.gameplay_running   = ogs.gameplay_running;
-        self.presents_menu      = ogs.presents_menu;
-        self.gameplay_displayed = ogs.gameplay_displayed;
+        if dt >= 1.0
+        {
+            self.gameplay_running   = ogs.gameplay_running;
+            self.presents_menu      = ogs.presents_menu;
+            self.gameplay_displayed = ogs.gameplay_displayed;
+            return true;
+        }
+        false
     }
 
     pub fn invert_paused_state(&mut self)
@@ -48,13 +58,10 @@ impl GameState {
     {
         self.presents_menu = !self.presents_menu;
     }
-    fn invert_gameplay_displayed(&mut self)
-    {
-        self.gameplay_displayed = !self.gameplay_displayed;
-    }
 }
 
-pub const TITLE_STATE      : GameState = GameState { gameplay_running: false, presents_menu: false, gameplay_displayed: false };
-pub const MAIN_MENU_STATE  : GameState = GameState { gameplay_running: false, presents_menu: true , gameplay_displayed: false };
-pub const GAMEPLAY_STATE   : GameState = GameState { gameplay_running: true , presents_menu: false, gameplay_displayed: true  };
-pub const PAUSE_MENU_STATE : GameState = GameState { gameplay_running: false, presents_menu: true , gameplay_displayed: true  };
+pub const TITLE_STATE      : GameState = GameState { gameplay_running: false, presents_menu: false, gameplay_displayed: false, exit: false };
+pub const MAIN_MENU_STATE  : GameState = GameState { gameplay_running: false, presents_menu: true , gameplay_displayed: false, exit: false };
+pub const GAMEPLAY_STATE   : GameState = GameState { gameplay_running: true , presents_menu: false, gameplay_displayed: true , exit: false };
+pub const PAUSE_MENU_STATE : GameState = GameState { gameplay_running: false, presents_menu: true , gameplay_displayed: true , exit: false };
+pub const EXIT_STATE       : GameState = GameState { gameplay_running: false, presents_menu: false, gameplay_displayed: false, exit: true  };

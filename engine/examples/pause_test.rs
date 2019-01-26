@@ -20,15 +20,11 @@ impl GameInterface for ExampleGame {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let title_background_filename = "assets/title_background.png";
-        let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
-        let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
-        title_background.set_position(ctx.get_screen_bounds().center());
+        let tr = ctx.get_texture_registry();
 
-        let title_filename = "assets/title.png";
-        let title_texture = ctx.get_texture_registry().load(title_filename)?;
-        let mut title_sprite = StaticSprite::new(128, 128, title_texture)?;
-        title_sprite.set_position(ctx.get_screen_bounds().center());
+        let mut title_background = StaticSprite::new(640, 480, tr.load("assets/title_background.png")?)?;
+
+        let mut title_sprite = StaticSprite::new(128, 128, tr.load("assets/title.png")?)?;
 
         let title_screen =
             SplashScreen {
@@ -36,14 +32,9 @@ impl GameInterface for ExampleGame {
                 foreground: title_sprite,
             };
 
-        let pause_filename = "assets/paused.png";
-        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
-        let mut pause_sprite = StaticSprite::new(128, 64, pause_texture)?;
-        pause_sprite.set_position(ctx.get_screen_bounds().center());
+        let mut pause_sprite = StaticSprite::new(128, 64, tr.load("assets/paused.png")?)?;
 
-        let filename = "assets/characters.png";
-        let texture = ctx.get_texture_registry().load(filename)?;
-        let mut sprite = AnimatedSprite::new(32, texture)?;
+        let mut sprite = AnimatedSprite::new(32, tr.load("assets/characters.png")?)?;
         sprite.set_scale(4.0);
         sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
@@ -53,7 +44,7 @@ impl GameInterface for ExampleGame {
 
         let mut game_objects: Vec<MovableObject> = Vec::new();
 
-        let roombatexture = ctx.get_texture_registry().load(filename)?;
+        let roombatexture = tr.load("assets/characters.png")?;
         let mut roombasprite = AnimatedSprite::new(32, roombatexture)?;
         roombasprite.set_scale(4.0);
         roombasprite.set_position(Vec2::from_coords(100.0, 100.0));
@@ -139,9 +130,12 @@ impl GameInterface for ExampleGame {
     }
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
-        if keycode == Keycode::P && !is_repeated {
-            ctx.invert_paused_state();
-            return Ok(true);
+        if ctx.state.gameplay_displayed
+        {
+            if keycode == Keycode::P && !is_repeated {
+                ctx.invert_paused_state();
+                return Ok(true);
+            }
         }
         if ctx.state.is_on(TITLE_STATE)
         {
@@ -159,5 +153,5 @@ impl GameInterface for ExampleGame {
 }
 
 fn main() {
-    Engine::execute::<ExampleGame>(640, 480).unwrap();
+    Engine::execute::<ExampleGame>(1920, 1680).unwrap();
 }
