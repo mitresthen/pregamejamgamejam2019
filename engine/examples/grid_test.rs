@@ -25,7 +25,7 @@ impl GameInterface for GridTest {
 
         let tr = ctx.get_texture_registry();
 
-        grid.register_tile_type(RGBA { r: 255, g: 0, b: 0, a: 255 }, tr.load("../src/resources/image/tile_Yellow_2.png")?);
+        grid.register_tile_type(RGBA { r: 255, g: 0, b: 0, a: 255 }, tr.load("assets/stolen.png")?);
 
         let game =
             GridTest {

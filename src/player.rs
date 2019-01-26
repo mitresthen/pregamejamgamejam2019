@@ -10,8 +10,8 @@ pub struct Player {
 impl Player {
     pub fn new(ctx: &mut Engine) -> Result<Player, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("src/resources/image/characters.png")?;
-        //let texture = tr.load("src/resources/image/red_rider.png")?;
+        let texture = tr.load("assets/image/characters.png")?;
+        //let texture = tr.load("assets/image/red_rider.png")?;
 
         let mut sprite = AnimatedSprite::new(32, texture)?;
 

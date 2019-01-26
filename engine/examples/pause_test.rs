@@ -47,8 +47,6 @@ impl GameInterface for ExampleGame {
         sprite.set_scale(4.0);
         sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
-        // ctx.play_sound("../src/resources/music/personal_space.wav")?;
-
         let mainchar = MovableObject::new(sprite, 400.0).unwrap();
 
         let mut game_objects: Vec<MovableObject> = Vec::new();
