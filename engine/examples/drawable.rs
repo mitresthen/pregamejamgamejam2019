@@ -76,67 +76,66 @@ impl GameInterface for ExampleGame {
         Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
-        if ctx.state.gameplay_running
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            {
-                let speed = 400.0;
-                let mut new_speed = Vec2::new();
+            let speed = 400.0;
+            let mut new_speed = Vec2::new();
 
-                if ctx.key_is_down(Keycode::Up) {
-                    new_speed.y = -speed;
-                }
-                if ctx.key_is_down(Keycode::Down) {
-                    new_speed.y = speed;
-                }
-                if ctx.key_is_down(Keycode::Left) {
-                    new_speed.x = -speed;
-                }
-                if ctx.key_is_down(Keycode::Right) {
-                    new_speed.x = speed;
-                }
-
-                self.player_object.set_target_velocity(new_speed);
-
-                self.player_object.update(dt);
+            if ctx.key_is_down(Keycode::Up) {
+                new_speed.y = -speed;
+            }
+            if ctx.key_is_down(Keycode::Down) {
+                new_speed.y = speed;
+            }
+            if ctx.key_is_down(Keycode::Left) {
+                new_speed.x = -speed;
+            }
+            if ctx.key_is_down(Keycode::Right) {
+                new_speed.x = speed;
             }
 
-            for object in self.autonomous_moving_objects.iter_mut() {
-                let player_pos = self.player_object.get_position();
-                let speed = 300.0;
-                let mut new_speed = Vec2::new();
-                let direction = self.player_object.get_position() -object.get_position();
-                let velocity_scaling= (direction.len()/speed).abs();
-                let target_vel = direction*velocity_scaling;
-                object.set_target_velocity(target_vel);
-                object.update(dt);
-            }
+            self.player_object.set_target_velocity(new_speed);
 
-            for object in self.autonomous_moving_objects.iter_mut() {
-                let overlap = object.overlaps(self.player_object.bounding_box);
-                // println!("Overlap: {:?}", overlap);
-            }
+            self.player_object.update(dt);
         }
 
-        if ctx.state.gameplay_displayed
-        {
-            {
-                ctx.draw(&self.player_object.animated_sprite);
-            }
-
-            for object in self.autonomous_moving_objects.iter_mut() {
-                ctx.draw(&object.animated_sprite);
-            }
+        for object in self.autonomous_moving_objects.iter_mut() {
+            let player_pos = self.player_object.get_position();
+            let speed = 300.0;
+            let mut new_speed = Vec2::new();
+            let direction = self.player_object.get_position() -object.get_position();
+            let velocity_scaling= (direction.len()/speed).abs();
+            let target_vel = direction*velocity_scaling;
+            object.set_target_velocity(target_vel);
+            object.update(dt);
         }
 
-        if ctx.state.presents_menu
-        {
-            if ctx.state.is_on(MAIN_MENU_STATE) {
-                ()
-            } else if ctx.state.is_on(PAUSE_MENU_STATE) {
-                ctx.draw(&self.pause_sprite);
-            }
+        for object in self.autonomous_moving_objects.iter_mut() {
+            let overlap = object.overlaps(self.player_object.bounding_box);
+            // println!("Overlap: {:?}", overlap);
         }
+
+        Ok(true)
+    }
+
+    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        {
+            ctx.draw(&self.player_object.animated_sprite);
+        }
+
+        for object in self.autonomous_moving_objects.iter_mut() {
+            ctx.draw(&object.animated_sprite);
+        }
+
+        Ok(true)
+    }
+
+    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        ctx.draw(&self.pause_sprite);
 
         Ok(true)
     }
