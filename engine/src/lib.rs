@@ -62,7 +62,7 @@ impl From<WavError> for Error {
 }
 
 pub struct Engine<'t> {
-    canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
+    pub canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     width: u32,
     height: u32,
     texture_registry: texture_registry::TextureRegistry<'t>,
@@ -190,7 +190,7 @@ impl<'t> Engine<'t> {
 
         let mut canvas = window.into_canvas()
             .accelerated().build().map_err(|e| e.to_string())?;
-
+        
         let mut event_pump = sdl_context.event_pump()?;
 
         let texture_creator = canvas.texture_creator();
@@ -231,6 +231,18 @@ impl<'t> Engine<'t> {
                         if key == Keycode::Escape {
                             // Every game wants to quit on escape right?
                             break 'main_loop;
+                        }
+
+                        if key == Keycode::F {
+                            let curr_fullscreen_state = engine.canvas.window().fullscreen_state();
+                            if curr_fullscreen_state != sdl2::video::FullscreenType::True {
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True);
+                            }
+                            else
+                            {
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off);
+                            }
+                            timer.reset();
                         }
                         engine.on_key_down(key);
 

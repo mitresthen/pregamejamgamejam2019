@@ -19,13 +19,13 @@ impl GameInterface for GridTest {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let level : Image<RGBA> = Image::load("assets/grid_test.png")?;
-
-        let mut grid = Grid::new(level, 120);
-
         let tr = ctx.get_texture_registry();
+        let level : Image<RGBA> = Image::load("assets/grid_test.png")?;
+        let lightmap = tr.load("assets/grid_test_lightmap.png")?;
 
-        grid.register_tile_type(RGBA { r: 255, g: 0, b: 0, a: 255 }, tr.load("../src/resources/image/tile_Yellow_2.png")?);
+        let mut grid = Grid::new(level, 120, lightmap);
+
+        grid.register_tile_type(RGBA { r: 255, g: 0, b: 0, a: 255 }, tr.load("assets/stolen.png")?);
 
         let game =
             GridTest {

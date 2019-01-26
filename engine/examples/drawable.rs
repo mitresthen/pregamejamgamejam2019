@@ -20,7 +20,7 @@ impl GameInterface for ExampleGame {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let title_background_filename = "../src/resources/image/title_background.png";
+        let title_background_filename = "assets/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
         let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
 
@@ -43,8 +43,6 @@ impl GameInterface for ExampleGame {
         let mut sprite = AnimatedSprite::new(32, texture)?;
         sprite.set_scale(4.0);
         sprite.set_position(Vec2::from_coords(100.0, 100.0));
-
-        // ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
         let mainchar = MovableObject::new(sprite, 400.0).unwrap();
 

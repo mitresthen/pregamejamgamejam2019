@@ -12,6 +12,7 @@ use offset::Offset;
 mod sdl {
 pub use sdl2::render::TextureCreator;
 pub use sdl2::render::Texture;
+pub use sdl2::render::BlendMode;
 pub use sdl2::video::WindowContext;
 pub use sdl2::surface::Surface;
 pub use sdl2::pixels::PixelFormatEnum;
@@ -69,6 +70,10 @@ impl<'t> TextureRegistry<'t> {
         }
     }
     pub fn load(&mut self, path: &str) -> Result<Texture, Error> {
+        return self.load2(path, sdl::BlendMode::Blend);
+    }
+
+    pub fn load2(&mut self, path: &str, blend_mode: sdl::BlendMode) -> Result<Texture, Error> {
         let png_img = match image::load(Path::new(path)) {
             LoadResult::ImageU8(bytes) => { bytes },
             LoadResult::ImageF32(_) => panic!("Is float"),
@@ -93,8 +98,8 @@ impl<'t> TextureRegistry<'t> {
             }
         );
 
-        let texture = self.texture_creator
-                .create_texture_from_surface(&surface).unwrap();
+        let mut texture = self.texture_creator.create_texture_from_surface(&surface).unwrap();
+        texture.set_blend_mode(blend_mode);
 
         let texture_data =
             TextureData {

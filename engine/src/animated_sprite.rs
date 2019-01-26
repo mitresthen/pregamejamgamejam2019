@@ -10,7 +10,7 @@ use offset::Offset;
 #[derive(Clone)]
 pub struct AnimatedSprite {
     texture: Texture,
-    tile_size: i32,
+    tile_extent: Extent,
     current_mode: i32,
     current_frame: f32,
     mode_count: i32,
@@ -19,20 +19,20 @@ pub struct AnimatedSprite {
 }
 
 impl AnimatedSprite {
-    pub fn new(tile_size: i32, texture: Texture) -> Result<AnimatedSprite, Error> {
+    pub fn new(tile_extent: Extent, texture: Texture) -> Result<AnimatedSprite, Error> {
         let extent = texture.extent();
 
-        if extent.width % tile_size != 0 || extent.height % tile_size != 0 {
+        if extent.width % tile_extent.width != 0 || extent.height % tile_extent.height != 0 {
             return Err(Error::InvalidTileSize);
         }
 
-        let mode_count = extent.height / tile_size;
-        let frame_count = extent.width / tile_size;
+        let mode_count = extent.height / tile_extent.height;
+        let frame_count = extent.width / tile_extent.width;
 
         let animated_sprite =
             AnimatedSprite {
                 texture: texture,
-                tile_size: tile_size,
+                tile_extent: tile_extent,
                 current_mode: 0,
                 current_frame: 0.0,
                 mode_count: mode_count,
@@ -70,10 +70,7 @@ impl AnimatedSprite {
     }
 
     pub fn calculate_size(&self) -> Vec2 {
-        Vec2::from_coords(
-            (self.tile_size as f32) * self.transform.get_scale(),
-            (self.tile_size as f32) * self.transform.get_scale()
-        )
+        self.tile_extent.to_vec() * self.transform.get_scale()
     }
 }
 
@@ -83,10 +80,10 @@ impl Drawable for AnimatedSprite {
 
         let frame = (self.current_frame as i32) % self.frame_count;
 
-        offset.x = frame * self.tile_size;
-        offset.y = self.current_mode * self.tile_size;
+        offset.x = frame * self.tile_extent.width;
+        offset.y = self.current_mode * self.tile_extent.height;
 
-        let extent = Extent::new(self.tile_size, self.tile_size);
+        let extent = Extent::new(self.tile_extent.width, self.tile_extent.height);
         let sub_texture = self.texture.sub_texture(offset, extent).unwrap();
 
         ctx.draw(&sub_texture, &self.transform);

@@ -1,6 +1,8 @@
 extern crate engine;
+extern crate sdl2;
 
 use engine::prelude::*;
+use sdl2::render::BlendMode;
 
 mod player;
 
@@ -24,29 +26,30 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let level : Image<RGBA> = Image::load("src/resources/image/temp_level.png")?;
+        let level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
-        let mut grid = Grid::new(level, 120);
+        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
+        let mut grid = Grid::new(level, 120, lightmap);
 
         {
             let tr = ctx.get_texture_registry();
 
             grid.register_tile_type(
                 RGBA { r: 0, g: 0, b: 0, a: 255 },
-                tr.load("src/resources/image/tile_Yellow_2.png")?
+                tr.load("assets/image/tile_Yellow_2.png")?
             );
 
             grid.register_tile_type(
                 RGBA { r: 255, g: 0, b: 0, a: 255 },
-                tr.load("src/resources/image/wall_with_dark_top.png")?
+                tr.load("assets/image/wall_with_dark_top.png")?
             );
             grid.register_tile_type(
                 RGBA { r: 254, g: 0, b: 0, a: 255 },
-                tr.load("src/resources/image/wall_dark_only.png")?
+                tr.load("assets/image/wall_dark_only.png")?
             );
             grid.register_tile_type(
                 RGBA { r: 253, g: 0, b: 0, a: 255 },
-                tr.load("src/resources/image/single_dark_tile.png")?
+                tr.load("assets/image/single_dark_tile.png")?
             );
         }
 
@@ -60,11 +63,11 @@ impl GameInterface for GoogleHomeopathicMedicine {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let pause_sprite = StaticSprite::new(128, 64, tr.load("src/resources/image/paused.png")?)?;
+        let pause_sprite = StaticSprite::new(128, 64, tr.load("assets/image/paused.png")?)?;
 
-        let title_background = StaticSprite::new(640, 480, tr.load("src/resources/image/title_background.png")?)?;
+        let title_background = StaticSprite::new(640, 480, tr.load("assets/image/title_background.png")?)?;
 
-        let title_sprite = StaticSprite::new(128, 128, tr.load("src/resources/image/title.png")?)?;
+        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
 
         let title_screen =
             SplashScreen {
