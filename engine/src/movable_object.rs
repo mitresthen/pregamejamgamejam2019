@@ -22,7 +22,7 @@ impl MovableObject {
                 player_velocity: Vec2::new(),
                 max_speed: maximum_speed,
                 acceleration: Vec2::new(),
-                bounding_box: BoundingBox::new(32, 32, Vec2::new()).unwrap()
+                bounding_box: BoundingBox::new(32.0, 32.0, Vec2::new()).unwrap()
             };
 
         Ok(movable_object)
