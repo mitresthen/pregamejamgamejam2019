@@ -2,8 +2,9 @@ use drawable::{DrawContext, Drawable};
 use texture_registry::Texture;
 
 use super::Error;
-use vector::Vec2;
+use rect::Rect2D;
 use transform::Transform;
+use vector::Vec2;
 
 #[derive(Clone)]
 pub struct StaticSprite {
@@ -28,6 +29,10 @@ impl StaticSprite {
         Ok(static_sprite)
     }
 
+    pub fn get_position(&self) -> Vec2{
+        self.position
+    }
+
     pub fn set_position(&mut self, position: Vec2) {
         self.position = position;
     }
@@ -41,6 +46,24 @@ impl StaticSprite {
             x: self.x_size as f32 * self.scale,
             y: self.y_size as f32 * self.scale,
         }
+    }
+
+    fn get_rect(&self) -> Rect2D {
+        Rect2D {
+            min: Vec2 {
+                x: self.position.x as f32 - (self.x_size as f32 / 2.0),
+                y: self.position.y as f32 - (self.y_size as f32 / 2.0),
+            },
+            max: Vec2 {
+                x: self.position.x as f32 + (self.x_size as f32 / 2.0),
+                y: self.position.y as f32 + (self.y_size as f32 / 2.0),
+            }
+        }
+    }
+
+    pub fn is_clicked(&self, click: Vec2) -> bool {
+        let sprite_rect = self.get_rect();
+        sprite_rect.is_clicked(click)
     }
 }
 

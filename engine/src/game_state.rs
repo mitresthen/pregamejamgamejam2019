@@ -20,7 +20,7 @@ pub struct GameState {
 
 impl fmt::Display for GameState {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "GameState(gr: {}, pm:{}, gd:{})", self.gameplay_running, self.presents_menu, self.gameplay_displayed)
+        write!(f, "GameState(gr: {}, pm:{}, gd:{}, e:{})", self.gameplay_running, self.presents_menu, self.gameplay_displayed, self.exit)
     }
 }
 
@@ -29,12 +29,13 @@ impl GameState {
         // ogs - other game state
         self.gameplay_running   == ogs.gameplay_running   &&
         self.presents_menu      == ogs.presents_menu      &&
-        self.gameplay_displayed == ogs.gameplay_displayed
+        self.gameplay_displayed == ogs.gameplay_displayed &&
+        self.exit               == ogs.exit
     }
 
     pub fn go_to(&mut self, ogs: GameState, dt: f32) -> bool
     {
-        if dt >= 1.0
+        if dt >= 0.5
         {
             self.gameplay_running   = ogs.gameplay_running;
             self.presents_menu      = ogs.presents_menu;

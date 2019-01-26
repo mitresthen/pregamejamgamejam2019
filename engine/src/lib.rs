@@ -20,6 +20,7 @@ pub mod transform;
 pub mod grid;
 pub mod image;
 pub mod splash_screen;
+pub mod menu_screen;
 pub mod game_state;
 pub mod game_object;
 pub mod scene;
@@ -89,6 +90,8 @@ pub trait GameInterface : Sized {
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
+
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
 }
 
 impl<'t> Engine<'t> {
@@ -108,6 +111,10 @@ impl<'t> Engine<'t> {
             );
 
         drawable.draw(&mut ctx);
+    }
+
+    pub fn get_camera(&mut self) -> transform::Transform {
+        self.camera.clone()
     }
 
     pub fn move_camera(&mut self, translation: vector::Vec2) {
@@ -142,6 +149,7 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.play_sound_from_file(filename)?)
     }
 
+    // TODO: Make it work with moving camera
     pub fn get_screen_bounds(&self) -> rect::Rect2D {
         rect::Rect2D {
             min: vector::Vec2::new(),
@@ -236,6 +244,15 @@ impl<'t> Engine<'t> {
                         engine.on_key_up(key);
 
                         if !game.on_key_up(&mut engine, key)? {
+                            break 'main_loop;
+                        }
+                    },
+                    Event::MouseButtonUp {
+                        x: click_x,
+                        y: click_y,
+                        ..
+                    } => {
+                        if !game.on_mouse_button_up(&mut engine, click_x, click_y)? {
                             break 'main_loop;
                         }
                     },

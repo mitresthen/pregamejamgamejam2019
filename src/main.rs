@@ -100,7 +100,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
-        &self.pause_sprite.set_position(player_position);
+        &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
 
         let player_bounding_box = self.scene.get(self.player_id)
             .unwrap()
@@ -126,34 +126,46 @@ impl GameInterface for GoogleHomeopathicMedicine {
     {
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
+        &self.pause_sprite.set_scale(1.0/zoom);
 
         ctx.draw(&self.level);
 
         self.scene.render(ctx);
 
-        let fps = (1.0 / dt) as i32;
+        // let fps = (1.0 / dt) as i32;
 
         Ok(true)
     }
 
-    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+    fn draw_main_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
         Ok(true)
     }
 
-    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
         ctx.draw(&self.pause_sprite);
 
         Ok(true)
     }
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
-        if keycode == Keycode::P && !is_repeated {
-            ctx.invert_paused_state();
-            return Ok(true);
+        if ctx.state.gameplay_displayed
+        {
+            if keycode == Keycode::P && !is_repeated {
+                ctx.invert_paused_state();
+                return Ok(true);
+            }
         }
         if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();
+            return Ok(true);
+        }
+        if ctx.state.is_on(MAIN_MENU_STATE)
+        {
+            if ctx.state.go_to(GAMEPLAY_STATE, ctx.last_game_state_change.get_time())
+            {
+                ctx.last_game_state_change.reset();
+            }
             return Ok(true);
         }
 
