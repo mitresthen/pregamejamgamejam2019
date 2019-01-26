@@ -1,10 +1,10 @@
-use animated_sprite::AnimatedSprite;
+use static_sprite::StaticSprite;
 use drawable::{DrawContext, Drawable};
 
 #[derive(Clone)]
 pub struct SplashScreen {
-    pub background: AnimatedSprite,
-    pub foreground: AnimatedSprite,
+    pub background: StaticSprite,
+    pub foreground: StaticSprite,
 }
 
 impl Drawable for SplashScreen {

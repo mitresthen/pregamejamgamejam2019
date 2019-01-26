@@ -8,7 +8,7 @@ struct GoogleHomeopathicMedicine {
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
-    pause_sprite: AnimatedSprite,
+    pause_sprite: StaticSprite,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -47,23 +47,18 @@ impl GameInterface for GoogleHomeopathicMedicine {
             );
         }
 
+        // Loading StaticSprites
         let title_background_filename = "src/resources/image/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
-        let mut title_background = AnimatedSprite::new(128, title_background_texture)?;
-        title_background.set_scale(4.0);
-        title_background.set_position(ctx.get_screen_bounds().center());
+        let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
 
         let title_filename = "src/resources/image/title.png";
         let title_texture = ctx.get_texture_registry().load(title_filename)?;
-        let mut title_sprite = AnimatedSprite::new(128, title_texture)?;
-        title_sprite.set_scale(1.0);
-        title_sprite.set_position(ctx.get_screen_bounds().center());
+        let mut title_sprite = StaticSprite::new(128, 128, title_texture)?;
 
         let pause_filename = "src/resources/image/paused.png";
         let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
-        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
-        pause_sprite.set_scale(1.0);
-        pause_sprite.set_position(ctx.get_screen_bounds().center());
+        let mut pause_sprite = StaticSprite::new(128, 64, pause_texture)?;
 
         let title_screen =
             SplashScreen {
