@@ -1,4 +1,5 @@
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
 
 use sdl2::AudioSubsystem;
 use sdl2::audio::{AudioFormat, AudioDevice, AudioCallback, AudioSpecDesired,AudioSpecWAV};
@@ -98,6 +99,7 @@ impl AudioCallback for AudioMixer {
 pub struct AudioEngine {
     _audio_device: AudioDevice<AudioMixer>,
     mixer: AudioMixer,
+    _sound_map: HashMap<String, Vec<f32>>,
 }
 
 
@@ -124,7 +126,8 @@ impl AudioEngine {
 
         AudioEngine {
             _audio_device: device,
-            mixer: mixer
+            mixer: mixer,
+            _sound_map: HashMap::new(),
         }
     }
 
@@ -133,6 +136,16 @@ impl AudioEngine {
     }
 
     pub fn loop_sound_from_file(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
+
+        if !self._sound_map.contains_key(filename) {
+            self.pre_load_file(filename);
+        }
+        let pcm_mono_float = self._sound_map.get(filename).unwrap().to_vec();
+        self.loop_sound(pcm_mono_float, repeats);
+        Ok(())
+    }
+
+    pub fn pre_load_file(&mut self, filename: &str) -> Result<(), Error> {
         use std::slice;
         use std::mem;
         use std::i16;
@@ -161,9 +174,7 @@ impl AudioEngine {
         let pcm_stereo_float : Vec<f32> = pcm_stereo_16.iter().map(|x| (*x as f32) / (i16::MAX as f32)).collect();
 
         let pcm_mono_float = pcm_stereo_float.chunks(2).map(|lr| (lr[0] + lr[1]) / 2.0).collect();
-
-        self.loop_sound(pcm_mono_float, repeats);
-
+        self._sound_map.insert(filename.to_string(), pcm_mono_float);
         Ok(())
     }
 
