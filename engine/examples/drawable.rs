@@ -6,6 +6,7 @@ use std::vec::Vec;
 pub struct ExampleGame{
     player_object: MovableObject,
     autonomous_moving_objects: Vec<MovableObject>,
+    pause_sprite: AnimatedSprite,
 }
 
 impl GameInterface for ExampleGame {
@@ -19,6 +20,12 @@ impl GameInterface for ExampleGame {
         let mut sprite = AnimatedSprite::new(32, texture)?;
         sprite.set_scale(4.0);
         sprite.set_position(Vec2 { x: 100.0, y: 100.0 });
+
+        let pause_filename = "assets/paused.png";
+        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
+        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
+        pause_sprite.set_scale(1.0);
+        pause_sprite.set_position(ctx.get_screen_bounds().center());
 
         ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
@@ -35,51 +42,58 @@ impl GameInterface for ExampleGame {
         game_objects.push(roomba);
 
         let game =
-            ExampleGame 
+            ExampleGame
             {
                 player_object: mainchar,
-                autonomous_moving_objects: game_objects
+                autonomous_moving_objects: game_objects,
+                pause_sprite: pause_sprite,
             };
 
         Ok(game)
     }
 
-
-
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            let speed = 400.0;
-            let mut new_speed = Vec2::new();
+            // Update player characted if game isn't paused
+            if !ctx.paused
+            {
+                let speed = 400.0;
+                let mut new_speed = Vec2::new();
 
-            if ctx.key_is_down(Keycode::Up) {
-                new_speed.y = -speed;
-            }
-            if ctx.key_is_down(Keycode::Down) {
-                new_speed.y = speed;
-            }
-            if ctx.key_is_down(Keycode::Left) {
-                new_speed.x = -speed;
-            }
-            if ctx.key_is_down(Keycode::Right) {
-                new_speed.x = speed;
-            }
+                if ctx.key_is_down(Keycode::Up) {
+                    new_speed.y = -speed;
+                }
+                if ctx.key_is_down(Keycode::Down) {
+                    new_speed.y = speed;
+                }
+                if ctx.key_is_down(Keycode::Left) {
+                    new_speed.x = -speed;
+                }
+                if ctx.key_is_down(Keycode::Right) {
+                    new_speed.x = speed;
+                }
 
-            self.player_object.set_target_velocity(new_speed);
+                self.player_object.set_target_velocity(new_speed);
 
-            self.player_object.update(dt);
+                self.player_object.update(dt);
+            }
 
             ctx.draw(&self.player_object.animated_sprite);
         }
 
-        for object in self.autonomous_moving_objects.iter_mut() {           
-            let player_pos = self.player_object.get_position();
-            let speed = 300.0;
-            let mut new_speed = Vec2::new();
-            let direction = self.player_object.get_position() -object.get_position(); 
-            let velocity_scaling= (direction.len()/speed).abs();
-            let target_vel = direction*velocity_scaling;
-            object.set_target_velocity(target_vel);
-            object.update(dt);
+        for object in self.autonomous_moving_objects.iter_mut() {
+            // Update other autonomous moving objects if game isn't paused
+            if !ctx.paused
+            {
+                let player_pos = self.player_object.get_position();
+                let speed = 300.0;
+                let mut new_speed = Vec2::new();
+                let direction = self.player_object.get_position() -object.get_position();
+                let velocity_scaling= (direction.len()/speed).abs();
+                let target_vel = direction*velocity_scaling;
+                object.set_target_velocity(target_vel);
+                object.update(dt);
+            }
 
             ctx.draw(&object.animated_sprite);
         }
@@ -89,6 +103,12 @@ impl GameInterface for ExampleGame {
             println!("Overlap: {:?}", overlap);
         }
 
+        // Draw paused sprite if game is paused
+        if ctx.paused
+        {
+            ctx.draw(&self.pause_sprite);
+        }
+
         Ok(true)
     }
 
@@ -96,7 +116,10 @@ impl GameInterface for ExampleGame {
         if keycode == Keycode::Escape {
             return Ok(false);
         }
-
+        if keycode == Keycode::P {
+            ctx.try_to_change_paused();
+            return Ok(true);
+        }
 
         Ok(true)
     }
@@ -104,5 +127,4 @@ impl GameInterface for ExampleGame {
 
 fn main() {
     Engine::execute::<ExampleGame>(640, 480).unwrap();
-
 }

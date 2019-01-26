@@ -1,12 +1,12 @@
 extern crate engine;
 
 use engine::prelude::*;
+use std::vec::Vec;
 
-struct ExampleGame {
-    sprite: AnimatedSprite,
-    sprite2: AnimatedSprite,
-    player_position: Vec2,
-    player_velocity: Vec2,
+pub struct ExampleGame{
+    player_object: MovableObject,
+    autonomous_moving_objects: Vec<MovableObject>,
+    pause_sprite: AnimatedSprite,
 }
 
 impl GameInterface for ExampleGame {
@@ -19,56 +19,96 @@ impl GameInterface for ExampleGame {
         let texture = ctx.get_texture_registry().load(filename)?;
         let mut sprite = AnimatedSprite::new(32, texture)?;
         sprite.set_scale(4.0);
-        sprite.set_position(Vec2::from_coords(100.0, 100.0));
+        sprite.set_position(Vec2 { x: 100.0, y: 100.0 });
 
-        let filename2 = "assets/paused.png";
-        let texture2 = ctx.get_texture_registry().load(filename2)?;
-        let mut sprite2 = AnimatedSprite::new(128, texture2)?;
-        sprite2.set_scale(2.0);
-        sprite2.set_position(ctx.get_screen_bounds().center());
+        let pause_filename = "assets/paused.png";
+        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
+        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
+        pause_sprite.set_scale(1.0);
+        pause_sprite.set_position(ctx.get_screen_bounds().center());
 
         // ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
+        let mainchar = MovableObject::new(sprite, 400.0).unwrap();
+
+        let mut game_objects: Vec<MovableObject> = Vec::new();
+
+        let roombatexture = ctx.get_texture_registry().load(filename)?;
+        let mut roombasprite = AnimatedSprite::new(32, roombatexture)?;
+        roombasprite.set_scale(4.0);
+        roombasprite.set_position(Vec2::from_coords(100.0, 100.0));
+
+        let roomba = MovableObject::new(roombasprite, 420.0).unwrap();
+        game_objects.push(roomba);
+
         let game =
-            ExampleGame {
-                sprite: sprite,
-                sprite2: sprite2,
-                player_position: Vec2::new(),
-                player_velocity: Vec2::new(),
+            ExampleGame
+            {
+                player_object: mainchar,
+                autonomous_moving_objects: game_objects,
+                pause_sprite: pause_sprite,
             };
 
         Ok(game)
     }
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        {
+            // Update player characted if game isn't paused
+            if !ctx.paused
+            {
+                let speed = 400.0;
+                let mut new_speed = Vec2::new();
+
+                if ctx.key_is_down(Keycode::Up) {
+                    new_speed.y = -speed;
+                }
+                if ctx.key_is_down(Keycode::Down) {
+                    new_speed.y = speed;
+                }
+                if ctx.key_is_down(Keycode::Left) {
+                    new_speed.x = -speed;
+                }
+                if ctx.key_is_down(Keycode::Right) {
+                    new_speed.x = speed;
+                }
+
+                self.player_object.set_target_velocity(new_speed);
+
+                self.player_object.update(dt);
+            }
+
+            ctx.draw(&self.player_object.animated_sprite);
+        }
+
+        for object in self.autonomous_moving_objects.iter_mut() {
+            // Update other autonomous moving objects if game isn't paused
+            if !ctx.paused
+            {
+                let player_pos = self.player_object.get_position();
+                let speed = 300.0;
+                let mut new_speed = Vec2::new();
+                let direction = self.player_object.get_position() -object.get_position();
+                let velocity_scaling= (direction.len()/speed).abs();
+                let target_vel = direction*velocity_scaling;
+                object.set_target_velocity(target_vel);
+                object.update(dt);
+            }
+
+            ctx.draw(&object.animated_sprite);
+        }
+
+        for object in self.autonomous_moving_objects.iter_mut() {
+            let overlap = object.overlaps(self.player_object.bounding_box);
+            // println!("Overlap: {:?}", overlap);
+        }
+
+        // Draw paused sprite if game is paused
         if ctx.paused
         {
-            ctx.draw(&self.sprite2);
-            return Ok(true);
-        }
-        let speed = 400.0;
-        let mut new_speed = Vec2::new();
-
-        if ctx.key_is_down(Keycode::Up) {
-            new_speed.y = -speed;
-        }
-        if ctx.key_is_down(Keycode::Down) {
-            new_speed.y = speed;
-        }
-        if ctx.key_is_down(Keycode::Left) {
-            new_speed.x = -speed;
-        }
-        if ctx.key_is_down(Keycode::Right) {
-            new_speed.x = speed;
+            ctx.draw(&self.pause_sprite);
         }
 
-        let acceleration = new_speed - self.player_velocity;
-        self.player_velocity = self.player_velocity + (acceleration * dt * 5.0);
-        self.player_position = self.player_position + (self.player_velocity * dt);
-
-        self.sprite.set_position(self.player_position);
-        self.sprite.step_time(dt * 0.1 * self.player_velocity.len());
-        ctx.draw(&self.sprite);
         Ok(true)
     }
 
