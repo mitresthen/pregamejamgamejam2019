@@ -10,7 +10,7 @@ pub struct SoundInstance {
     position: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub enum WavError {
     Not16Bit,
     NotStereo,

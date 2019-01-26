@@ -27,7 +27,7 @@ impl GameInterface for ExampleGame {
         pause_sprite.set_scale(1.0);
         pause_sprite.set_position(ctx.get_screen_bounds().center());
 
-        ctx.play_sound("../src/resources/music/personal_space.wav")?;
+        // ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
         let mainchar = MovableObject::new(sprite, 400.0).unwrap();
 
@@ -100,7 +100,7 @@ impl GameInterface for ExampleGame {
 
         for object in self.autonomous_moving_objects.iter_mut() {
             let overlap = object.overlaps(self.player_object.bounding_box);
-            println!("Overlap: {:?}", overlap);
+            // println!("Overlap: {:?}", overlap);
         }
 
         // Draw paused sprite if game is paused

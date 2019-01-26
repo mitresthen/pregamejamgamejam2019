@@ -6,9 +6,21 @@ use std::collections::HashSet;
 pub mod audio_engine;
 pub mod drawable;
 pub mod animated_sprite;
+pub mod movable_object;
 pub mod texture_registry;
+pub mod bounding_box;
 pub mod timer;
 pub mod vector;
+pub mod rect;
+pub mod offset;
+pub mod extent;
+pub mod transform;
+pub mod grid;
+pub mod image;
+
+pub mod axis_controller;
+pub mod slider_controller;
+
 
 pub mod prelude;
 
@@ -17,13 +29,16 @@ pub use sdl2::keyboard::Keycode;
 
 use audio_engine::WavError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Error {
     SDLError(String),
     IO { path: Option<String> },
     UnsupportedPixelFormat,
     InvalidTileSize,
     WavError(WavError),
+    FatalError(String),
+    IncompatiblePixelType,
+    IncompletePixel,
     Unknown,
 }
 
@@ -41,9 +56,14 @@ impl From<WavError> for Error {
 
 pub struct Engine<'t> {
     canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
+    width: u32,
+    height: u32,
     texture_registry: texture_registry::TextureRegistry<'t>,
     audio_engine: audio_engine::AudioEngine,
     keys_down: HashSet<Keycode>,
+    camera: transform::Transform,
+    pub paused: bool,
+    last_paused_change: timer::Timer,
 }
 
 pub trait GameInterface : Sized {
@@ -53,7 +73,7 @@ pub trait GameInterface : Sized {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
 
-    fn on_key_down(&mut self, keycode: Keycode) -> Result<bool, Error>;
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 }
 
 impl<'t> Engine<'t> {
@@ -62,9 +82,26 @@ impl<'t> Engine<'t> {
     }
 
     pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
-        let mut ctx = drawable::DrawContext::new(&mut self.canvas, &mut self.texture_registry);
+        let mut ctx =
+            drawable::DrawContext::new(
+                &mut self.canvas,
+                &mut self.texture_registry,
+                &self.camera
+            );
 
         drawable.draw(&mut ctx);
+    }
+
+    pub fn move_camera(&mut self, translation: vector::Vec2) {
+        self.camera.translate(translation);
+    }
+
+    pub fn set_camera_zoom(&mut self, value: f32) {
+        self.camera.set_scale(value);
+    }
+
+    pub fn get_camera_position(&self) -> vector::Vec2 {
+        self.camera.get_translation()
     }
 
     pub fn on_key_down(&mut self, keycode: Keycode) {
@@ -81,6 +118,28 @@ impl<'t> Engine<'t> {
 
     pub fn play_sound(&mut self, filename: &str) -> Result<(), Error> {
         Ok(self.audio_engine.play_sound_from_file(filename)?)
+    }
+
+    pub fn get_screen_bounds(&self) -> rect::Rect2D {
+        rect::Rect2D {
+            min: vector::Vec2::new(),
+            max: vector::Vec2 {
+                x: self.width as f32,
+                y: self.height as f32
+            }
+        }
+    }
+
+    pub fn get_width(&self) -> u32 { self.width }
+
+    pub fn get_height(&self) -> u32 { self.height }
+
+    pub fn try_to_change_paused(&mut self) {
+        if self.last_paused_change.get_time() > 1.0
+        {
+            self.paused = !self.paused;
+            self.last_paused_change.reset();
+        }
     }
 
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
@@ -101,9 +160,14 @@ impl<'t> Engine<'t> {
         let mut engine =
             Engine {
                 canvas: &mut canvas,
+                width: width,
+                height: height,
                 texture_registry: texture_registry,
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
+                camera: transform::Transform::new(),
+                paused: false,
+                last_paused_change: timer::Timer::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -120,9 +184,13 @@ impl<'t> Engine<'t> {
                     Event::KeyDown {
                         keycode: Some(key), ..
                     } => {
+                        if key == Keycode::Escape {
+                            // Every game wants to quit on escape right?
+                            break 'main_loop;
+                        }
                         engine.on_key_down(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },
@@ -131,7 +199,7 @@ impl<'t> Engine<'t> {
                     } => {
                         engine.on_key_up(key);
 
-                        if !game.on_key_down(key)? {
+                        if !game.on_key_down(&mut engine, key)? {
                             break 'main_loop;
                         }
                     },

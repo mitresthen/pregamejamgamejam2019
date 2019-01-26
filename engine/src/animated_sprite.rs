@@ -2,6 +2,10 @@ use drawable::{DrawContext, Drawable};
 use texture_registry::Texture;
 
 use super::Error;
+use vector::Vec2;
+use transform::Transform;
+use extent::Extent;
+use offset::Offset;
 
 pub struct AnimatedSprite {
     texture: Texture,
@@ -10,22 +14,20 @@ pub struct AnimatedSprite {
     current_frame: f32,
     mode_count: i32,
     frame_count: i32,
-    position_x: i32,
-    position_y: i32,
-    scale: i32
+    position: Vec2,
+    scale: f32
 }
 
 impl AnimatedSprite {
     pub fn new(tile_size: i32, texture: Texture) -> Result<AnimatedSprite, Error> {
-        let width = texture.width();
-        let height = texture.height();
+        let extent = texture.extent();
 
-        if width % tile_size != 0 || height % tile_size != 0 {
+        if extent.width % tile_size != 0 || extent.height % tile_size != 0 {
             return Err(Error::InvalidTileSize);
         }
 
-        let mode_count = height / tile_size;
-        let frame_count = width / tile_size;
+        let mode_count = extent.height / tile_size;
+        let frame_count = extent.width / tile_size;
 
         let animated_sprite =
             AnimatedSprite {
@@ -35,9 +37,8 @@ impl AnimatedSprite {
                 current_frame: 0.0,
                 mode_count: mode_count,
                 frame_count: frame_count,
-                position_x: 0,
-                position_y: 0,
-                scale: 1
+                position: Vec2::new(),
+                scale: 1.0
             };
 
         Ok(animated_sprite)
@@ -50,9 +51,8 @@ impl AnimatedSprite {
         }
     }
 
-    pub fn set_position(&mut self, x: i32, y: i32) {
-        self.position_x = x;
-        self.position_y = y;
+    pub fn set_position(&mut self, position: Vec2) {
+        self.position = position;
     }
 
     pub fn set_mode(&mut self, mode: i32) {
@@ -62,26 +62,35 @@ impl AnimatedSprite {
         self.current_mode = mode;
     }
 
-    pub fn set_scale(&mut self, scale: i32) {
+    pub fn set_scale(&mut self, scale: f32) {
         self.scale = scale;
+    }
+
+    pub fn calculate_size(&mut self) -> Vec2 {
+        Vec2 {
+            x: self.tile_size as f32 * self.scale,
+            y: self.tile_size as f32 * self.scale,
+        }
     }
 }
 
 impl Drawable for AnimatedSprite {
     fn draw(&self, ctx: &mut DrawContext) {
-        let f = (self.current_frame as i32) % self.frame_count;
-        let m = self.current_mode;
-        let ts = self.tile_size;
-        let s = self.scale;
+        let mut offset = Offset::new();
 
-        let x = self.position_x;
-        let y = self.position_y;
+        let frame = (self.current_frame as i32) % self.frame_count;
 
-        use sdl2::rect::Rect;
-        let src = Rect::new(f * ts, m * ts, ts as u32, ts as u32);
-        let dst = Rect::new(x, y, (ts * s) as u32, (ts * s) as u32);
+        offset.x = frame * self.tile_size;
+        offset.y = self.current_mode * self.tile_size;
 
-        ctx.copy_ex(&self.texture, src, dst);
+        let extent = Extent::new(self.tile_size, self.tile_size);
+        let sub_texture = self.texture.sub_texture(offset, extent).unwrap();
+
+        let mut transform = Transform::new();
+        transform.set_translation(self.position);
+        transform.set_scale(self.scale);
+
+        ctx.draw(&sub_texture, &transform);
     }
 }
 
