@@ -107,6 +107,10 @@ impl GameObject for Player {
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
         Some(self)
     }
+
+    fn on_event(&mut self, event: GameEvent) {
+        println!("Player handling event {:#?}", event);
+    }
 }
 
 impl PhysicalObject for Player {

@@ -10,4 +10,5 @@ sdl2 = { version = "0.31.0" }
 
 [dependencies]
 stb_image = "0.2.1"
+rand = "0.6.4"
 engine = { path = "engine" }

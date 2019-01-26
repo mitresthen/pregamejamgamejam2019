@@ -1,5 +1,6 @@
 extern crate sdl2;
 extern crate stb_image;
+extern crate rand;
 
 use std::collections::HashSet;
 use std::time::Duration;

@@ -1,9 +1,15 @@
 use engine::prelude::*;
 
+enum MovementMode {
+    Tracking,
+    Random,
+}
+
 pub struct Roomba {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
+    mode: MovementMode
 }
 
 impl Roomba {
@@ -17,8 +23,13 @@ impl Roomba {
             Roomba {
                 sprite: sprite,
                 transform: Transform::new(),
-                velocity: Vec2::new()
+                velocity: Vec2::new(),
+                mode: MovementMode::Random
             };
+        let vel = Vec2::random();
+        println!("Setting roomba velocity {:#?}", vel);
+        roomba.velocity = vel;
+
 
         roomba.transform.set_scale(1.0);
 
@@ -27,6 +38,10 @@ impl Roomba {
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
         &mut self.transform
+    }
+
+    pub fn new_random_direction(&mut self) {
+        self.velocity = Vec2::random();
     }
 }
 
@@ -52,6 +67,10 @@ impl GameObject for Roomba {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
         Some(self)
+    }
+
+    fn on_event(&mut self, event: GameEvent) {
+        println!("Roomba handling event {:#?}", event);
     }
 }
 
