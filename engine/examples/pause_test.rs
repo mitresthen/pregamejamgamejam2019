@@ -77,9 +77,8 @@ impl GameInterface for ExampleGame {
     }
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        if ctx.state.gameplay_running
         {
-            // Update player characted if game isn't paused
-            if ctx.state.is_on(GAMEPLAY_STATE)
             {
                 let speed = 400.0;
                 let mut new_speed = Vec2::new();
@@ -102,16 +101,7 @@ impl GameInterface for ExampleGame {
                 self.player_object.update(dt);
             }
 
-            if ctx.state.gameplay_displayed
-            {
-                ctx.draw(&self.player_object.animated_sprite);
-            }
-        }
-
-        for object in self.autonomous_moving_objects.iter_mut() {
-            // Update other autonomous moving objects if game isn't paused
-            if ctx.state.is_on(GAMEPLAY_STATE)
-            {
+            for object in self.autonomous_moving_objects.iter_mut() {
                 let player_pos = self.player_object.get_position();
                 let speed = 300.0;
                 let mut new_speed = Vec2::new();
@@ -122,21 +112,30 @@ impl GameInterface for ExampleGame {
                 object.update(dt);
             }
 
-            if ctx.state.gameplay_displayed
+            for object in self.autonomous_moving_objects.iter_mut() {
+                let overlap = object.overlaps(self.player_object.bounding_box);
+                // println!("Overlap: {:?}", overlap);
+            }
+        }
+
+        if ctx.state.gameplay_displayed
+        {
             {
+                ctx.draw(&self.player_object.animated_sprite);
+            }
+
+            for object in self.autonomous_moving_objects.iter_mut() {
                 ctx.draw(&object.animated_sprite);
             }
         }
 
-        for object in self.autonomous_moving_objects.iter_mut() {
-            let overlap = object.overlaps(self.player_object.bounding_box);
-            // println!("Overlap: {:?}", overlap);
-        }
-
-        // Draw paused sprite if game is paused
-        if ctx.state.is_on(PAUSE_MENU_STATE)
+        if ctx.state.presents_menu
         {
-            ctx.draw(&self.pause_sprite);
+            if ctx.state.is_on(MAIN_MENU_STATE) {
+                ()
+            } else if ctx.state.is_on(PAUSE_MENU_STATE) {
+                ctx.draw(&self.pause_sprite);
+            }
         }
 
         Ok(true)
