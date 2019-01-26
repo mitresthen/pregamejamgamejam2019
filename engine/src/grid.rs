@@ -13,17 +13,15 @@ pub type TileIndex = RGBA;
 
 pub struct Grid {
     image: Image<RGBA>,
-    lightmap: Texture,
     tile_size: u32,
     tile_map: HashMap<TileIndex, Texture>,
     interleaved_scene: Option<Scene>
 }
 
 impl Grid {
-    pub fn new(image: Image<RGBA>, tile_size: u32, lightmap: Texture) -> Grid {
+    pub fn new(image: Image<RGBA>, tile_size: u32) -> Grid {
         Grid {
             image: image,
-            lightmap: lightmap,
             tile_size: tile_size,
             tile_map: HashMap::new(),
             interleaved_scene: None
@@ -141,9 +139,6 @@ impl Grid {
                 }
             }
         }
-        let mut transform = Transform::new();
-        transform.set_translation(Vec2::from_coords(0.0, 0.0));
-        ctx.draw2(&self.lightmap, &transform, Origin::TopLeft);
     }
 
     pub fn interleave_scene<'t>(&'t self, scene: &'t Scene) -> GridWithInterleavedScene<'t> {

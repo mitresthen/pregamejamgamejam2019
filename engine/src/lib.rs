@@ -99,17 +99,19 @@ impl<'t> Engine<'t> {
         &mut self.texture_registry
     }
 
-    pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+    pub fn get_draw_context<'k>(&'k mut self) -> drawable::DrawContext<'k> {
         let bounds = self.get_screen_bounds();
 
-        let mut ctx =
-            drawable::DrawContext::new(
-                &mut self.canvas,
-                &mut self.texture_registry,
-                &self.camera,
-                bounds
-            );
+        drawable::DrawContext::new(
+            &mut self.canvas,
+            &mut self.texture_registry,
+            &self.camera,
+            bounds
+        )
+    }
 
+    pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+        let mut ctx = self.get_draw_context();
         drawable.draw(&mut ctx);
     }
 

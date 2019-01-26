@@ -5,7 +5,7 @@ pub use Keycode;
 pub use static_sprite::StaticSprite;
 pub use animated_sprite::{Animatable, AnimatedSprite, AggregatedAnimatedSprite, SpriteTrait};
 pub use movable_object::MovableObject;
-pub use drawable::{Drawable, DrawContext};
+pub use drawable::{Drawable, DrawContext, Origin};
 pub use bounding_box::BoundingBox;
 pub use vector::Vec2;
 pub use extent::Extent;
@@ -13,6 +13,7 @@ pub use offset::Offset;
 pub use splash_screen::SplashScreen;
 pub use menu_screen::*;
 pub use game_state::*;
+pub use texture_registry::Texture;
 
 pub use grid::Grid;
 
