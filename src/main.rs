@@ -100,9 +100,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_position(player_position);
         &self.pause_sprite.set_position(player_position);
 
-        let zoom = self.zoom_controller.poll(&ctx, dt);
-        ctx.set_camera_zoom(zoom);
-
         self.scene.update(ctx, dt);
 
         Ok(true)
@@ -111,6 +108,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<bool, Error>
     {
+        let zoom = self.zoom_controller.poll(&ctx, dt);
+        ctx.set_camera_zoom(zoom);
+
         ctx.draw(&self.level);
 
         self.scene.render(ctx);
