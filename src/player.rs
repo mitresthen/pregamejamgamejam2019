@@ -10,10 +10,10 @@ pub struct Player {
 impl Player {
     pub fn new(ctx: &mut Engine) -> Result<Player, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/characters.png")?;
+        let texture = tr.load("assets/image/mainChar-1x2.png")?;
         //let texture = tr.load("assets/image/red_rider.png")?;
 
-        let mut sprite = AnimatedSprite::new(32, texture)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
 
         let mut player =
             Player {
@@ -28,7 +28,7 @@ impl Player {
                 velocity: Vec2::new()
             };
 
-        player.transform.set_scale(4.0);
+        player.transform.set_scale(1.0);
 
         Ok(player)
     }
@@ -47,7 +47,23 @@ impl GameObject for Player {
         self.velocity.approach(target_velocity, 240.0 * dt);
         self.transform.translate(self.velocity * dt);
         self.sprite.set_transform(&self.transform);
-        self.sprite.step_time(dt * self.velocity.len() * 0.1);
+        self.sprite.step_time(dt * self.velocity.len() * 0.05);
+
+        if target_velocity.len() > 0.1 {
+            if target_velocity.x.abs() > target_velocity.y.abs() {
+                if target_velocity.x > 0.0 {
+                    self.sprite.set_mode(1)
+                } else {
+                    self.sprite.set_mode(3);
+                }
+            } else {
+                if target_velocity.y > 0.0 {
+                    self.sprite.set_mode(2)
+                } else {
+                    self.sprite.set_mode(0);
+                }
+            }
+        }
 
         true
     }
