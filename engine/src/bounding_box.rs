@@ -1,5 +1,6 @@
 use vector::Vec2;
 use std::vec::Vec;
+use std::ops::Range;
 
 use super::Error;
 
@@ -43,7 +44,71 @@ impl BoundingBox {
         points
     }
 
-    pub fn SAT_overlap(&self, other: BoundingBox) -> bool {
-        true
+    pub fn get_edges(&self) -> Vec<Vec2> {
+        let points = self.get_points();
+        let mut edges = Vec::new();
+        for i in 0..points.len() {
+            let a = points[i];
+            let b = points[(i+1) % points.len()];
+            let ab = b-a;
+            let ab_a = ab;
+            edges.push(ab);
+            //println!("Creating edge {:#?}", ab_a);
+        }
+
+        edges
+
+    }
+
+    pub fn sat_overlap(&self, other: BoundingBox) -> Option<Vec2> {
+        let my_edges = self.get_edges();
+        let other_edges = other.get_edges();
+        let mut all_axes: Vec<Vec2> = Vec::new();
+        all_axes.extend(&my_edges);
+        all_axes.extend(&other_edges);
+        fn update_range(existing_range: Range<f32>, inserted_value: f32) -> Range<f32> {
+            let new_range = 
+                Range{
+                    start: existing_range.start.min(inserted_value),
+                    end: existing_range.end.max(inserted_value) 
+                };
+            new_range
+        }
+
+        fn overlap_len(range_a: Range<f32>, range_b: Range<f32>) -> f32 {
+            range_a.end.min(range_b.end) - range_a.start.max(range_b.start)
+        }
+
+        use std::f32;
+
+        let mut min_overlap = f32::MAX;
+        let mut axis_of_overlap = None;
+        for axis in all_axes {
+            let normal = axis.normal_vector();
+            let mut a_range = Range{
+                start: f32::MAX, 
+                end: f32::MIN};
+            let mut b_range = Range{
+                start: f32::MAX, 
+                end: f32::MIN};
+            for a_point in self.get_points() {
+                let dot_product = a_point.dot_product(normal);
+                a_range = update_range(a_range, dot_product);
+            }
+            for b_point in other.get_points() {
+                let dot_product = b_point.dot_product(normal);
+                b_range = update_range(b_range, dot_product);
+            }
+            let current_overlap = overlap_len(a_range, b_range);
+            if current_overlap < 0.0 {
+                return None
+            }
+            if current_overlap <= min_overlap 
+            {
+                min_overlap = current_overlap;
+                axis_of_overlap = Some(normal);
+            }
+        }
+        axis_of_overlap
     }
 }

@@ -18,4 +18,6 @@ List of assets:
 	- Open (no door)
 - All four wall corners 1x1
 - All four wall T-junctions 1x1
+- Stair railing vertical 1x1 (stairs on left side)
+- Stair railing upper end 1x1 (stairs on left side)
 

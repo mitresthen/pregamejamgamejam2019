@@ -69,9 +69,12 @@ impl<'t> DrawContext<'t> {
         top_left = self.camera.transform_point_inv(top_left);
         bottom_right = self.camera.transform_point_inv(bottom_right);
 
+        top_left = top_left.round();
+        bottom_right = bottom_right.round();
+
         let size = bottom_right - top_left;
 
-        let extent = Extent::new(size.x as i32, size.y as i32);
+        let extent = Extent::new(size.x.round() as i32, size.y.round() as i32);
 
         let dst =
             Rect::new(
