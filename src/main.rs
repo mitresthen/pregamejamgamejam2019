@@ -8,6 +8,7 @@ struct GoogleHomeopathicMedicine {
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
+    pause_sprite: AnimatedSprite,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -58,6 +59,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
         title_sprite.set_scale(1.0);
         title_sprite.set_position(ctx.get_screen_bounds().center());
 
+        let pause_filename = "src/resources/image/paused.png";
+        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
+        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
+        pause_sprite.set_scale(1.0);
+        pause_sprite.set_position(ctx.get_screen_bounds().center());
+
         let title_screen =
             SplashScreen {
                 background: title_background,
@@ -80,12 +87,18 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 ),
                 camera_velocity: Vec2::new(),
                 title_screen: title_screen,
+                pause_sprite: pause_sprite,
             };
 
         Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32)
+
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<bool, Error>
     {
         let target_velocity = self.camera_controller.poll(ctx) * 1000.0;
@@ -103,7 +116,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
         Ok(true)
     }
 
+    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        ctx.draw(&self.pause_sprite);
+
+        Ok(true)
+    }
+
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
+        if keycode == Keycode::P && !is_repeated {
+            ctx.invert_paused_state();
+            return Ok(true);
+        }
         if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();

@@ -75,7 +75,12 @@ pub trait GameInterface : Sized {
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    // Update - broken down into 2 stages for game engine: update and draw
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    // Optional part of update - drawing pause or main menu
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
 
@@ -232,8 +237,30 @@ impl<'t> Engine<'t> {
             } else {
                 let dt = timer.get_time();
                 timer.reset();
-                if !game.update(&mut engine, dt)? {
-                    break 'main_loop;
+                if engine.state.gameplay_running
+                {
+                    if !game.update_gameplay(&mut engine, dt)? {
+                        break 'main_loop;
+                    }
+                }
+                if engine.state.gameplay_displayed
+                {
+                    if !game.draw_gameplay(&mut engine, dt)? {
+                        break 'main_loop;
+                    }
+                }
+                if engine.state.presents_menu
+                {
+                    if engine.state.gameplay_displayed
+                    {
+                        if !game.draw_pause_menu(&mut engine, dt)? {
+                            break 'main_loop;
+                        }
+                    } else {
+                        if !game.draw_main_menu(&mut engine, dt)? {
+                            break 'main_loop;
+                        }
+                    }
                 }
             }
 
