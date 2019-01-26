@@ -181,7 +181,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let roomba_velocity = physical_roomba.get_velocity_mut();
             *roomba_velocity = roomba_target_vector * 100.0;
 
-            if let Some(axis) = self.level.get_collision_vector(roomba_bbox) {
+            if let Some(axis) = self.mid_level.get_collision_vector(roomba_bbox) {
                 *roomba_velocity = axis * 100.0;
             }
 
