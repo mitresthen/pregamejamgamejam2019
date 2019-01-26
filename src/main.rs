@@ -13,6 +13,7 @@ struct GoogleHomeopathicMedicine {
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
+    main_menu_screen: MenuScreen,
     pause_sprite: StaticSprite,
 }
 
@@ -75,6 +76,36 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 foreground: title_sprite,
             };
 
+        let mut main_menu_background = StaticSprite::new(1920, 1080, tr.load("assets/image/main_menu_background.png")?)?;
+        let mut start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
+        let mut exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
+
+        let main_menu_choices =
+            [
+                MenuChoice
+                {
+                    name: "Start Adventure".to_string(),
+                    target_game_state: GAMEPLAY_STATE,
+                    sprite: start_game_sprite,
+                    // sprite: pause_sprite.clone(),
+                },
+                MenuChoice
+                {
+                    name: "Quit Game".to_string(),
+                    target_game_state: EXIT_STATE,
+                    sprite: exit_sprite,
+                    // sprite: pause_sprite.clone(),
+                },
+            ].to_vec();
+
+        let main_menu_screen =
+            MenuScreen
+            {
+                name: "Main Menu".to_string(),
+                background: main_menu_background,
+                options: main_menu_choices,
+            };
+
         let game =
             GoogleHomeopathicMedicine {
                 level: grid,
@@ -87,6 +118,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 ),
                 camera_velocity: Vec2::new(),
                 title_screen: title_screen,
+                main_menu_screen: main_menu_screen,
                 pause_sprite: pause_sprite,
             };
 
@@ -140,7 +172,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         Ok(true)
     }
 
-    fn draw_main_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
+    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        ctx.draw(&self.main_menu_screen);
+
         Ok(true)
     }
 
@@ -163,20 +197,47 @@ impl GameInterface for GoogleHomeopathicMedicine {
             ctx.end_title_screen();
             return Ok(true);
         }
-        if ctx.state.is_on(MAIN_MENU_STATE)
-        {
-            if ctx.state.go_to(GAMEPLAY_STATE, ctx.last_game_state_change.get_time())
-            {
-                ctx.last_game_state_change.reset();
-            }
-            return Ok(true);
-        }
 
         Ok(true)
     }
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
         self.on_key_down(ctx, keycode, true)
+    }
+
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32) -> Result<bool, Error> {
+        if ctx.state.is_on(TITLE_STATE)
+        {
+            ctx.end_title_screen();
+            return Ok(true);
+        }
+        if ctx.state.is_on(MAIN_MENU_STATE)
+        {
+            // Click as "visible" in regards to camera.
+            let mut cbc = Vec2 {
+                x: click_x as f32,
+                y: click_y as f32
+            };
+            let mut screen_transform = Transform::new();
+            screen_transform.translate(ctx.get_screen_bounds().max * 0.5);
+            cbc = screen_transform.transform_point_inv(cbc);
+            cbc = ctx.get_camera().transform_point(cbc);
+
+            match self.main_menu_screen.get_target_from_pos(cbc)
+            {
+                Some(game_state) => {
+                    let gs_clone = game_state.clone();
+                    ctx.state.go_to(game_state, ctx.last_game_state_change.get_time());
+                    ctx.last_game_state_change.reset();
+                    if (gs_clone.is_on(EXIT_STATE)) {
+                        return Ok(false);
+                    }
+                    return Ok(true)
+                },
+                None => return Ok(true),
+            }
+        }
+        Ok(true)
     }
 }
 
