@@ -10,6 +10,7 @@ pub struct MenuChoice {
     pub sprite: StaticSprite,
 }
 
+#[derive(Clone)]
 pub struct MenuScreen {
     pub name:       String,
     // If transparent - should be ok to use as an overlay as well(eg. for pause screen)
