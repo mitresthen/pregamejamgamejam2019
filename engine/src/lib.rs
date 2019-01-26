@@ -2,6 +2,7 @@ extern crate sdl2;
 extern crate stb_image;
 
 use std::collections::HashSet;
+use std::time::Duration;
 
 pub mod audio_engine;
 pub mod drawable;
@@ -228,13 +229,19 @@ impl<'t> Engine<'t> {
                     None               => engine.state.go_to(game_state::GAMEPLAY_STATE),
                     // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
                 }
-            } else if !game.update(&mut engine, timer.get_time())? {
-                break 'main_loop;
+            } else {
+                let dt = timer.get_time();
+                timer.reset();
+                if !game.update(&mut engine, dt)? {
+                    break 'main_loop;
+                }
             }
 
-            timer.reset();
 
             engine.canvas.present();
+
+            // Limit framerate to 100 fps
+            // std::thread::sleep(Duration::from_millis(10));
         }
 
         Ok(())
