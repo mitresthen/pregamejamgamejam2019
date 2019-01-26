@@ -35,10 +35,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         {
             let tr = ctx.get_texture_registry();
 
-            grid.register_tile_type(
-                RGBA { r: 0, g: 0, b: 0, a: 255 },
-                tr.load("assets/image/tile_Yellow_2.png")?
-            );
+            //grid.register_tile_type(
+            //    RGBA { r: 0, g: 0, b: 0, a: 255 },
+            //    tr.load("assets/image/tile_Yellow_2.png")?
+            //);
 
             grid.register_tile_type(
                 RGBA { r: 255, g: 0, b: 0, a: 255 },
@@ -163,9 +163,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_zoom(zoom);
         &self.pause_sprite.set_scale(1.0/zoom);
 
-        ctx.draw(&self.level);
+        ctx.draw(&self.level.interleave_scene(&self.scene));
 
-        self.scene.render(ctx);
+        // Scene is now rendered as a part of the interleaved grid
+        //self.scene.render(ctx);
 
         // let fps = (1.0 / dt) as i32;
 

@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 
 use game_object::GameObject;
 use drawable::DrawContext;
+use rect::Rect2D;
 use Engine;
 
 pub type SceneObjectId = i32;
@@ -54,5 +55,23 @@ impl Scene {
         self.current_id += 1;
         self.objects.insert(new_id, Box::new(object));
         new_id
+    }
+
+    pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {
+        let mut result = Vec::new();
+        for (_id, object) in self.objects.iter() {
+            if let Some(physical_object) = object.get_physical_object() {
+                let translation =
+                    physical_object
+                        .get_transform()
+                        .get_translation();
+
+                if rect.contains(translation) {
+                    result.push(object);
+                }
+            }
+        }
+
+        result
     }
 }
