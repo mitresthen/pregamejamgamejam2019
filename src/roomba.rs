@@ -6,12 +6,12 @@ pub struct Roomba {
     velocity: Vec2,
 }
 
-impl Player {
-    pub fn new(ctx: &mut Engine) -> Result<Player, Error> {
+impl Roomba {
+    pub fn new(ctx: &mut Engine) -> Result<Roomba, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/red_rider.png")?;
+        let texture = tr.load("assets/image/Electronics_Roomba.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut roomba =
             Roomba {
@@ -32,8 +32,8 @@ impl Player {
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &Engine, dt: f32, target: Vec2) -> bool {
-        let target_velocity = 240.0;
+    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
+        let target_velocity = Vec2::new();
         self.velocity.approach(target_velocity, 240.0 * dt);
         self.transform.translate(self.velocity * dt);
         self.sprite.set_transform(&self.transform);
