@@ -12,6 +12,10 @@ impl Offset {
     pub fn new() -> Offset {
         Offset { x: 0, y: 0 }
     }
+
+    pub fn from_coords(x: i32, y: i32) -> Offset {
+        Offset { x, y }
+    }
 }
 
 impl Add<Extent> for Offset {
