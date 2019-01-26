@@ -5,10 +5,12 @@ use engine::prelude::*;
 use sdl2::render::BlendMode;
 
 mod player;
+mod roomba;
 
 struct GoogleHomeopathicMedicine {
     level: Grid,
     player_id: SceneObjectId,
+    roomba_id: SceneObjectId, 
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
@@ -31,6 +33,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
         let mut grid = Grid::new(level, 120, lightmap);
+        ctx.loop_sound("assets/music/home_automation.wav", -1)?;
 
         {
             let tr = ctx.get_texture_registry();
@@ -57,9 +60,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
+        let mut roomba = roomba::Roomba::new(ctx)?;
+        roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
+
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
+        let roomba_id = scene.add_object(roomba);
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
@@ -111,6 +118,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 level: grid,
                 scene: scene,
                 player_id: player_id,
+                roomba_id: roomba_id,
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,
@@ -143,6 +151,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .unwrap()
             .get_bounding_box()
             .unwrap();
+
+        let roomba_position = self.scene.get(self.roomba_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        {
+            let roomba_target_vector = (player_position - roomba_position).normalize();
+            let roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
+            let physical_roomba = roomba_object.get_physical_object_mut().unwrap();
+            let roomba_velocity = physical_roomba.get_velocity_mut();
+            *roomba_velocity = roomba_target_vector * 100.0;
+        }
 
         if let Some(axis) = self.level.get_collision_vector(player_bounding_box) {
             let player_object = self.scene.get_mut(self.player_id).unwrap();
