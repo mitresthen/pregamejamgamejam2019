@@ -206,7 +206,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_zoom(zoom);
         &self.pause_sprite.set_scale(1.0/zoom);
 
-        //ctx.draw(&self.low_level);
+        ctx.draw(&self.low_level);
         ctx.draw(&self.mid_level.interleave_scene(&self.scene));
 
         let mut transform = Transform::new();
