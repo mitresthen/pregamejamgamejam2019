@@ -73,9 +73,16 @@ pub struct Engine<'t> {
 pub trait GameInterface : Sized {
     fn get_title() -> &'static str;
 
+    fn get_title_screen(&self) -> Option<splash_screen::SplashScreen> { None }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    // Update - broken down into 2 stages for game engine: update and draw
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    // Optional part of update - drawing pause or main menu
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
 
@@ -225,11 +232,45 @@ impl<'t> Engine<'t> {
             }
 
             engine.canvas.clear();
-            let dt = timer.get_time();
-            timer.reset();
 
-            if !game.update(&mut engine, dt)? {
-                break 'main_loop;
+            if engine.state.is_on(game_state::TITLE_STATE)
+            {
+                let potential_title_screen = game.get_title_screen();
+                match potential_title_screen {
+                    // Title screen exists - show it.
+                    Some(ref title_screen) => engine.draw(title_screen),
+                    // No title screen defined - jump to next state.
+                    None               => engine.state.go_to(game_state::GAMEPLAY_STATE),
+                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
+                }
+            } else {
+                let dt = timer.get_time();
+                timer.reset();
+                if engine.state.gameplay_running
+                {
+                    if !game.update_gameplay(&mut engine, dt)? {
+                        break 'main_loop;
+                    }
+                }
+                if engine.state.gameplay_displayed
+                {
+                    if !game.draw_gameplay(&mut engine, dt)? {
+                        break 'main_loop;
+                    }
+                }
+                if engine.state.presents_menu
+                {
+                    if engine.state.gameplay_displayed
+                    {
+                        if !game.draw_pause_menu(&mut engine, dt)? {
+                            break 'main_loop;
+                        }
+                    } else {
+                        if !game.draw_main_menu(&mut engine, dt)? {
+                            break 'main_loop;
+                        }
+                    }
+                }
             }
 
             engine.canvas.present();

@@ -26,6 +26,7 @@ impl AxisController {
         if ctx.key_is_down(self.up_key) {
             axis.y -= 1.0;
         }
+
         if ctx.key_is_down(self.down_key) {
             axis.y += 1.0;
         }

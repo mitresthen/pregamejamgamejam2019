@@ -15,6 +15,10 @@ impl GameInterface for ExampleGame {
         "ExampleGame"
     }
 
+    fn get_title_screen(&self) -> Option<SplashScreen> {
+        Some(self.title_screen.clone())
+    }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let title_background_filename = "assets/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
@@ -72,62 +76,38 @@ impl GameInterface for ExampleGame {
         Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            if ctx.state.is_on(TITLE_STATE)
-            {
-                ctx.draw(&self.title_screen);
-                return Ok(true);
+            let speed = 400.0;
+            let mut new_speed = Vec2::new();
+
+            if ctx.key_is_down(Keycode::Up) {
+                new_speed.y = -speed;
+            }
+            if ctx.key_is_down(Keycode::Down) {
+                new_speed.y = speed;
+            }
+            if ctx.key_is_down(Keycode::Left) {
+                new_speed.x = -speed;
+            }
+            if ctx.key_is_down(Keycode::Right) {
+                new_speed.x = speed;
             }
 
-            // Update player characted if game isn't paused
-            if ctx.state.is_on(GAMEPLAY_STATE)
-            {
-                let speed = 400.0;
-                let mut new_speed = Vec2::new();
+            self.player_object.set_target_velocity(new_speed);
 
-                if ctx.key_is_down(Keycode::Up) {
-                    new_speed.y = -speed;
-                }
-                if ctx.key_is_down(Keycode::Down) {
-                    new_speed.y = speed;
-                }
-                if ctx.key_is_down(Keycode::Left) {
-                    new_speed.x = -speed;
-                }
-                if ctx.key_is_down(Keycode::Right) {
-                    new_speed.x = speed;
-                }
-
-                self.player_object.set_target_velocity(new_speed);
-
-                self.player_object.update(dt);
-            }
-
-            if ctx.state.gameplay_displayed
-            {
-                ctx.draw(&self.player_object.animated_sprite);
-            }
+            self.player_object.update(dt);
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {
-            // Update other autonomous moving objects if game isn't paused
-            if ctx.state.is_on(GAMEPLAY_STATE)
-            {
-                let player_pos = self.player_object.get_position();
-                let speed = 300.0;
-                let mut new_speed = Vec2::new();
-                let direction = self.player_object.get_position() -object.get_position();
-                let velocity_scaling= (direction.len()/speed).abs();
-                let target_vel = direction*velocity_scaling;
-                object.set_target_velocity(target_vel);
-                object.update(dt);
-            }
-
-            if ctx.state.gameplay_displayed
-            {
-                ctx.draw(&object.animated_sprite);
-            }
+            let player_pos = self.player_object.get_position();
+            let speed = 300.0;
+            let mut new_speed = Vec2::new();
+            let direction = self.player_object.get_position() -object.get_position();
+            let velocity_scaling= (direction.len()/speed).abs();
+            let target_vel = direction*velocity_scaling;
+            object.set_target_velocity(target_vel);
+            object.update(dt);
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {
@@ -135,19 +115,32 @@ impl GameInterface for ExampleGame {
             // println!("Overlap: {:?}", overlap);
         }
 
-        // Draw paused sprite if game is paused
-        if ctx.state.is_on(PAUSE_MENU_STATE)
+        Ok(true)
+    }
+
+    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            ctx.draw(&self.pause_sprite);
+            ctx.draw(&self.player_object.animated_sprite);
+        }
+
+        for object in self.autonomous_moving_objects.iter_mut() {
+            ctx.draw(&object.animated_sprite);
         }
 
         Ok(true)
     }
 
+    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        ctx.draw(&self.pause_sprite);
+
+        Ok(true)
+    }
+
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
-        if keycode == Keycode::Escape {
-            return Ok(false);
-        }
         if keycode == Keycode::P && !is_repeated {
             ctx.invert_paused_state();
             return Ok(true);

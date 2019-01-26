@@ -7,6 +7,7 @@ use transform::Transform;
 use extent::Extent;
 use offset::Offset;
 
+#[derive(Clone)]
 pub struct AnimatedSprite {
     texture: Texture,
     tile_size: i32,

@@ -14,6 +14,10 @@ impl GameInterface for GridTest {
         "GridTest"
     }
 
+    fn get_title_screen(&self) -> Option<SplashScreen> {
+        None
+    }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("assets/grid_test.png")?;
 
@@ -34,9 +38,11 @@ impl GameInterface for GridTest {
         Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32)
-        -> Result<bool, Error>
-    {
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         let target_velocity = self.controller.poll(ctx) * 2500.0;
 
         self.camera_velocity.approach(target_velocity, dt * 2500.0);
@@ -49,6 +55,14 @@ impl GameInterface for GridTest {
 
         let fps = (1.0 / dt) as i32;
 
+        Ok(true)
+    }
+
+    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        Ok(true)
+    }
+
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         Ok(true)
     }
 }

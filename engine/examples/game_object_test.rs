@@ -80,8 +80,17 @@ impl GameInterface for GameObjectTest {
         Ok(game)
     }
 
-    fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32)
+        -> Result<bool, Error>
+    {
         self.scene.update(ctx, dt);
+
+        Ok(true)
+    }
+
+    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32)
+        -> Result<bool, Error>
+    {
         self.scene.render(ctx);
 
         Ok(true)
