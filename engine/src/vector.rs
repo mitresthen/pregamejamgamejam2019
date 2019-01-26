@@ -15,6 +15,10 @@ impl Vec2 {
         ((self.x * self.x) + (self.y * self.y)).sqrt()
     }
 
+    pub fn shifted(&self, x: f32, y: f32) -> Vec2 {
+        Vec2 { x: self.x + x, y: self.y + y }
+    }
+
     pub fn from_coords(x: f32, y: f32) -> Vec2 {
         Vec2 { x, y }
     }

@@ -20,6 +20,7 @@ pub mod transform;
 pub mod grid;
 pub mod image;
 pub mod splash_screen;
+pub mod menu_screen;
 pub mod game_state;
 pub mod game_object;
 pub mod scene;
@@ -61,7 +62,7 @@ impl From<WavError> for Error {
 }
 
 pub struct Engine<'t> {
-    canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
+    pub canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     width: u32,
     height: u32,
     texture_registry: texture_registry::TextureRegistry<'t>,
@@ -69,6 +70,7 @@ pub struct Engine<'t> {
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
     pub state: game_state::GameState,
+    pub last_game_state_change : timer::Timer,
 }
 
 pub trait GameInterface : Sized {
@@ -88,6 +90,8 @@ pub trait GameInterface : Sized {
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
+
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
 }
 
 impl<'t> Engine<'t> {
@@ -107,6 +111,10 @@ impl<'t> Engine<'t> {
             );
 
         drawable.draw(&mut ctx);
+    }
+
+    pub fn get_camera(&mut self) -> transform::Transform {
+        self.camera.clone()
     }
 
     pub fn move_camera(&mut self, translation: vector::Vec2) {
@@ -141,6 +149,7 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.play_sound_from_file(filename)?)
     }
 
+    // TODO: Make it work with moving camera
     pub fn get_screen_bounds(&self) -> rect::Rect2D {
         rect::Rect2D {
             min: vector::Vec2::new(),
@@ -157,13 +166,19 @@ impl<'t> Engine<'t> {
 
     pub fn invert_paused_state(&mut self)
     {
-        self.state.invert_paused_state();
+        if self.last_game_state_change.get_time() >= 1.0
+        {
+            self.state.invert_paused_state();
+            self.last_game_state_change.reset();
+        }
     }
 
     // End showing the title screen - switch to Main Menu
     pub fn end_title_screen(&mut self) {
-        self.state.go_to(game_state::GAMEPLAY_STATE);
-        // self.state.go_to(game_state::MAIN_MENU_STATE);
+        if self.state.go_to(game_state::MAIN_MENU_STATE, self.last_game_state_change.get_time())
+        {
+            self.last_game_state_change.reset();
+        }
     }
 
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
@@ -175,7 +190,7 @@ impl<'t> Engine<'t> {
 
         let mut canvas = window.into_canvas()
             .accelerated().build().map_err(|e| e.to_string())?;
-
+        
         let mut event_pump = sdl_context.event_pump()?;
 
         let texture_creator = canvas.texture_creator();
@@ -190,7 +205,8 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE
+                state: game_state::TITLE_STATE,
+                last_game_state_change: timer::Timer::new(),
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -216,6 +232,18 @@ impl<'t> Engine<'t> {
                             // Every game wants to quit on escape right?
                             break 'main_loop;
                         }
+
+                        if key == Keycode::F {
+                            let curr_fullscreen_state = engine.canvas.window().fullscreen_state();
+                            if curr_fullscreen_state != sdl2::video::FullscreenType::True {
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True);
+                            }
+                            else
+                            {
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off);
+                            }
+                            timer.reset();
+                        }
                         engine.on_key_down(key);
 
                         if !game.on_key_down(&mut engine, key, is_repeated)? {
@@ -228,6 +256,15 @@ impl<'t> Engine<'t> {
                         engine.on_key_up(key);
 
                         if !game.on_key_up(&mut engine, key)? {
+                            break 'main_loop;
+                        }
+                    },
+                    Event::MouseButtonUp {
+                        x: click_x,
+                        y: click_y,
+                        ..
+                    } => {
+                        if !game.on_mouse_button_up(&mut engine, click_x, click_y)? {
                             break 'main_loop;
                         }
                     },
@@ -244,8 +281,13 @@ impl<'t> Engine<'t> {
                     // Title screen exists - show it.
                     Some(ref title_screen) => engine.draw(title_screen),
                     // No title screen defined - jump to next state.
-                    None               => engine.state.go_to(game_state::GAMEPLAY_STATE),
-                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
+                    None               => {
+                        if engine.state.go_to(game_state::GAMEPLAY_STATE, engine.last_game_state_change.get_time())
+                        {
+                            engine.last_game_state_change.reset();
+                        }
+                    },
+                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE, engine.last_game_state_change.get_time()),
                 }
             } else {
                 if engine.state.gameplay_running
