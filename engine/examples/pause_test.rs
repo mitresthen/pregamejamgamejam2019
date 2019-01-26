@@ -138,12 +138,12 @@ impl GameInterface for ExampleGame {
         Ok(true)
     }
 
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
         if keycode == Keycode::Escape {
             return Ok(false);
         }
-        if keycode == Keycode::P {
-            ctx.try_to_change_paused();
+        if keycode == Keycode::P && !is_repeated {
+            ctx.change_paused();
             return Ok(true);
         }
         if ctx.is_on_title_screen
@@ -154,6 +154,10 @@ impl GameInterface for ExampleGame {
 
 
         Ok(true)
+    }
+
+    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
+        self.on_key_down(ctx, keycode, true)
     }
 }
 
