@@ -69,7 +69,7 @@ impl AnimatedSprite {
         self.transform.set_scale(scale);
     }
 
-    pub fn calculate_size(&mut self) -> Vec2 {
+    pub fn calculate_size(&self) -> Vec2 {
         Vec2::from_coords(
             (self.tile_size as f32) * self.transform.get_scale(),
             (self.tile_size as f32) * self.transform.get_scale()

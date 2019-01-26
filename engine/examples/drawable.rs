@@ -20,7 +20,7 @@ impl GameInterface for ExampleGame {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let title_background_filename = "assets/title_background.png";
+        let title_background_filename = "../src/resources/image/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
         let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
 
@@ -100,13 +100,17 @@ impl GameInterface for ExampleGame {
             let direction = self.player_object.get_position() -object.get_position();
             let velocity_scaling= (direction.len()/speed).abs();
             let target_vel = direction*velocity_scaling;
-            object.set_target_velocity(target_vel);
+            //object.set_target_velocity(target_vel);
             object.update(dt);
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {
-            let overlap = object.overlaps(self.player_object.bounding_box);
-            // println!("Overlap: {:?}", overlap);
+            let overlap =
+                object.bounding_box.sat_overlap(
+                    self.player_object.bounding_box
+                );
+
+             println!("Overlap: {:?}", overlap);
         }
 
         Ok(true)
