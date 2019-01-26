@@ -70,7 +70,7 @@ impl<'t> TextureRegistry<'t> {
         }
     }
     pub fn load(&mut self, path: &str) -> Result<Texture, Error> {
-        return self.load2(path, sdl::BlendMode::None);
+        return self.load2(path, sdl::BlendMode::Blend);
     }
 
     pub fn load2(&mut self, path: &str, blend_mode: sdl::BlendMode) -> Result<Texture, Error> {
