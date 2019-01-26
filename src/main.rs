@@ -11,7 +11,7 @@ struct GoogleHomeopathicMedicine {
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
-    pause_sprite: AnimatedSprite,
+    pause_sprite: StaticSprite,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -57,19 +57,14 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
 
-        let title_background_filename = "src/resources/image/title_background.png";
-        let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
-        let mut title_background = AnimatedSprite::new(128, title_background_texture)?;
-        title_background.set_scale(4.0);
-        title_background.set_position(ctx.get_screen_bounds().center());
+        // Loading StaticSprites
+        let tr = ctx.get_texture_registry();
 
-        let title_filename = "src/resources/image/title.png";
-        let title_texture = ctx.get_texture_registry().load(title_filename)?;
-        let mut title_sprite = AnimatedSprite::new(128, title_texture)?;
+        let pause_sprite = StaticSprite::new(128, 64, tr.load("src/resources/image/paused.png")?)?;
 
-        let pause_filename = "src/resources/image/paused.png";
-        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
-        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
+        let title_background = StaticSprite::new(640, 480, tr.load("src/resources/image/title_background.png")?)?;
+
+        let title_sprite = StaticSprite::new(128, 128, tr.load("src/resources/image/title.png")?)?;
 
         let title_screen =
             SplashScreen {
@@ -105,9 +100,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
-
-        let zoom = self.zoom_controller.poll(&ctx, dt);
-        ctx.set_camera_zoom(zoom);
+        &self.pause_sprite.set_position(player_position);
 
         let player_bounding_box = self.scene.get(self.player_id)
             .unwrap()
@@ -131,6 +124,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<bool, Error>
     {
+        let zoom = self.zoom_controller.poll(&ctx, dt);
+        ctx.set_camera_zoom(zoom);
+
         ctx.draw(&self.level);
 
         self.scene.render(ctx);

@@ -6,6 +6,7 @@ use std::time::Duration;
 
 pub mod audio_engine;
 pub mod drawable;
+pub mod static_sprite;
 pub mod animated_sprite;
 pub mod movable_object;
 pub mod texture_registry;

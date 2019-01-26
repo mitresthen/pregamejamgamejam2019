@@ -6,7 +6,7 @@ use std::vec::Vec;
 pub struct ExampleGame{
     player_object: MovableObject,
     autonomous_moving_objects: Vec<MovableObject>,
-    pause_sprite: AnimatedSprite,
+    pause_sprite: StaticSprite,
     title_screen: SplashScreen,
 }
 
@@ -22,14 +22,12 @@ impl GameInterface for ExampleGame {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let title_background_filename = "assets/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
-        let mut title_background = AnimatedSprite::new(128, title_background_texture)?;
-        title_background.set_scale(4.0);
+        let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
         title_background.set_position(ctx.get_screen_bounds().center());
 
         let title_filename = "assets/title.png";
         let title_texture = ctx.get_texture_registry().load(title_filename)?;
-        let mut title_sprite = AnimatedSprite::new(128, title_texture)?;
-        title_sprite.set_scale(1.0);
+        let mut title_sprite = StaticSprite::new(128, 128, title_texture)?;
         title_sprite.set_position(ctx.get_screen_bounds().center());
 
         let title_screen =
@@ -38,17 +36,16 @@ impl GameInterface for ExampleGame {
                 foreground: title_sprite,
             };
 
+        let pause_filename = "assets/paused.png";
+        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
+        let mut pause_sprite = StaticSprite::new(128, 64, pause_texture)?;
+        pause_sprite.set_position(ctx.get_screen_bounds().center());
+
         let filename = "assets/characters.png";
         let texture = ctx.get_texture_registry().load(filename)?;
         let mut sprite = AnimatedSprite::new(32, texture)?;
         sprite.set_scale(4.0);
-        sprite.set_position(Vec2 { x: 100.0, y: 100.0 });
-
-        let pause_filename = "assets/paused.png";
-        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
-        let mut pause_sprite = AnimatedSprite::new(128, pause_texture)?;
-        pause_sprite.set_scale(1.0);
-        pause_sprite.set_position(ctx.get_screen_bounds().center());
+        sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
         // ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
@@ -121,6 +118,7 @@ impl GameInterface for ExampleGame {
     fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
             ctx.draw(&self.player_object.animated_sprite);
+            // println!("Drew char at {}x{}", &self.player_object.get_position().y, &self.player_object.get_position().y)
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {

@@ -2,6 +2,7 @@ pub use Engine;
 pub use GameInterface;
 pub use Error;
 pub use Keycode;
+pub use static_sprite::StaticSprite;
 pub use animated_sprite::AnimatedSprite;
 pub use movable_object::MovableObject;
 pub use drawable::{Drawable, DrawContext};
