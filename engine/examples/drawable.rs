@@ -143,9 +143,6 @@ impl GameInterface for ExampleGame {
     }
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
-        if keycode == Keycode::Escape {
-            return Ok(false);
-        }
         if keycode == Keycode::P && !is_repeated {
             ctx.invert_paused_state();
             return Ok(true);
