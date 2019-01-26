@@ -36,12 +36,14 @@ impl Vec2 {
     }
 
     pub fn normal_vector(&self) -> Vec2 {
-        let norm = 
+        let mut norm = 
             Vec2 {
                 x: self.y * -1.0,
                 y: self.x
             };
-
+        let scaling_for_unit = norm.len()/self.len();
+        norm.x *= scaling_for_unit;
+        norm.y *= scaling_for_unit;
         norm
     }
 }
