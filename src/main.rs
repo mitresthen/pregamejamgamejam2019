@@ -10,13 +10,13 @@ mod roomba;
 struct GoogleHomeopathicMedicine {
     level: Grid,
     player_id: SceneObjectId,
-    roomba_id: SceneObjectId, 
+    roomba_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
     main_menu_screen: MenuScreen,
-    pause_sprite: StaticSprite,
+    pause_screen: MenuScreen,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -81,7 +81,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 foreground: title_sprite,
             };
 
-        let mut main_menu_background = StaticSprite::new(1920, 1080, tr.load("assets/image/main_menu_background.png")?)?;
+        let mut main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
         let mut start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
         let mut exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
 
@@ -111,6 +111,34 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 options: main_menu_choices,
             };
 
+        let mut pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
+        let mut continue_sprite = StaticSprite::new(128, 64, tr.load("assets/image/continue_button.png")?)?;
+        let mut return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/image/return_to_menu_button.png")?)?;
+
+        let pause_menu_choices =
+            [
+                MenuChoice
+                {
+                    name: "Continue Adventure".to_string(),
+                    target_game_state: GAMEPLAY_STATE,
+                    sprite: continue_sprite,
+                },
+                MenuChoice
+                {
+                    name: "Return to Main Menu".to_string(),
+                    target_game_state: MAIN_MENU_STATE,
+                    sprite: return_to_menu_sprite,
+                },
+            ].to_vec();
+
+        let pause_screen =
+            MenuScreen
+            {
+                name: "Pause Menu".to_string(),
+                background: pause_menu_background,
+                options: pause_menu_choices,
+            };
+
         let game =
             GoogleHomeopathicMedicine {
                 level: grid,
@@ -125,7 +153,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 camera_velocity: Vec2::new(),
                 title_screen: title_screen,
                 main_menu_screen: main_menu_screen,
-                pause_sprite: pause_sprite,
+                pause_screen: pause_screen,
             };
 
         Ok(game)
@@ -141,7 +169,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
-        &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
+        // &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
 
         let player_bounding_box = self.scene.get(self.player_id)
             .unwrap()
@@ -174,7 +202,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     {
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
-        &self.pause_sprite.set_scale(1.0/zoom);
+        // &self.pause_sprite.set_scale(1.0/zoom);
 
         ctx.draw(&self.level);
 
@@ -192,7 +220,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn draw_pause_menu(&mut self, ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
-        ctx.draw(&self.pause_sprite);
+        ctx.draw(&self.pause_screen);
 
         Ok(true)
     }
@@ -224,7 +252,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             ctx.end_title_screen();
             return Ok(true);
         }
-        if ctx.state.is_on(MAIN_MENU_STATE)
+        if ctx.state.presents_menu
         {
             // Click as "visible" in regards to camera.
             let mut cbc = Vec2 {
@@ -235,21 +263,32 @@ impl GameInterface for GoogleHomeopathicMedicine {
             screen_transform.translate(ctx.get_screen_bounds().max * 0.5);
             cbc = screen_transform.transform_point_inv(cbc);
             cbc = ctx.get_camera().transform_point(cbc);
+            let current_screen = if ctx.state.gameplay_displayed
+            {
+                self.pause_screen.clone()
+            } else {
+                self.main_menu_screen.clone()
+            };
 
-            match self.main_menu_screen.get_target_from_pos(cbc)
+            match current_screen.get_target_from_pos(cbc)
             {
                 Some(game_state) => {
-                    let gs_clone = game_state.clone();
-                    ctx.state.go_to(game_state, ctx.last_game_state_change.get_time());
-                    ctx.last_game_state_change.reset();
-                    if (gs_clone.is_on(EXIT_STATE)) {
-                        return Ok(false);
+                    let dt = ctx.last_game_state_change.get_time();
+                    if dt >= 0.5
+                    {
+                        let gs_clone = game_state.clone();
+                        ctx.state.go_to(game_state, dt);
+                        ctx.last_game_state_change.reset();
+                        if (gs_clone.is_on(EXIT_STATE)) {
+                            return Ok(false);
+                        }
                     }
                     return Ok(true)
                 },
                 None => return Ok(true),
             }
         }
+
         Ok(true)
     }
 }
