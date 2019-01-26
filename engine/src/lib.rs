@@ -201,6 +201,13 @@ impl<'t> Engine<'t> {
         let texture_creator = canvas.texture_creator();
         let texture_registry = texture_registry::TextureRegistry::new(&texture_creator);
 
+        let starting_state =
+            if std::env::var("QUICK_START").is_ok() {
+                game_state::GAMEPLAY_STATE
+            } else {
+                game_state::TITLE_STATE
+            };
+
         let mut engine =
             Engine {
                 canvas: &mut canvas,
@@ -210,7 +217,7 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE,
+                state: starting_state,
                 last_game_state_change: timer::Timer::new(),
             };
 
