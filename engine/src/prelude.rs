@@ -10,6 +10,7 @@ pub use bounding_box::BoundingBox;
 pub use vector::Vec2;
 pub use extent::Extent;
 pub use splash_screen::SplashScreen;
+pub use menu_screen::*;
 pub use game_state::*;
 
 pub use grid::Grid;

@@ -25,4 +25,11 @@ impl Rect2D {
     pub fn center(&self) -> Vec2 {
         (self.min + self.max) * 0.5
     }
+
+    pub fn is_clicked(&self, v: Vec2) -> bool{
+        v.x > self.min.x &&
+        v.y > self.min.y &&
+        v.x < self.max.x &&
+        v.y < self.max.y
+    }
 }
