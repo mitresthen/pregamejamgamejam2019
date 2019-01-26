@@ -1,5 +1,7 @@
 use std::ops::{Add, Sub, Mul};
 
+use rand::Rng;
+
 #[derive(Clone, Debug, Copy)]
 pub struct Vec2 {
     pub x: f32,
@@ -9,6 +11,17 @@ pub struct Vec2 {
 impl Vec2 {
     pub fn new() -> Vec2 {
         Vec2 { x: 0.0, y: 0.0 }
+    }
+
+    pub fn random() -> Vec2 {
+        let mut created_vec = Vec2::new();
+        let mut rng = rand::thread_rng();
+        let x: f32 = rng.gen();
+        let y: f32 = rng.gen();
+
+        created_vec.x = x;
+        created_vec.y = y;
+        created_vec.normalize()
     }
 
     pub fn len(&self) -> f32 {

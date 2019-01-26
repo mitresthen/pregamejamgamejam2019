@@ -4,12 +4,15 @@ use transform::Transform;
 use vector::Vec2;
 use Engine;
 
+#[derive(Debug)]
 pub enum EventType {
     Interact,
+    Collide
 }
 
+#[derive(Debug)]
 pub struct GameEvent {
-    event_type: EventType,
+    pub event_type: EventType,
 }
 
 pub trait PhysicalObject {
@@ -32,4 +35,6 @@ pub trait GameObject: 'static {
     fn get_physical_object(&self) -> Option<&PhysicalObject> { None }
 
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> { None }
+
+    fn on_event(&mut self, event: GameEvent);
 }
