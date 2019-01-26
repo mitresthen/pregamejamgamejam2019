@@ -31,14 +31,15 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
+        let low_level : Image<RGBA> = Image::load("assets/image/temp_level_low.png")?;
+        let mid_level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
         ctx.loop_sound("assets/music/home_automation.wav", -1)?;
 
         let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
 
-        let mut low_level = Grid::new(level.clone(), 120);
-        let mut mid_level = Grid::new(level.clone(), 120);
+        let mut low_level = Grid::new(low_level, 120);
+        let mut mid_level = Grid::new(mid_level, 120);
 
 
         {
@@ -60,6 +61,14 @@ impl GameInterface for GoogleHomeopathicMedicine {
             mid_level.register_tile_type(
                 RGBA { r: 253, g: 0, b: 0, a: 255 },
                 tr.load("assets/image/single_dark_tile.png")?
+            );
+            mid_level.register_tile_type(
+                RGBA { r: 0, g: 0, b: 255, a: 255 },
+                tr.load("assets/image/item_bed_col1.png")?
+            );
+            mid_level.register_tile_type(
+                RGBA { r: 255, g: 0, b: 255, a: 255 },
+                tr.load("assets/image/Alexa_version1.png")?
             );
         }
 
@@ -212,7 +221,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut transform = Transform::new();
         transform.set_translation(Vec2::from_coords(0.0, 0.0));
 
-        ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
+        if std::env::var("DO_NOT_DRAW_LIGHTMAP").is_err() {
+            ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
+        }
 
         // Scene is now rendered as a part of the interleaved grid
         //self.scene.render(ctx);

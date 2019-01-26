@@ -102,6 +102,8 @@ impl Grid {
     ) {
         let mut it = self.image.data().iter();
 
+        //let mut predrawn = vec![false; self.image.width() * self.image.height()];
+
         for y in 0..self.image.height() {
             if let Some(scene) = interleaved_scene {
                 let row_rect = self.get_row_rect(y);
@@ -124,18 +126,25 @@ impl Grid {
                         )
                     );
 
+                    // Currently the tiles would be drawn with the center at the grid
+                    // intersection. We move them a half tile size down
+                    transform.translate(
+                        Vec2::from_coords(
+                            self.tile_size as f32 * 0.5,
+                            self.tile_size as f32 * 0.5
+                        )
+                    );
+
+
                     // Textures that are taller than the grid size are now drawn with
                     // the overlapping height divided equally on the tile below and
                     // the tile above. Move it up half the extra height to make it only
                     // overlap the tile above
                     let extra_height = texture.extent().height - self.tile_size as i32;
-                    transform.translate(Vec2::from_coords(0.0, extra_height as f32 * -0.5));
+                    let extra_width = texture.extent().width - self.tile_size as i32;
+                    transform.translate(Vec2::from_coords(extra_width as f32 * 0.5, extra_height as f32 * -0.5));
 
-                    // For now we just scale all tiles so that they match exactly the width
-                    let scale = self.tile_size as f32 / texture.extent().width as f32;
-                    transform.set_scale(scale);
-
-                    ctx.draw2(&texture, &transform, Origin::TopLeft)
+                    ctx.draw(&texture, &transform)
                 }
             }
         }
