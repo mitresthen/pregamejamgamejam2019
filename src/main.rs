@@ -28,7 +28,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
-        let lightmap = ctx.get_texture_registry().load2("engine/assets/grid_test_lightmap.png", BlendMode::Mod)?;
+        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
         let mut grid = Grid::new(level, 120, lightmap);
 
         {
