@@ -79,16 +79,18 @@ impl BoundingBox {
             range_a.end.min(range_b.end) - range_a.start.max(range_b.start)
         }
 
-        let mut min_overlap = std::f32::MAX;
+        use std::f32;
+
+        let mut min_overlap = f32::MAX;
         let mut axis_of_overlap = None;
         for axis in all_axes {
             let normal = axis.normal_vector();
             let mut a_range = Range{
-                start: std::f32::MAX, 
-                end: std::f32::MIN};
+                start: f32::MAX, 
+                end: f32::MIN};
             let mut b_range = Range{
-                start: std::f32::MAX, 
-                end: std::f32::MIN};
+                start: f32::MAX, 
+                end: f32::MIN};
             for a_point in self.get_points() {
                 let dot_product = a_point.dot_product(normal);
                 a_range = update_range(a_range, dot_product);
