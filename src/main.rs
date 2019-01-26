@@ -50,7 +50,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
             );
         }
 
-        let player = player::Player::new(ctx)?;
+        let mut player = player::Player::new(ctx)?;
+        player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
+
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
@@ -106,6 +108,20 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
+
+        let player_bounding_box = self.scene.get(self.player_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_bounding_box()
+            .unwrap();
+
+        if let Some(axis) = self.level.get_collision_vector(player_bounding_box) {
+            let player_object = self.scene.get_mut(self.player_id).unwrap();
+            let physical_object = player_object.get_physical_object_mut().unwrap();
+            let player_velocity = physical_object.get_velocity_mut();
+            *player_velocity = axis * 100.0;
+        }
 
         self.scene.update(ctx, dt);
 

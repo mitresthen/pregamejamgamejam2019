@@ -15,6 +15,8 @@ pub struct MovableObject {
 
 impl MovableObject {
     pub fn new(sprite: AnimatedSprite, maximum_speed: f32) -> Result<MovableObject, Error> {
+        let size = sprite.calculate_size();
+
         let movable_object = 
             MovableObject {
                 animated_sprite: sprite,
@@ -22,7 +24,7 @@ impl MovableObject {
                 player_velocity: Vec2::new(),
                 max_speed: maximum_speed,
                 acceleration: Vec2::new(),
-                bounding_box: BoundingBox::new(32.0, 32.0, Vec2::new()).unwrap()
+                bounding_box: BoundingBox::new(size.x, size.y, Vec2::new())
             };
 
         Ok(movable_object)

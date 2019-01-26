@@ -36,19 +36,18 @@ impl Vec2 {
     }
 
     pub fn dot_product(&self, other: Vec2) -> f32 {
-        self.x * other.x + self.y + other.y
+        (self.x * other.x) + (self.y * other.y)
     }
 
-    pub fn normal_vector(&self) -> Vec2 {
-        let mut norm = 
-            Vec2 {
-                x: self.y * -1.0,
-                y: self.x
-            };
-        let scaling_for_unit = norm.len()/self.len();
-        norm.x *= scaling_for_unit;
-        norm.y *= scaling_for_unit;
-        norm
+    pub fn normalize(&self) -> Vec2 {
+        self.clone() * (1.0 / self.len())
+    }
+
+    pub fn perpendicular(&self) -> Vec2 {
+        Vec2 {
+            x: self.y * -1.0,
+            y: self.x
+        }
     }
 }
 

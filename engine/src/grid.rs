@@ -4,6 +4,7 @@ use drawable::{Drawable, DrawContext};
 use transform::Transform;
 use vector::Vec2;
 use image::{Image, RGBA};
+use bounding_box::BoundingBox;
 
 pub type TileIndex = RGBA;
 
@@ -24,6 +25,51 @@ impl Grid {
 
     pub fn register_tile_type(&mut self, id: TileIndex, texture: Texture) {
         self.tile_map.insert(id, texture);
+    }
+
+    pub fn get_collision_vector(&self, bounding_box: BoundingBox)
+        -> Option<Vec2>
+    {
+        let upper_left = bounding_box.get_upper_left();
+        let lower_right = bounding_box.get_lower_right();
+
+        let start_x = ((upper_left.x / self.tile_size as f32).floor() as i32).max(0);
+        let start_y = ((upper_left.y / self.tile_size as f32).floor() as i32).max(0);
+
+        let end_x = ((lower_right.x / self.tile_size as f32).ceil() as i32).min(self.image.width());
+        let end_y = ((lower_right.y / self.tile_size as f32).ceil() as i32).min(self.image.height());
+
+        let mut best_axis = None;
+
+        let black = RGBA { r: 0, g: 0, b: 0, a: 255 };
+
+        for y in start_y..end_y {
+            for x in start_x..end_x {
+                let index = (y * self.image.width()) + x;
+
+                let tile_id = self.image.data().iter().nth(index as usize).unwrap();
+
+                if *tile_id == black {
+                    continue;
+                }
+
+                let tile_bb =
+                    BoundingBox::new(
+                        self.tile_size as f32,
+                        self.tile_size as f32,
+                        Vec2::from_coords(
+                            x as f32 + 0.5,
+                            y as f32 + 0.5
+                        ) * self.tile_size as f32
+                    );
+
+                if let Some(result) = bounding_box.sat_overlap(tile_bb) {
+                    best_axis = Some(best_axis.map(|x: (Vec2, f32)| if x.1 > result.1 { x } else { result }).unwrap_or(result));
+                }
+            }
+        }
+
+        best_axis.map(|x| x.0)
     }
 }
 
@@ -69,4 +115,5 @@ impl Drawable for Grid {
             }
         }
     }
+
 }
