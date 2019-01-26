@@ -20,6 +20,8 @@ pub mod grid;
 pub mod image;
 pub mod splash_screen;
 pub mod game_state;
+pub mod game_object;
+pub mod scene;
 
 pub mod axis_controller;
 pub mod slider_controller;
@@ -86,11 +88,14 @@ impl<'t> Engine<'t> {
     }
 
     pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+        let bounds = self.get_screen_bounds();
+
         let mut ctx =
             drawable::DrawContext::new(
                 &mut self.canvas,
                 &mut self.texture_registry,
-                &self.camera
+                &self.camera,
+                bounds
             );
 
         drawable.draw(&mut ctx);
@@ -100,12 +105,16 @@ impl<'t> Engine<'t> {
         self.camera.translate(translation);
     }
 
-    pub fn set_camera_zoom(&mut self, value: f32) {
-        self.camera.set_scale(value);
+    pub fn set_camera_position(&mut self, p: vector::Vec2) {
+        self.camera.set_translation(p);
     }
 
     pub fn get_camera_position(&self) -> vector::Vec2 {
         self.camera.get_translation()
+    }
+
+    pub fn set_camera_zoom(&mut self, value: f32) {
+        self.camera.set_scale(value);
     }
 
     pub fn on_key_down(&mut self, keycode: Keycode) {
@@ -173,7 +182,7 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE,
+                state: game_state::TITLE_STATE
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -218,10 +227,10 @@ impl<'t> Engine<'t> {
             engine.canvas.clear();
             let dt = timer.get_time();
             timer.reset();
+
             if !game.update(&mut engine, dt)? {
                 break 'main_loop;
             }
-
 
             engine.canvas.present();
 

@@ -4,7 +4,8 @@ pub use Error;
 pub use Keycode;
 pub use animated_sprite::AnimatedSprite;
 pub use movable_object::MovableObject;
-pub use drawable::Drawable;
+pub use drawable::{Drawable, DrawContext};
+pub use bounding_box::BoundingBox;
 pub use vector::Vec2;
 pub use splash_screen::SplashScreen;
 pub use game_state::*;
@@ -17,3 +18,6 @@ pub use slider_controller::SliderController;
 pub use image::{Image, RGBA};
 
 pub use transform::Transform;
+
+pub use game_object::{PhysicalObject, GameObject};
+pub use scene::{SceneObjectId, Scene};
