@@ -79,7 +79,6 @@ impl<'t> TextureRegistry<'t> {
                 png_img.width as u32,
                 png_img.height as u32,
                 match png_img.depth {
-                    3 => sdl::PixelFormatEnum::BGR888,
                     4 => sdl::PixelFormatEnum::ABGR8888,
                     _ => return Err(Error::UnsupportedPixelFormat)
                 }
