@@ -8,6 +8,8 @@ use super::Error;
 pub struct SoundInstance {
     data: Vec<f32>,
     position: usize,
+    repeats: i32,
+    is_done: bool,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -18,19 +20,38 @@ pub enum WavError {
 }
 
 impl SoundInstance {
-    pub fn new(data: Vec<f32>) -> SoundInstance {
-        SoundInstance { data, position: 0 }
+    pub fn new(data: Vec<f32>, repeats: i32) -> SoundInstance {
+        SoundInstance { data, position: 0, repeats, is_done: false }
     }
 
-    pub fn next_sample(&mut self) -> Option<f32> {
-        let maybe_sample : Option<f32> = self.data.iter().nth(self.position).map(|x| *x);
-        self.position += 1;
-        maybe_sample
+    pub fn request_samples(&mut self, amount : usize) -> Vec<f32>{
+        let mut return_vec = Vec::new();
+        let mut remaining = amount;
+        while remaining > 0 {
+            let mut end : usize = self.position + remaining;
+            if self.data.len() - self.position < remaining {
+                end = self.data.len() - 1;
+            }
+            return_vec.extend(self.data[self.position..end].to_vec());
+            remaining -= end - self.position;
+            self.position = end;
+            if remaining > 0 {
+                if self.repeats == 0 {
+                    return_vec.extend(vec![0.0; remaining]);
+                    self.is_done = true;
+                    break;
+                }
+                else {
+                    self.position = 0;
+                }
+                if self.repeats > 0 {
+                    self.repeats -= 1;
+                }
+            }
+        }
+        return return_vec;
     }
 
-    pub fn is_done(&self) -> bool {
-        self.position >= self.data.len()
-    }
 }
 
 #[derive(Clone)]
@@ -56,15 +77,20 @@ impl AudioCallback for AudioMixer {
     fn callback(&mut self, out: &mut [f32]) {
         let mut sounds = self.playing.lock().unwrap();
 
-        for dst in out {
-            *dst = 0.0;
-            for sound_instance in sounds.iter_mut() {
-                *dst += sound_instance.next_sample().unwrap_or(0.0);
+
+        let mut samples = Vec::new();
+        for sound_instance in sounds.iter_mut() {
+            samples.push(sound_instance.request_samples(out.len()));
+        }
+        for i in 0..out.len() {
+            out[i] = 0.0;
+            for s in samples.iter() {
+                out[i] += (*s)[i];
             }
         }
 
         let mut old : Vec<SoundInstance>  = sounds.drain(..).collect();
-        *sounds = old.drain(..).filter(|s| !s.is_done()).collect();
+        *sounds = old.drain(..).filter(|s| !s.is_done).collect();
     }
 }
 
@@ -103,6 +129,10 @@ impl AudioEngine {
     }
 
     pub fn play_sound_from_file(&mut self, filename: &str) -> Result<(), Error> {
+        return self.loop_sound_from_file(filename, 0);
+    }
+
+    pub fn loop_sound_from_file(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
         use std::slice;
         use std::mem;
         use std::i16;
@@ -132,12 +162,16 @@ impl AudioEngine {
 
         let pcm_mono_float = pcm_stereo_float.chunks(2).map(|lr| (lr[0] + lr[1]) / 2.0).collect();
 
-        self.play_sound(pcm_mono_float);
+        self.loop_sound(pcm_mono_float, repeats);
 
         Ok(())
     }
 
     pub fn play_sound(&mut self, data: Vec<f32>) {
-        self.mixer.play_sound(SoundInstance::new(data));
+        self.mixer.play_sound(SoundInstance::new(data, 0));
+    }
+
+    pub fn loop_sound(&mut self, data: Vec<f32>, repeats: i32) {
+        self.mixer.play_sound(SoundInstance::new(data, repeats));
     }
 }
