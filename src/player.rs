@@ -6,6 +6,7 @@ pub struct Player {
     transform: Transform,
     velocity: Vec2,
     direction: i32,
+    collision_size: f32
 }
 
 impl Player {
@@ -36,6 +37,7 @@ impl Player {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 direction: 1,
+                collision_size: 80.0
             };
 
         player.transform.set_scale(1.0);
@@ -52,7 +54,7 @@ impl GameObject for Player {
 
     fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
         let target_velocity =
-            self.controller.poll(ctx) * 240.0;
+            self.controller.poll(ctx) * 400.0;
 
         self.velocity.approach(target_velocity, 400.0 * dt);
         self.transform.translate(self.velocity * dt);
@@ -75,8 +77,20 @@ impl GameObject for Player {
             mode += 4;
         }
 
+        let mut sprite_transform = self.transform.clone();
+        let collision_height = self.collision_size;
+        let sprite_size = self.sprite.calculate_size();
+
+        sprite_transform.translate(
+            Vec2::from_coords(
+                0.0,
+                (sprite_size.y - collision_height) * -0.5
+            )
+        );
+
+
         self.sprite.set_mode(mode);
-        self.sprite.set_transform(&self.transform);
+        self.sprite.set_transform(&sprite_transform);
         self.sprite.step_time(dt * self.velocity.len() * 0.02);
 
         true
@@ -117,8 +131,8 @@ impl PhysicalObject for Player {
 
         let bounding_box =
             BoundingBox::new(
-                size.x,
-                size.y,
+                self.collision_size,
+                self.collision_size,
                 self.transform.get_translation()
             );
 
