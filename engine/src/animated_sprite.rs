@@ -15,8 +15,7 @@ pub struct AnimatedSprite {
     current_frame: f32,
     mode_count: i32,
     frame_count: i32,
-    position: Vec2,
-    scale: f32
+    transform: Transform
 }
 
 impl AnimatedSprite {
@@ -38,8 +37,7 @@ impl AnimatedSprite {
                 current_frame: 0.0,
                 mode_count: mode_count,
                 frame_count: frame_count,
-                position: Vec2::new(),
-                scale: 1.0
+                transform: Transform::new(),
             };
 
         Ok(animated_sprite)
@@ -53,7 +51,11 @@ impl AnimatedSprite {
     }
 
     pub fn set_position(&mut self, position: Vec2) {
-        self.position = position;
+        self.transform.set_translation(position);
+    }
+
+    pub fn set_transform(&mut self, transform: &Transform) {
+        self.transform = transform.clone();
     }
 
     pub fn set_mode(&mut self, mode: i32) {
@@ -64,14 +66,14 @@ impl AnimatedSprite {
     }
 
     pub fn set_scale(&mut self, scale: f32) {
-        self.scale = scale;
+        self.transform.set_scale(scale);
     }
 
     pub fn calculate_size(&mut self) -> Vec2 {
-        Vec2 {
-            x: self.tile_size as f32 * self.scale,
-            y: self.tile_size as f32 * self.scale,
-        }
+        Vec2::from_coords(
+            (self.tile_size as f32) * self.transform.get_scale(),
+            (self.tile_size as f32) * self.transform.get_scale()
+        )
     }
 }
 
@@ -87,11 +89,7 @@ impl Drawable for AnimatedSprite {
         let extent = Extent::new(self.tile_size, self.tile_size);
         let sub_texture = self.texture.sub_texture(offset, extent).unwrap();
 
-        let mut transform = Transform::new();
-        transform.set_translation(self.position);
-        transform.set_scale(self.scale);
-
-        ctx.draw(&sub_texture, &transform);
+        ctx.draw(&sub_texture, &self.transform);
     }
 }
 

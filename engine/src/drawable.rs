@@ -6,6 +6,7 @@ use transform::Transform;
 use texture_registry::{Texture, TextureRegistry};
 use vector::Vec2;
 use extent::Extent;
+use rect::Rect2D;
 
 pub trait Drawable {
     fn draw(&self, ctx: &mut DrawContext);
@@ -14,21 +15,24 @@ pub trait Drawable {
 pub struct DrawContext<'t> {
     canvas: &'t mut Canvas<Window>,
     texture_registry: &'t TextureRegistry<'t>,
-    camera: &'t Transform
+    camera: &'t Transform,
+    screen_bounds: Rect2D,
 }
 
 impl<'t> DrawContext<'t> {
     pub fn new(
         canvas: &'t mut Canvas<Window>,
         texture_registry: &'t TextureRegistry<'t>,
-        camera: &'t Transform
+        camera: &'t Transform,
+        screen_bounds: Rect2D
     )
         -> DrawContext<'t>
     {
         DrawContext {
             canvas: canvas,
             texture_registry: texture_registry,
-            camera: camera
+            camera: camera,
+            screen_bounds: screen_bounds
         }
     }
 
@@ -68,6 +72,12 @@ impl<'t> DrawContext<'t> {
 
         top_left = self.camera.transform_point_inv(top_left);
         bottom_right = self.camera.transform_point_inv(bottom_right);
+
+        let mut screen_transform = Transform::new();
+        screen_transform.translate(self.screen_bounds.max * 0.5);
+
+        top_left = screen_transform.transform_point(top_left);
+        bottom_right = screen_transform.transform_point(bottom_right);
 
         top_left = top_left.round();
         bottom_right = bottom_right.round();

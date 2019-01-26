@@ -2,9 +2,12 @@ extern crate engine;
 
 use engine::prelude::*;
 
+mod player;
+
 struct GoogleHomeopathicMedicine {
     level: Grid,
-    camera_controller: AxisController,
+    player_id: SceneObjectId,
+    scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
     title_screen: SplashScreen,
@@ -47,6 +50,11 @@ impl GameInterface for GoogleHomeopathicMedicine {
             );
         }
 
+        let player = player::Player::new(ctx)?;
+
+        let mut scene = Scene::new();
+        let player_id = scene.add_object(player);
+
         // Loading StaticSprites
         let title_background_filename = "src/resources/image/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
@@ -69,12 +77,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let game =
             GoogleHomeopathicMedicine {
                 level: grid,
-                camera_controller: AxisController::new(
-                    Keycode::Up,
-                    Keycode::Down,
-                    Keycode::Left,
-                    Keycode::Right
-                ),
+                scene: scene,
+                player_id: player_id,
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,
@@ -90,21 +94,29 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
 
     fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+        let player_position = self.scene.get(self.player_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        ctx.set_camera_position(player_position);
+
+        let zoom = self.zoom_controller.poll(&ctx, dt);
+        ctx.set_camera_zoom(zoom);
+
+        self.scene.update(ctx, dt);
+
         Ok(true)
     }
 
     fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<bool, Error>
     {
-        let target_velocity = self.camera_controller.poll(ctx) * 1000.0;
-
-        self.camera_velocity.approach(target_velocity, dt * 250.0);
-
-        ctx.move_camera(self.camera_velocity * dt);
-        let zoom = self.zoom_controller.poll(&ctx, dt);
-        ctx.set_camera_zoom(zoom);
-
         ctx.draw(&self.level);
+
+        self.scene.render(ctx);
 
         let fps = (1.0 / dt) as i32;
 
@@ -141,5 +153,5 @@ impl GameInterface for GoogleHomeopathicMedicine {
 }
 
 fn main() {
-    Engine::execute::<GoogleHomeopathicMedicine>(1920, 1080).unwrap();
+    Engine::execute::<GoogleHomeopathicMedicine>(1280, 720).unwrap();
 }

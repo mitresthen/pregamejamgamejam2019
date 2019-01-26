@@ -21,6 +21,8 @@ pub mod grid;
 pub mod image;
 pub mod splash_screen;
 pub mod game_state;
+pub mod game_object;
+pub mod scene;
 
 pub mod axis_controller;
 pub mod slider_controller;
@@ -72,16 +74,16 @@ pub struct Engine<'t> {
 pub trait GameInterface : Sized {
     fn get_title() -> &'static str;
 
-    fn get_title_screen(&self) -> Option<splash_screen::SplashScreen>;
+    fn get_title_screen(&self) -> Option<splash_screen::SplashScreen> { None }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
     // Update - broken down into 2 stages for game engine: update and draw
-    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
-    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
     // Optional part of update - drawing pause or main menu
-    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
-    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
+    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
 
     fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
 
@@ -94,11 +96,14 @@ impl<'t> Engine<'t> {
     }
 
     pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+        let bounds = self.get_screen_bounds();
+
         let mut ctx =
             drawable::DrawContext::new(
                 &mut self.canvas,
                 &mut self.texture_registry,
-                &self.camera
+                &self.camera,
+                bounds
             );
 
         drawable.draw(&mut ctx);
@@ -108,12 +113,16 @@ impl<'t> Engine<'t> {
         self.camera.translate(translation);
     }
 
-    pub fn set_camera_zoom(&mut self, value: f32) {
-        self.camera.set_scale(value);
+    pub fn set_camera_position(&mut self, p: vector::Vec2) {
+        self.camera.set_translation(p);
     }
 
     pub fn get_camera_position(&self) -> vector::Vec2 {
         self.camera.get_translation()
+    }
+
+    pub fn set_camera_zoom(&mut self, value: f32) {
+        self.camera.set_scale(value);
     }
 
     pub fn on_key_down(&mut self, keycode: Keycode) {
@@ -181,7 +190,7 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE,
+                state: game_state::TITLE_STATE
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -264,7 +273,6 @@ impl<'t> Engine<'t> {
                     }
                 }
             }
-
 
             engine.canvas.present();
 

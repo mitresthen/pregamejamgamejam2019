@@ -21,11 +21,12 @@ impl AxisController {
         }
     }
 
-    pub fn poll(&self, ctx: &mut Engine) -> Vec2 {
+    pub fn poll(&self, ctx: &Engine) -> Vec2 {
         let mut axis = Vec2::new();
         if ctx.key_is_down(self.up_key) {
             axis.y -= 1.0;
         }
+
         if ctx.key_is_down(self.down_key) {
             axis.y += 1.0;
         }

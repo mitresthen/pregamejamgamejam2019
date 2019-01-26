@@ -33,6 +33,11 @@ impl Transform {
     pub fn set_scale(&mut self, s: f32) {
         self.scale = s;
     }
+
+    pub fn get_scale(&self) -> f32 {
+        self.scale
+    }
+
     pub fn translate(&mut self, p: Vec2) {
         self.translation = self.translation + p;
     }
