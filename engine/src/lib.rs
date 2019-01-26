@@ -18,6 +18,7 @@ pub mod extent;
 pub mod transform;
 pub mod grid;
 pub mod image;
+pub mod splash_screen;
 
 pub mod axis_controller;
 pub mod slider_controller;
@@ -65,6 +66,7 @@ pub struct Engine<'t> {
     camera: transform::Transform,
     pub paused: bool,
     last_paused_change: timer::Timer,
+    pub is_on_title_screen: bool,
 }
 
 pub trait GameInterface : Sized {
@@ -143,6 +145,10 @@ impl<'t> Engine<'t> {
         }
     }
 
+    pub fn end_title_screen(&mut self) {
+        self.is_on_title_screen = false;
+    }
+
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
@@ -169,6 +175,7 @@ impl<'t> Engine<'t> {
                 camera: transform::Transform::new(),
                 paused: false,
                 last_paused_change: timer::Timer::new(),
+                is_on_title_screen: true,
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;

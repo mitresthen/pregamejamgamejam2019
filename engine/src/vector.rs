@@ -30,6 +30,20 @@ impl Vec2 {
             *self = *self + (diff * (acceleration / l));
         }
     }
+
+    pub fn dot_product(&self, other: Vec2) -> f32 {
+        self.x * other.x + self.y + other.y
+    }
+
+    pub fn normal_vector(&self) -> Vec2 {
+        let norm = 
+            Vec2 {
+                x: self.y * -1.0,
+                y: self.x
+            };
+
+        norm
+    }
 }
 
 impl Add for Vec2 {
