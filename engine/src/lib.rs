@@ -18,6 +18,7 @@ pub mod transform;
 pub mod grid;
 pub mod image;
 pub mod splash_screen;
+pub mod game_state;
 
 pub mod axis_controller;
 pub mod slider_controller;
@@ -63,8 +64,7 @@ pub struct Engine<'t> {
     audio_engine: audio_engine::AudioEngine,
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
-    pub paused: bool,
-    pub is_on_title_screen: bool,
+    pub state: game_state::GameState,
 }
 
 pub trait GameInterface : Sized {
@@ -137,12 +137,15 @@ impl<'t> Engine<'t> {
 
     pub fn get_height(&self) -> u32 { self.height }
 
-    pub fn change_paused(&mut self) {
-        self.paused = !self.paused;
+    pub fn invert_paused_state(&mut self)
+    {
+        self.state.invert_paused_state();
     }
 
+    // End showing the title screen - switch to Main Menu
     pub fn end_title_screen(&mut self) {
-        self.is_on_title_screen = false;
+        self.state.go_to(game_state::GAMEPLAY_STATE);
+        // self.state.go_to(game_state::MAIN_MENU_STATE);
     }
 
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
@@ -169,8 +172,7 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                paused: false,
-                is_on_title_screen: true,
+                state: game_state::TITLE_STATE,
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
