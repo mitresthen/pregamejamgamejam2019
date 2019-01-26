@@ -15,6 +15,10 @@ impl GameInterface for ExampleGame {
         "ExampleGame"
     }
 
+    fn get_title_screen(&self) -> Option<SplashScreen> {
+        Some(self.title_screen.clone())
+    }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let title_background_filename = "assets/title_background.png";
         let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
@@ -74,12 +78,6 @@ impl GameInterface for ExampleGame {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            if ctx.state.is_on(TITLE_STATE)
-            {
-                ctx.draw(&self.title_screen);
-                return Ok(true);
-            }
-
             // Update player characted if game isn't paused
             if ctx.state.is_on(GAMEPLAY_STATE)
             {

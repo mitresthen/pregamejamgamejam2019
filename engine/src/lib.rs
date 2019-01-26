@@ -70,6 +70,8 @@ pub struct Engine<'t> {
 pub trait GameInterface : Sized {
     fn get_title() -> &'static str;
 
+    fn get_title_screen(&self) -> Option<splash_screen::SplashScreen>;
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error>;
@@ -215,7 +217,18 @@ impl<'t> Engine<'t> {
             }
 
             engine.canvas.clear();
-            if !game.update(&mut engine, timer.get_time())? {
+
+            if engine.state.is_on(game_state::TITLE_STATE)
+            {
+                let potential_title_screen = game.get_title_screen();
+                match potential_title_screen {
+                    // Title screen exists - show it.
+                    Some(ref title_screen) => engine.draw(title_screen),
+                    // No title screen defined - jump to next state.
+                    None               => engine.state.go_to(game_state::GAMEPLAY_STATE),
+                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
+                }
+            } else if !game.update(&mut engine, timer.get_time())? {
                 break 'main_loop;
             }
 

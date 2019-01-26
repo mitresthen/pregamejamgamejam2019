@@ -17,6 +17,7 @@ pub use sdl2::surface::Surface;
 pub use sdl2::pixels::PixelFormatEnum;
 }
 
+#[derive(Clone)]
 pub struct Texture {
     index: usize,
     offset: Offset,

@@ -14,6 +14,10 @@ impl GameInterface for GridTest {
         "GridTest"
     }
 
+    fn get_title_screen(&self) -> Option<SplashScreen> {
+        None
+    }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("assets/grid_test.png")?;
 
