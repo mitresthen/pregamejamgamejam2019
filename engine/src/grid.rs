@@ -44,6 +44,22 @@ impl Drawable for Grid {
                         )
                     );
 
+                    // Currently the tiles would be drawn with the center at the grid
+                    // intersection. We move them a half tile size down
+                    transform.translate(
+                        Vec2::from_coords(
+                            self.tile_size as f32 * 0.5,
+                            self.tile_size as f32 * 0.5
+                        )
+                    );
+
+                    // Textures that are taller than the grid size are now drawn with
+                    // the overlapping height divided equally on the tile below and
+                    // the tile above. Move it up half the extra height to make it only
+                    // overlap the tile above
+                    let extra_height = texture.extent().height - self.tile_size as i32;
+                    transform.translate(Vec2::from_coords(0.0, extra_height as f32 * -0.5));
+
                     // For now we just scale all tiles so that they match exactly the width
                     let scale = self.tile_size as f32 / texture.extent().width as f32;
                     transform.set_scale(scale);

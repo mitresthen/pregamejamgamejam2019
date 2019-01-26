@@ -31,6 +31,10 @@ impl Vec2 {
         }
     }
 
+    pub fn round(&self) -> Vec2 {
+        Vec2 { x: self.x.round(), y: self.y.round() }
+    }
+
     pub fn dot_product(&self, other: Vec2) -> f32 {
         self.x * other.x + self.y + other.y
     }

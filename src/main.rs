@@ -22,8 +22,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let tr = ctx.get_texture_registry();
 
         grid.register_tile_type(
-            RGBA { r: 255, g: 0, b: 0, a: 255 },
+            RGBA { r: 0, g: 0, b: 0, a: 255 },
             tr.load("src/resources/image/tile_Yellow_2.png")?
+        );
+
+        grid.register_tile_type(
+            RGBA { r: 255, g: 0, b: 0, a: 255 },
+            tr.load("src/resources/image/Wall Tile_3boxesHigh.png")?
         );
 
         let game =
