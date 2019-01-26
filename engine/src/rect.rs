@@ -22,6 +22,13 @@ impl Rect2D {
         result
     }
 
+    pub fn contains(&self, v: Vec2) -> bool {
+        (v.x >= self.min.x) &&
+        (v.x <= self.max.x) &&
+        (v.y >= self.min.y) &&
+        (v.y <= self.max.y)
+    }
+
     pub fn center(&self) -> Vec2 {
         (self.min + self.max) * 0.5
     }

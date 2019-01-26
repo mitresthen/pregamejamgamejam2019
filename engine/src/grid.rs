@@ -6,24 +6,30 @@ use vector::Vec2;
 use image::{Image, RGBA};
 use sdl2::render::BlendMode;
 use bounding_box::BoundingBox;
+use scene::Scene;
+use rect::Rect2D;
 
 pub type TileIndex = RGBA;
 
 pub struct Grid {
     image: Image<RGBA>,
-    lightmap: Texture,
     tile_size: u32,
-    tile_map: HashMap<TileIndex, Texture>
+    tile_map: HashMap<TileIndex, Texture>,
+    interleaved_scene: Option<Scene>
 }
 
 impl Grid {
-    pub fn new(image: Image<RGBA>, tile_size: u32, lightmap: Texture) -> Grid {
+    pub fn new(image: Image<RGBA>, tile_size: u32) -> Grid {
         Grid {
             image: image,
-            lightmap: lightmap,
             tile_size: tile_size,
-            tile_map: HashMap::new()
+            tile_map: HashMap::new(),
+            interleaved_scene: None
         }
+    }
+
+    pub fn set_interleaved_scene(&mut self, scene: Scene) {
+        self.interleaved_scene = Some(scene);
     }
 
     pub fn register_tile_type(&mut self, id: TileIndex, texture: Texture) {
@@ -74,13 +80,38 @@ impl Grid {
 
         best_axis.map(|x| x.0)
     }
-}
 
-impl Drawable for Grid {
-    fn draw(&self, ctx: &mut DrawContext) {
+    fn get_row_rect(&self, y: i32) -> Rect2D {
+        use std::f32;
+        Rect2D {
+            min: Vec2::from_coords(
+                f32::MIN,
+                (y * self.tile_size as i32) as f32
+            ),
+            max: Vec2::from_coords(
+                f32::MAX,
+                ((y + 1) * self.tile_size as i32) as f32
+            )
+        }
+    }
+
+    fn draw_with_interleaved_scene(
+        &self,
+        ctx: &mut DrawContext,
+        interleaved_scene: Option<&Scene>
+    ) {
         let mut it = self.image.data().iter();
 
         for y in 0..self.image.height() {
+            if let Some(scene) = interleaved_scene {
+                let row_rect = self.get_row_rect(y);
+                let objects = scene.get_objects_in_rect(row_rect);
+
+                for object in objects.iter() {
+                    object.render(ctx);
+                }
+            }
+
             for x in 0..self.image.width() {
                 let id = it.next().unwrap();
 
@@ -108,9 +139,29 @@ impl Drawable for Grid {
                 }
             }
         }
-        let mut transform = Transform::new();
-        transform.set_translation(Vec2::from_coords(0.0, 0.0));
-        ctx.draw2(&self.lightmap, &transform, Origin::TopLeft);
     }
 
+    pub fn interleave_scene<'t>(&'t self, scene: &'t Scene) -> GridWithInterleavedScene<'t> {
+        GridWithInterleavedScene {
+            scene: scene,
+            grid: self
+        }
+    }
+}
+
+impl Drawable for Grid {
+    fn draw(&self, ctx: &mut DrawContext) {
+        self.draw_with_interleaved_scene(ctx, None);
+    }
+}
+
+pub struct GridWithInterleavedScene<'t> {
+    scene: &'t Scene,
+    grid: &'t Grid
+}
+
+impl<'t> Drawable for GridWithInterleavedScene<'t> {
+    fn draw(&self, ctx: &mut DrawContext) {
+        self.grid.draw_with_interleaved_scene(ctx, Some(self.scene));
+    }
 }

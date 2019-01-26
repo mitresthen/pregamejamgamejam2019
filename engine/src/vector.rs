@@ -44,6 +44,9 @@ impl Vec2 {
     }
 
     pub fn normalize(&self) -> Vec2 {
+        if(self.len() == 0.0){
+            return Vec2::new()
+        }
         self.clone() * (1.0 / self.len())
     }
 

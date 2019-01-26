@@ -8,7 +8,9 @@ mod player;
 mod roomba;
 
 struct GoogleHomeopathicMedicine {
-    level: Grid,
+    low_level: Grid,
+    mid_level: Grid,
+    lightmap: Texture,
     player_id: SceneObjectId,
     roomba_id: SceneObjectId, 
     scene: Scene,
@@ -31,27 +33,31 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
-        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
-        let mut grid = Grid::new(level, 120, lightmap);
         ctx.loop_sound("assets/music/home_automation.wav", -1)?;
+
+        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
+
+        let mut low_level = Grid::new(level.clone(), 120);
+        let mut mid_level = Grid::new(level.clone(), 120);
+
 
         {
             let tr = ctx.get_texture_registry();
 
-            grid.register_tile_type(
+            low_level.register_tile_type(
                 RGBA { r: 0, g: 0, b: 0, a: 255 },
                 tr.load("assets/image/tile_Yellow_2.png")?
             );
 
-            grid.register_tile_type(
+            mid_level.register_tile_type(
                 RGBA { r: 255, g: 0, b: 0, a: 255 },
                 tr.load("assets/image/wall_with_dark_top.png")?
             );
-            grid.register_tile_type(
+            mid_level.register_tile_type(
                 RGBA { r: 254, g: 0, b: 0, a: 255 },
                 tr.load("assets/image/wall_dark_only.png")?
             );
-            grid.register_tile_type(
+            mid_level.register_tile_type(
                 RGBA { r: 253, g: 0, b: 0, a: 255 },
                 tr.load("assets/image/single_dark_tile.png")?
             );
@@ -61,6 +67,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
         let mut roomba = roomba::Roomba::new(ctx)?;
+        roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
+
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
@@ -113,7 +121,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let game =
             GoogleHomeopathicMedicine {
-                level: grid,
+                low_level: low_level,
+                mid_level: mid_level,
+                lightmap: lightmap,
                 scene: scene,
                 player_id: player_id,
                 roomba_id: roomba_id,
@@ -157,7 +167,27 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_transform()
             .get_translation();
 
-        if let Some(axis) = self.level.get_collision_vector(player_bounding_box) {
+        let roomba_bbox = self.scene.get(self.roomba_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_bounding_box()
+            .unwrap();
+
+        {
+            let roomba_target_vector = (player_position - roomba_position).normalize();
+            let roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
+            let physical_roomba = roomba_object.get_physical_object_mut().unwrap();
+            let roomba_velocity = physical_roomba.get_velocity_mut();
+            *roomba_velocity = roomba_target_vector * 100.0;
+
+            if let Some(axis) = self.level.get_collision_vector(roomba_bbox) {
+                *roomba_velocity = axis * 100.0;
+            }
+
+        }
+
+        if let Some(axis) = self.mid_level.get_collision_vector(player_bounding_box) {
             let player_object = self.scene.get_mut(self.player_id).unwrap();
             let physical_object = player_object.get_physical_object_mut().unwrap();
             let player_velocity = physical_object.get_velocity_mut();
@@ -176,9 +206,16 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_zoom(zoom);
         &self.pause_sprite.set_scale(1.0/zoom);
 
-        ctx.draw(&self.level);
+        //ctx.draw(&self.low_level);
+        ctx.draw(&self.mid_level.interleave_scene(&self.scene));
 
-        self.scene.render(ctx);
+        let mut transform = Transform::new();
+        transform.set_translation(Vec2::from_coords(0.0, 0.0));
+
+        ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
+
+        // Scene is now rendered as a part of the interleaved grid
+        //self.scene.render(ctx);
 
         // let fps = (1.0 / dt) as i32;
 
