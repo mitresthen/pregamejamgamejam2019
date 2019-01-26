@@ -6,6 +6,7 @@ pub use animated_sprite::AnimatedSprite;
 pub use movable_object::MovableObject;
 pub use drawable::Drawable;
 pub use vector::Vec2;
+pub use splash_screen::SplashScreen;
 
 pub use grid::Grid;
 

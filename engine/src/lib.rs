@@ -17,6 +17,7 @@ pub mod extent;
 pub mod transform;
 pub mod grid;
 pub mod image;
+pub mod splash_screen;
 
 pub mod axis_controller;
 pub mod slider_controller;
