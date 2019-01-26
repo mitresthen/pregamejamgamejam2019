@@ -14,6 +14,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         "Google Homopathic Medicine"
     }
 
+    fn get_title_screen(&self) -> Option<SplashScreen>{
+        None
+    }
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("src/resources/image/temp_level.png")?;
 
