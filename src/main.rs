@@ -56,17 +56,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let player_id = scene.add_object(player);
 
         // Loading StaticSprites
-        let title_background_filename = "src/resources/image/title_background.png";
-        let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
-        let mut title_background = StaticSprite::new(640, 480, title_background_texture)?;
+        let tr = ctx.get_texture_registry();
 
-        let title_filename = "src/resources/image/title.png";
-        let title_texture = ctx.get_texture_registry().load(title_filename)?;
-        let mut title_sprite = StaticSprite::new(128, 128, title_texture)?;
+        let pause_sprite = StaticSprite::new(128, 64, tr.load("src/resources/image/paused.png")?)?;
 
-        let pause_filename = "src/resources/image/paused.png";
-        let pause_texture = ctx.get_texture_registry().load(pause_filename)?;
-        let mut pause_sprite = StaticSprite::new(128, 64, pause_texture)?;
+        let title_background = StaticSprite::new(640, 480, tr.load("src/resources/image/title_background.png")?)?;
+
+        let title_sprite = StaticSprite::new(128, 128, tr.load("src/resources/image/title.png")?)?;
 
         let title_screen =
             SplashScreen {

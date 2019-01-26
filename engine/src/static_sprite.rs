@@ -4,8 +4,6 @@ use texture_registry::Texture;
 use super::Error;
 use vector::Vec2;
 use transform::Transform;
-use extent::Extent;
-use offset::Offset;
 
 #[derive(Clone)]
 pub struct StaticSprite {
@@ -18,8 +16,6 @@ pub struct StaticSprite {
 
 impl StaticSprite {
     pub fn new(x_size: i32, y_size: i32, texture: Texture) -> Result<StaticSprite, Error> {
-        let extent = texture.extent();
-
         let static_sprite =
             StaticSprite {
                 texture: texture,
