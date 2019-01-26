@@ -2,7 +2,6 @@ extern crate sdl2;
 extern crate stb_image;
 
 use std::collections::HashSet;
-use std::time::Duration;
 
 pub mod audio_engine;
 pub mod drawable;

@@ -2,8 +2,6 @@ use vector::Vec2;
 use std::vec::Vec;
 use std::f32;
 
-use super::Error;
-
 #[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {
     width: f32, 

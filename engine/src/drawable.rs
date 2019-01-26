@@ -1,7 +1,6 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::rect::Rect;
-use sdl2::render::BlendMode;
 
 use transform::Transform;
 use texture_registry::{Texture, TextureRegistry};
