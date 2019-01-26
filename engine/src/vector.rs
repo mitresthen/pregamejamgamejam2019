@@ -1,6 +1,7 @@
 use std::ops::{Add, Sub, Mul};
 
 use rand::Rng;
+use rand;
 
 #[derive(Clone, Debug, Copy)]
 pub struct Vec2 {
