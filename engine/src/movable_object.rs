@@ -1,4 +1,4 @@
-use animated_sprite::AnimatedSprite;
+use animated_sprite::{AnimatedSprite, Animatable, SpriteTrait};
 use bounding_box::BoundingBox;
 use vector::Vec2;
 

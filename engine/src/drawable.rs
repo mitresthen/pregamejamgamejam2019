@@ -97,6 +97,8 @@ impl<'t> DrawContext<'t> {
         top_left = transform.transform_point(top_left);
         bottom_right = transform.transform_point(bottom_right);
 
+        // World space
+
         top_left = self.camera.transform_point_inv(top_left);
         bottom_right = self.camera.transform_point_inv(bottom_right);
 

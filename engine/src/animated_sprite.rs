@@ -18,6 +18,24 @@ pub struct AnimatedSprite {
     transform: Transform
 }
 
+pub trait SpriteTrait : Drawable + 'static {
+    fn set_position(&mut self, p: Vec2);
+
+    fn set_transform(&mut self, transform: &Transform);
+
+    fn set_scale(&mut self, scale: f32);
+
+    fn calculate_size(&self) -> Vec2;
+}
+
+pub trait Animatable : Drawable + 'static {
+    fn set_mode(&mut self, mode: i32);
+
+    fn get_mode_count(&self) -> i32;
+
+    fn step_time(&mut self, dt: f32);
+}
+
 impl AnimatedSprite {
     pub fn new(tile_extent: Extent, texture: Texture) -> Result<AnimatedSprite, Error> {
         let extent = texture.extent();
@@ -43,33 +61,42 @@ impl AnimatedSprite {
         Ok(animated_sprite)
     }
 
-    pub fn step_time(&mut self, dt: f32) {
-        self.current_frame += dt;
-        while self.current_frame as i32 > self.frame_count {
-            self.current_frame -= self.frame_count as f32;
-        }
-    }
+}
 
-    pub fn set_position(&mut self, position: Vec2) {
-        self.transform.set_translation(position);
-    }
-
-    pub fn set_transform(&mut self, transform: &Transform) {
-        self.transform = transform.clone();
-    }
-
-    pub fn set_mode(&mut self, mode: i32) {
+impl Animatable for AnimatedSprite {
+    fn set_mode(&mut self, mode: i32) {
         if mode < 0 || mode >= self.mode_count {
             panic!("Mode out of range");
         }
         self.current_mode = mode;
     }
 
-    pub fn set_scale(&mut self, scale: f32) {
+    fn get_mode_count(&self) -> i32 {
+        self.mode_count
+    }
+
+    fn step_time(&mut self, dt: f32) {
+        self.current_frame += dt;
+        while self.current_frame as i32 > self.frame_count {
+            self.current_frame -= self.frame_count as f32;
+        }
+    }
+}
+
+impl SpriteTrait for AnimatedSprite {
+    fn set_position(&mut self, position: Vec2) {
+        self.transform.set_translation(position);
+    }
+
+    fn set_transform(&mut self, transform: &Transform) {
+        self.transform = transform.clone();
+    }
+
+    fn set_scale(&mut self, scale: f32) {
         self.transform.set_scale(scale);
     }
 
-    pub fn calculate_size(&self) -> Vec2 {
+    fn calculate_size(&self) -> Vec2 {
         self.tile_extent.to_vec() * self.transform.get_scale()
     }
 }
@@ -90,3 +117,80 @@ impl Drawable for AnimatedSprite {
     }
 }
 
+pub trait Aggregatable : Animatable + SpriteTrait { }
+
+impl Aggregatable for AnimatedSprite { }
+
+pub struct AggregatedAnimatedSprite {
+    sprites: Vec<Box<Aggregatable>>,
+    sprite_index: i32,
+    mode: i32,
+}
+
+impl AggregatedAnimatedSprite {
+    pub fn new() -> AggregatedAnimatedSprite {
+        AggregatedAnimatedSprite {
+            sprites: Vec::new(),
+            sprite_index: 0i32,
+            mode: 0i32
+        }
+    }
+
+    pub fn add<T: Aggregatable>(&mut self, t: T) {
+        self.sprites.push(Box::new(t));
+    }
+}
+
+impl Drawable for AggregatedAnimatedSprite {
+    fn draw(&self, ctx: &mut DrawContext) {
+        self.sprites[self.sprite_index as usize].draw(ctx);
+    }
+}
+
+impl Animatable for AggregatedAnimatedSprite {
+    fn set_mode(&mut self, mode: i32) {
+        self.mode = mode;
+        for (index, sprite) in self.sprites.iter().enumerate() {
+            if self.mode >= sprite.get_mode_count() {
+                self.mode -= sprite.get_mode_count();
+            } else {
+                self.sprite_index = index as i32;
+                break;
+            }
+        }
+
+        self.sprites[self.sprite_index as usize].set_mode(self.mode);
+    }
+
+    fn get_mode_count(&self) -> i32 {
+        let mut total_mode_count = 0i32;
+        for sprite in self.sprites.iter() {
+            total_mode_count += sprite.get_mode_count();
+        }
+        total_mode_count
+    }
+
+    fn step_time(&mut self, dt: f32) {
+        let index = self.sprite_index as usize;
+        self.sprites[index].step_time(dt);
+    }
+}
+
+impl SpriteTrait for AggregatedAnimatedSprite
+{
+    fn set_position(&mut self, position: Vec2) {
+        self.sprites[self.sprite_index as usize].set_position(position);
+    }
+
+    fn set_transform(&mut self, transform: &Transform) {
+        self.sprites[self.sprite_index as usize].set_transform(transform);
+    }
+
+    fn set_scale(&mut self, scale: f32) {
+        self.sprites[self.sprite_index as usize].set_scale(scale);
+    }
+
+    fn calculate_size(&self) -> Vec2 {
+        self.sprites[self.sprite_index as usize].calculate_size()
+    }
+}

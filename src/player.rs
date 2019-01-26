@@ -2,9 +2,10 @@ use engine::prelude::*;
 
 pub struct Player {
     controller: AxisController,
-    sprite: AnimatedSprite,
+    sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
+    direction: i32,
 }
 
 impl Player {
@@ -13,7 +14,15 @@ impl Player {
         let texture = tr.load("assets/image/mainChar-1x2.png")?;
         //let texture = tr.load("assets/image/red_rider.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
+        let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
+        let mut walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
+
+        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(120 * 1, 240 * 4))?;
+        let mut idle_sprite = AnimatedSprite::new(Extent::new(120, 240), idle_texture)?;
+
+        let mut sprite = AggregatedAnimatedSprite::new();
+        sprite.add(idle_sprite);
+        sprite.add(walk_sprite);
 
         let mut player =
             Player {
@@ -25,7 +34,8 @@ impl Player {
                 ),
                 sprite: sprite,
                 transform: Transform::new(),
-                velocity: Vec2::new()
+                velocity: Vec2::new(),
+                direction: 1,
             };
 
         player.transform.set_scale(1.0);
@@ -44,26 +54,30 @@ impl GameObject for Player {
         let target_velocity =
             self.controller.poll(ctx) * 240.0;
 
-        self.velocity.approach(target_velocity, 240.0 * dt);
+        self.velocity.approach(target_velocity, 400.0 * dt);
         self.transform.translate(self.velocity * dt);
-        self.sprite.set_transform(&self.transform);
-        self.sprite.step_time(dt * self.velocity.len() * 0.05);
 
+        let mut is_walking = false;
         if target_velocity.len() > 0.1 {
-            if target_velocity.x.abs() > target_velocity.y.abs() {
-                if target_velocity.x > 0.0 {
-                    self.sprite.set_mode(1)
+            self.direction =
+                if target_velocity.x.abs() > target_velocity.y.abs() {
+                    if target_velocity.x > 0.0 { 1 } else { 3 }
                 } else {
-                    self.sprite.set_mode(3);
-                }
-            } else {
-                if target_velocity.y > 0.0 {
-                    self.sprite.set_mode(2)
-                } else {
-                    self.sprite.set_mode(0);
-                }
-            }
+                    if target_velocity.y > 0.0 { 2 } else { 0 }
+                };
+
+            is_walking = true;
         }
+
+        let mut mode = self.direction;
+
+        if is_walking {
+            mode += 4;
+        }
+
+        self.sprite.set_mode(mode);
+        self.sprite.set_transform(&self.transform);
+        self.sprite.step_time(dt * self.velocity.len() * 0.02);
 
         true
     }
