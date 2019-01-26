@@ -5,10 +5,12 @@ use engine::prelude::*;
 use sdl2::render::BlendMode;
 
 mod player;
+mod roomba;
 
 struct GoogleHomeopathicMedicine {
     level: Grid,
     player_id: SceneObjectId,
+    roomba_id: SceneObjectId, 
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
@@ -57,9 +59,11 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
+        let mut roomba = roomba::Roomba::new(ctx)?;
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
+        let roomba_id = scene.add_object(roomba);
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
@@ -111,6 +115,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 level: grid,
                 scene: scene,
                 player_id: player_id,
+                roomba_id: roomba_id,
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,
@@ -143,6 +148,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .unwrap()
             .get_bounding_box()
             .unwrap();
+
+        let roomba_position = self.scene.get(self.roomba_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
 
         if let Some(axis) = self.level.get_collision_vector(player_bounding_box) {
             let player_object = self.scene.get_mut(self.player_id).unwrap();
