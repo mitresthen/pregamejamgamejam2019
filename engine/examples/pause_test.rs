@@ -74,7 +74,7 @@ impl GameInterface for ExampleGame {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            if true
+            if ctx.is_on_title_screen
             {
                 ctx.draw(&self.title_screen);
                 return Ok(true);
@@ -146,6 +146,12 @@ impl GameInterface for ExampleGame {
             ctx.try_to_change_paused();
             return Ok(true);
         }
+        if ctx.is_on_title_screen
+        {
+            ctx.end_title_screen();
+            return Ok(true);
+        }
+
 
         Ok(true)
     }

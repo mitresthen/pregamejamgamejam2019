@@ -7,6 +7,7 @@ pub struct ExampleGame{
     player_object: MovableObject,
     autonomous_moving_objects: Vec<MovableObject>,
     pause_sprite: AnimatedSprite,
+    title_screen: SplashScreen,
 }
 
 impl GameInterface for ExampleGame {
@@ -15,6 +16,24 @@ impl GameInterface for ExampleGame {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
+        let title_background_filename = "assets/title_background.png";
+        let title_background_texture = ctx.get_texture_registry().load(title_background_filename)?;
+        let mut title_background = AnimatedSprite::new(128, title_background_texture)?;
+        title_background.set_scale(4.0);
+        title_background.set_position(ctx.get_screen_bounds().center());
+
+        let title_filename = "assets/title.png";
+        let title_texture = ctx.get_texture_registry().load(title_filename)?;
+        let mut title_sprite = AnimatedSprite::new(128, title_texture)?;
+        title_sprite.set_scale(1.0);
+        title_sprite.set_position(ctx.get_screen_bounds().center());
+
+        let title_screen =
+            SplashScreen {
+                background: title_background,
+                foreground: title_sprite,
+            };
+
         let filename = "assets/characters.png";
         let texture = ctx.get_texture_registry().load(filename)?;
         let mut sprite = AnimatedSprite::new(32, texture)?;
@@ -27,7 +46,7 @@ impl GameInterface for ExampleGame {
         pause_sprite.set_scale(1.0);
         pause_sprite.set_position(ctx.get_screen_bounds().center());
 
-        ctx.play_sound("../src/resources/music/personal_space.wav")?;
+        // ctx.play_sound("../src/resources/music/personal_space.wav")?;
 
         let mainchar = MovableObject::new(sprite, 400.0).unwrap();
 
@@ -46,6 +65,7 @@ impl GameInterface for ExampleGame {
             {
                 player_object: mainchar,
                 autonomous_moving_objects: game_objects,
+                title_screen: title_screen,
                 pause_sprite: pause_sprite,
             };
 
@@ -54,6 +74,12 @@ impl GameInterface for ExampleGame {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
+            if ctx.is_on_title_screen
+            {
+                ctx.draw(&self.title_screen);
+                return Ok(true);
+            }
+
             // Update player characted if game isn't paused
             if !ctx.paused
             {
@@ -100,7 +126,7 @@ impl GameInterface for ExampleGame {
 
         for object in self.autonomous_moving_objects.iter_mut() {
             let overlap = object.overlaps(self.player_object.bounding_box);
-            println!("Overlap: {:?}", overlap);
+            // println!("Overlap: {:?}", overlap);
         }
 
         // Draw paused sprite if game is paused
@@ -120,6 +146,12 @@ impl GameInterface for ExampleGame {
             ctx.try_to_change_paused();
             return Ok(true);
         }
+        if ctx.is_on_title_screen
+        {
+            ctx.end_title_screen();
+            return Ok(true);
+        }
+
 
         Ok(true)
     }
