@@ -48,6 +48,12 @@ impl MovableObject {
     }
 
     pub fn overlaps(&self, other_object: BoundingBox) -> bool {
-        self.bounding_box.overlaps(other_object)
+        let overlap =  self.bounding_box.sat_overlap(other_object);
+        match overlap {
+            Some(x) => {
+                return true
+            }
+            None => return false
+        }
     }
 }

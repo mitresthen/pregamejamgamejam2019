@@ -74,14 +74,14 @@ impl GameInterface for ExampleGame {
 
     fn update(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         {
-            if ctx.is_on_title_screen
+            if ctx.state.is_on(TITLE_STATE)
             {
                 ctx.draw(&self.title_screen);
                 return Ok(true);
             }
 
             // Update player characted if game isn't paused
-            if !ctx.paused
+            if ctx.state.is_on(GAMEPLAY_STATE)
             {
                 let speed = 400.0;
                 let mut new_speed = Vec2::new();
@@ -104,12 +104,15 @@ impl GameInterface for ExampleGame {
                 self.player_object.update(dt);
             }
 
-            ctx.draw(&self.player_object.animated_sprite);
+            if ctx.state.gameplay_displayed
+            {
+                ctx.draw(&self.player_object.animated_sprite);
+            }
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {
             // Update other autonomous moving objects if game isn't paused
-            if !ctx.paused
+            if ctx.state.is_on(GAMEPLAY_STATE)
             {
                 let player_pos = self.player_object.get_position();
                 let speed = 300.0;
@@ -121,7 +124,10 @@ impl GameInterface for ExampleGame {
                 object.update(dt);
             }
 
-            ctx.draw(&object.animated_sprite);
+            if ctx.state.gameplay_displayed
+            {
+                ctx.draw(&object.animated_sprite);
+            }
         }
 
         for object in self.autonomous_moving_objects.iter_mut() {
@@ -130,7 +136,7 @@ impl GameInterface for ExampleGame {
         }
 
         // Draw paused sprite if game is paused
-        if ctx.paused
+        if ctx.state.is_on(PAUSE_MENU_STATE)
         {
             ctx.draw(&self.pause_sprite);
         }
@@ -138,15 +144,15 @@ impl GameInterface for ExampleGame {
         Ok(true)
     }
 
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
         if keycode == Keycode::Escape {
             return Ok(false);
         }
-        if keycode == Keycode::P {
-            ctx.try_to_change_paused();
+        if keycode == Keycode::P && !is_repeated {
+            ctx.invert_paused_state();
             return Ok(true);
         }
-        if ctx.is_on_title_screen
+        if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();
             return Ok(true);
@@ -154,6 +160,10 @@ impl GameInterface for ExampleGame {
 
 
         Ok(true)
+    }
+
+    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
+        self.on_key_down(ctx, keycode, true)
     }
 }
 
