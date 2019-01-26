@@ -1,12 +1,36 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::rect::Rect;
+use sdl2::render::BlendMode;
 
 use transform::Transform;
 use texture_registry::{Texture, TextureRegistry};
 use vector::Vec2;
 use extent::Extent;
 use rect::Rect2D;
+
+pub enum Origin {
+    TopLeft,
+    TopRight,
+    BottomLeft,
+    BottomRight,
+    Center
+}
+
+impl Origin {
+    fn tl(&self) -> Vec2 {
+        match *self {
+            Origin::TopLeft => Vec2::from_coords(0.0, 0.0),
+            Origin::TopRight => Vec2::from_coords(-1.0, 0.0),
+            Origin::BottomLeft => Vec2::from_coords(0.0, -1.0),
+            Origin::BottomRight => Vec2::from_coords(-1.0, -1.0),
+            Origin::Center => Vec2::from_coords(-0.5, -0.5),
+        }
+    }
+    fn br(&self) -> Vec2 {
+        return Vec2::from_coords(1.0, 1.0) + self.tl();
+    }
+}
 
 pub trait Drawable {
     fn draw(&self, ctx: &mut DrawContext);
@@ -49,6 +73,10 @@ impl<'t> DrawContext<'t> {
     }
 
     pub fn draw(&mut self, texture: &Texture, transform: &Transform) {
+        self.draw2(texture, transform, Origin::Center);
+    }
+
+    pub fn draw2(&mut self, texture: &Texture, transform: &Transform, origin: Origin) {
         let src =
             Rect::new(
                 texture.offset().x,
@@ -57,15 +85,14 @@ impl<'t> DrawContext<'t> {
                 texture.extent().height as u32
             );
 
-
         let texture_size =
             Vec2::from_coords(
                 texture.extent().width as f32,
                 texture.extent().height as f32
             );
 
-        let mut top_left = Vec2::from_coords(-0.5, -0.5) * texture_size;
-        let mut bottom_right = Vec2::from_coords(0.5, 0.5) * texture_size;
+        let mut top_left = origin.tl() * texture_size;
+        let mut bottom_right = origin.br() * texture_size;
 
         top_left = transform.transform_point(top_left);
         bottom_right = transform.transform_point(bottom_right);

@@ -1,6 +1,8 @@
 extern crate engine;
+extern crate sdl2;
 
 use engine::prelude::*;
+use sdl2::render::BlendMode;
 
 mod player;
 
@@ -26,7 +28,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
-        let mut grid = Grid::new(level, 120);
+        let lightmap = ctx.get_texture_registry().load2("engine/assets/grid_test_lightmap.png", BlendMode::Mod)?;
+        let mut grid = Grid::new(level, 120, lightmap);
 
         {
             let tr = ctx.get_texture_registry();
