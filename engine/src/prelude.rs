@@ -8,6 +8,7 @@ pub use movable_object::MovableObject;
 pub use drawable::{Drawable, DrawContext};
 pub use bounding_box::BoundingBox;
 pub use vector::Vec2;
+pub use extent::Extent;
 pub use splash_screen::SplashScreen;
 pub use game_state::*;
 
