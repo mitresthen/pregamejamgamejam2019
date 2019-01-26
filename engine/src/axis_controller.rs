@@ -36,6 +36,11 @@ impl AxisController {
         if ctx.key_is_down(self.right_key) {
             axis.x += 1.0;
         }
+
+        if axis.len() > 0.0 {
+            axis = axis.normalize()
+        }
+
         axis
     }
 }

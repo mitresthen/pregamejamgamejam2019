@@ -1,25 +1,58 @@
 use vector::Vec2;
 use std::vec::Vec;
-use std::ops::Range;
+use std::f32;
 
 use super::Error;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {
     width: f32, 
     height: f32,
     pub centre: Vec2
 }
 
+#[derive(Clone, Copy, Debug)]
+struct Range {
+    min: f32,
+    max: f32
+}
+
+impl Range {
+    pub fn new() -> Range {
+        Range {
+            min: f32::MAX,
+            max: f32::MIN
+        }
+    }
+
+    pub fn update(&mut self, value: f32) {
+        self.min = self.min.min(value);
+        self.max = self.max.max(value);
+    }
+
+    pub fn overlap(&self, other: &Range) -> Range {
+        Range {
+            min: self.min.max(other.min),
+            max: self.max.min(other.max)
+        }
+    }
+
+    pub fn length(&self) -> f32 {
+        self.max - self.min
+    }
+
+    pub fn center(&self) -> f32 {
+        (self.min + self.max) * 0.5
+    }
+}
+
 impl BoundingBox {
-    pub fn new(bb_width: f32, bb_height: f32, bb_centre: Vec2) -> Result<BoundingBox, Error> {
-        let bb = 
-            BoundingBox {
-                width: bb_width,
-                height: bb_height,
-                centre: bb_centre
-            };
-        Ok(bb)
+    pub fn new(bb_width: f32, bb_height: f32, bb_centre: Vec2) -> BoundingBox {
+        BoundingBox {
+            width: bb_width,
+            height: bb_height,
+            centre: bb_centre
+        }
     }
 
     pub fn contains(&self, point: Vec2) -> bool {
@@ -60,53 +93,59 @@ impl BoundingBox {
 
     }
 
-    pub fn sat_overlap(&self, other: BoundingBox) -> Option<Vec2> {
+    pub fn get_upper_left(&self) -> Vec2 {
+        Vec2 {
+            x: self.centre.x - self.width / 2.0,
+            y: self.centre.y - self.height / 2.0
+        }
+    }
+
+    pub fn get_lower_right(&self) -> Vec2 {
+        Vec2 {
+            x: self.centre.x + self.width / 2.0,
+            y: self.centre.y + self.height / 2.0
+        }
+    }
+
+    pub fn sat_overlap(&self, other: BoundingBox) -> Option<(Vec2, f32)> {
         let my_edges = self.get_edges();
         let other_edges = other.get_edges();
         let mut all_axes: Vec<Vec2> = Vec::new();
         all_axes.extend(&my_edges);
         all_axes.extend(&other_edges);
-        fn update_range(existing_range: Range<f32>, inserted_value: f32) -> Range<f32> {
-            let new_range = 
-                Range{
-                    start: existing_range.start.min(inserted_value),
-                    end: existing_range.end.max(inserted_value) 
-                };
-            new_range
-        }
-
-        fn overlap_len(range_a: Range<f32>, range_b: Range<f32>) -> f32 {
-            range_a.end.min(range_b.end) - range_a.start.max(range_b.start)
-        }
 
         use std::f32;
 
         let mut min_overlap = f32::MAX;
         let mut axis_of_overlap = None;
         for axis in all_axes {
-            let normal = axis.normal_vector();
-            let mut a_range = Range{
-                start: f32::MAX, 
-                end: f32::MIN};
-            let mut b_range = Range{
-                start: f32::MAX, 
-                end: f32::MIN};
+            let normal = axis.perpendicular().normalize();
+
+            let mut a_range = Range::new();
+            let mut b_range = Range::new();
             for a_point in self.get_points() {
                 let dot_product = a_point.dot_product(normal);
-                a_range = update_range(a_range, dot_product);
+                a_range.update(dot_product);
             }
             for b_point in other.get_points() {
                 let dot_product = b_point.dot_product(normal);
-                b_range = update_range(b_range, dot_product);
+                b_range.update(dot_product);
             }
-            let current_overlap = overlap_len(a_range, b_range);
+
+            let current_overlap = a_range.overlap(&b_range).length();
             if current_overlap < 0.0 {
                 return None
             }
-            if current_overlap <= min_overlap 
+            if current_overlap <= min_overlap
             {
                 min_overlap = current_overlap;
-                axis_of_overlap = Some(normal);
+
+                let a_center = a_range.center();
+                let b_center = b_range.center();
+
+                let factor = if a_center < b_center { -1.0 } else { 1.0 };
+
+                axis_of_overlap = Some((normal * factor, current_overlap));
             }
         }
         axis_of_overlap

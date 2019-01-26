@@ -199,6 +199,9 @@ impl<'t> Engine<'t> {
         let mut timer = timer::Timer::new();
 
         'main_loop: loop {
+            let dt = timer.get_time();
+            timer.reset();
+
             for event in event_pump.poll_iter() {
                 match event {
                     Event::Quit {..} => {
@@ -245,8 +248,6 @@ impl<'t> Engine<'t> {
                     // None               => engine.state.go_to(game_state::MAIN_MENU_STATE),
                 }
             } else {
-                let dt = timer.get_time();
-                timer.reset();
                 if engine.state.gameplay_running
                 {
                     if !game.update_gameplay(&mut engine, dt)? {
