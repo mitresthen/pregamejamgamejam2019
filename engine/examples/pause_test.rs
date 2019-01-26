@@ -35,7 +35,7 @@ impl GameInterface for ExampleGame {
 
         let mut pause_sprite = StaticSprite::new(128, 64, tr.load("assets/paused.png")?)?;
 
-        let mut sprite = AnimatedSprite::new(32, tr.load("assets/characters.png")?)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(32, 32), tr.load("assets/characters.png")?)?;
         sprite.set_scale(4.0);
         sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
@@ -44,7 +44,7 @@ impl GameInterface for ExampleGame {
         let mut game_objects: Vec<MovableObject> = Vec::new();
 
         let roombatexture = tr.load("assets/characters.png")?;
-        let mut roombasprite = AnimatedSprite::new(32, roombatexture)?;
+        let mut roombasprite = AnimatedSprite::new(Extent::new(32, 32), roombatexture)?;
         roombasprite.set_scale(4.0);
         roombasprite.set_position(Vec2::from_coords(100.0, 100.0));
 
