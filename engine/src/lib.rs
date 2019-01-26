@@ -148,6 +148,9 @@ impl<'t> Engine<'t> {
     pub fn play_sound(&mut self, filename: &str) -> Result<(), Error> {
         Ok(self.audio_engine.play_sound_from_file(filename)?)
     }
+    pub fn loop_sound(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
+        Ok(self.audio_engine.loop_sound_from_file(filename, repeats)?)
+    }
 
     // TODO: Make it work with moving camera
     pub fn get_screen_bounds(&self) -> rect::Rect2D {
@@ -242,6 +245,10 @@ impl<'t> Engine<'t> {
                             {
                                 engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off);
                             }
+                            let window_size = engine.canvas.window().size();
+                            engine.width = window_size.0;
+                            engine.height = window_size.1;
+
                             timer.reset();
                         }
                         engine.on_key_down(key);
