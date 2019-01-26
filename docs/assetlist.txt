@@ -4,12 +4,20 @@ List of assets:
 - Floor tile 1x1
 - Stairs down 2x3
 - Stairs up 2x3
-- Horizontal wall 1x4
-- Vertical wall 1x4 (only top 1x1 used)
-- Horizontal wall with small window 1x4
-- Horizontal wall with large window 2x4
+- Horizontal wall 1x2
+- Vertical wall 1x2 (only top 1x1 used)
+- Horizontal wall with small window 1x2
+- Horizontal wall with large window 2x2
 - Bed 2x3
 - Nightstand 1x1
-- Horizontal wall with door 2x4
-
+- Horizontal wall with door 2x2
+	- Closed
+	- Open (no door)
+- Vertical wall with door 1x2 (vertical doors are one tile instead of two)
+	- Closed
+	- Open (no door)
+- All four wall corners 1x1
+- All four wall T-junctions 1x1
+- Stair railing vertical 1x1 (stairs on left side)
+- Stair railing upper end 1x1 (stairs on left side)
 
