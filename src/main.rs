@@ -256,12 +256,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .unwrap();
 
         {
-            /*
-            let roomba_target_vector = (player_position - roomba_position).normalize();
-            let roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
-            let physical_roomba = roomba_object.get_physical_object_mut().unwrap();
-            let roomba_velocity = physical_roomba.get_velocity_mut();*/
-            //*roomba_velocity = roomba_target_vector * 100.0;
             let mut roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
             if let Some(axis) = self.mid_level.get_collision_vector(roomba_bbox) {
                 let mut points = Vec::new();
