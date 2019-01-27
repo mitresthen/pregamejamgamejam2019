@@ -11,7 +11,8 @@ mod player;
 mod roomba;
 mod alex;
 mod audio_library;
-mod key_in_dust;
+mod key;
+mod dust;
 
 use audio_library::AudioLibrary;
 
@@ -112,11 +113,11 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
-        let key_in_dust = mid_level.take_tile_with_id(21);
-        for (_, position) in key_in_dust.iter() {
-            let mut key_in_dust = key_in_dust::KeyInDust::new(ctx)?;
-            key_in_dust.get_transform_mut().set_translation(*position);
-            scene.add_object(key_in_dust);
+        let key = mid_level.take_tile_with_id(21);
+        for (_, position) in key.iter() {
+            let mut key = key::Key::new(ctx)?;
+            key.get_transform_mut().set_translation(*position);
+            scene.add_object(key);
         }
 
         // Loading StaticSprites
