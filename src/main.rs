@@ -29,6 +29,7 @@ struct GoogleHomeopathicMedicine {
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
     dimmer: Dimmer,
+    intro_played: bool,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -122,11 +123,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
-        let dust = mid_level.take_tile_with_id(22);
+        let dust = mid_level.take_tile_with_id(21);
 
         for (_, position) in dust.iter() {
-
-
             let mut key = key::Key::new(ctx)?;
             key.get_transform_mut().set_translation(*position);
             scene.add_object(key);
@@ -146,15 +145,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(door);
         }
 
-        let fuse_box = mid_level.take_tile_with_id(16);
+        let fuse_box = mid_level.take_tile_with_id(29);
         for (_, position) in fuse_box.iter() {
             let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
             fuse_box.get_transform_mut().set_translation(*position);
             scene.add_object(fuse_box);
         }
-
-
-
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
@@ -244,6 +240,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
                 dimmer: dimmer,
+                intro_played: false,
             };
 
         Ok(game)
@@ -264,6 +261,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         self.scene.update(ctx, Some(&self.mid_level), dt);
         self.dimmer.update(dt);
 
+        if !self.intro_played {
+            self.intro_played = true;
+            ctx.replace_sound(AudioLibrary::Intro, 0, 0);
+        }
         if ctx.is_done(0) {
             ctx.replace_sound(AudioLibrary::Music, 0, -1);
         }
