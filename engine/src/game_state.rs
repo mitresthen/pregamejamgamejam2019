@@ -64,3 +64,5 @@ pub const MAIN_MENU_STATE  : GameState = GameState { gameplay_running: false, pr
 pub const GAMEPLAY_STATE   : GameState = GameState { gameplay_running: true , presents_menu: false, gameplay_displayed: true , exit: false };
 pub const PAUSE_MENU_STATE : GameState = GameState { gameplay_running: false, presents_menu: true , gameplay_displayed: true , exit: false };
 pub const EXIT_STATE       : GameState = GameState { gameplay_running: false, presents_menu: false, gameplay_displayed: false, exit: true  };
+// TODO: Think of a better way of having middle state for resetting the game than fake one with wrong params
+pub const RESET_GAME       : GameState = GameState { gameplay_running: false, presents_menu: false, gameplay_displayed: true , exit: false };

@@ -182,7 +182,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 MenuChoice
                 {
                     name: "Return to Main Menu".to_string(),
-                    target_game_state: MAIN_MENU_STATE,
+                    target_game_state: RESET_GAME,
                     sprite: return_to_menu_sprite,
                 },
             ].to_vec();
@@ -216,7 +216,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         Ok(game)
     }
-
 
     fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         let player_position = self.scene.get(self.player_id)

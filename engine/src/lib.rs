@@ -265,7 +265,7 @@ impl<'t> Engine<'t> {
 
         let mut canvas = window.into_canvas()
             .accelerated().build().map_err(|e| e.to_string())?;
-        
+
         let mut event_pump = sdl_context.event_pump()?;
 
         let texture_creator = canvas.texture_creator();
@@ -397,6 +397,13 @@ impl<'t> Engine<'t> {
                         }
                     },
                     // None               => engine.state.go_to(game_state::MAIN_MENU_STATE, engine.last_game_state_change.get_time()),
+                }
+            } else if engine.state.is_on(game_state::RESET_GAME) {
+                engine.camera = transform::Transform::new();
+                game = <T as GameInterface>::initialize(&mut engine)?;
+                if engine.state.go_to(game_state::MAIN_MENU_STATE, 60.0)
+                {
+                    engine.last_game_state_change.reset();
                 }
             } else {
                 if engine.state.gameplay_running
