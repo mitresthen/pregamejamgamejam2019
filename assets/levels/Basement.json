@@ -2,20 +2,17 @@
     "width" : 30,
     "height" : 20,
     "ground" : {
-        "file" : "GroundFloor-Ground.dat",
+        "file" : "Basement-Ground.dat",
         "tiles" : [
-            "tile_Yellow_2.png",
             "tile_Blue_1.png",
+            "tile_Yellow_2.png",
             "tile_Blue_Cracked1.png",
             "tile_Blue_Cracked2.png",
-            "Floormat_on_Green.png",
-            "Floormat_on_Blue.png",
-            "Floormat_on_Yellow.png",
-            "stairsTop.png"
+            "item_Floormat.png"
         ]
     },
     "objects" : {
-        "file" : "GroundFloor-Objects.dat",
+        "file" : "Basement-Objects.dat",
         "tiles" : [
             "blank.png",
             "wall_with_dark_top.png",
