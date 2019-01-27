@@ -7,13 +7,13 @@ use Engine;
 
 #[derive(Debug, Clone)]
 pub enum EventType {
-    Ack,
     Interact,
     Collide { force: Vec2 },
     Probe { hint: String },
     ProbeReply { p: Vec2 },
     RayCast { origin: Vec2, target: Vec2 },
-    RayCastReply { success: bool, target: Vec2 }
+    RayCastReply { success: bool, target: Vec2 },
+    Attack { damage: f32 }
 }
 
 #[derive(Debug)]

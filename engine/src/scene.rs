@@ -134,7 +134,52 @@ impl Scene {
         }
     }
 
-    pub fn update(&mut self, engine: &mut Engine, dt: f32) {
+    pub fn update(&mut self, engine: &mut Engine, collider: Option<&LevelCollider>, dt: f32) {
+        {
+            let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2)> = Vec::new();
+
+            {
+                let mut it = self.objects.iter();
+
+                while let Some((id_a, object_a)) = it.next() {
+                    let mut jt = it.clone();
+
+                    while let Some((id_b, object_b)) = jt.next() {
+
+                        if let Some(physical_object_a) = object_a.get_physical_object() {
+                            if let Some(physical_object_b) = object_b.get_physical_object() {
+                                if let Some(bounding_box_a) = physical_object_a.get_bounding_box() {
+                                    if let Some(bounding_box_b) = physical_object_b.get_bounding_box() {
+                                        if let Some((axis, _)) = bounding_box_a.sat_overlap(bounding_box_b) {
+                                            collision_pairs.push((*id_a, *id_b, axis));
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            for (ob_a, ob_b, axis) in collision_pairs.drain(..) {
+                {
+                    let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
+                    let velocity_a = physical_object_a.get_velocity_mut();
+                    *velocity_a = axis * -220.0;
+                }
+                {
+                    let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
+                    let velocity_b = physical_object_b.get_velocity_mut();
+                    *velocity_b = axis * 220.0;
+                }
+            }
+        }
+
+        if let Some(level_collider) = collider {
+            self.do_level_collision(level_collider);
+        }
+
+
         for (id, object) in self.objects.iter_mut() {
             object.update(engine, &mut self.event_queue.bind_to_sender(*id), dt);
         }

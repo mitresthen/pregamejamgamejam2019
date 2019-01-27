@@ -4,6 +4,7 @@ use transform::Transform;
 use vector::Vec2;
 use bounding_box::BoundingBox;
 use scene::{Scene, LevelCollider};
+use game_object::GameObject;
 use rect::Rect2D;
 use std::fs::File;
 use std::io::Read;
@@ -118,9 +119,15 @@ impl Grid2 {
         for y in 0..self.height {
             if let Some(scene) = interleaved_scene {
                 let row_rect = self.get_row_rect(y);
-                let objects = scene.get_objects_in_rect(row_rect);
+                let mut objects : Vec<(&Box<GameObject>, f32)> = scene.get_objects_in_rect(row_rect).into_iter().map(
+                    |o| {
+                        let y = o.get_physical_object().unwrap().get_transform().get_translation().y;
+                        (o, y)
+                    }).collect();
 
-                for object in objects.iter() {
+                objects.sort_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+
+                for (object, _y) in objects.iter() {
                     object.render(ctx);
                 }
             }

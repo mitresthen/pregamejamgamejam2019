@@ -209,8 +209,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_position(player_position);
         &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
 
-        self.scene.do_level_collision(&self.mid_level);
-        self.scene.update(ctx, dt);
+        self.scene.update(ctx, Some(&self.mid_level), dt);
 
         Ok(true)
     }
