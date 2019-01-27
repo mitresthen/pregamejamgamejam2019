@@ -117,6 +117,7 @@ pub trait GameInterface : Sized {
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
     fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
 
     fn on_exit(&mut self) { }
@@ -171,7 +172,7 @@ impl<'t> Engine<'t> {
         self.keys_down.remove(&keycode);
     }
 
-    fn screen_to_world(&self, x: i32, y: i32) -> vector::Vec2 {
+    pub fn screen_to_world(&self, x: i32, y: i32) -> vector::Vec2 {
         let mut screen_transform = transform::Transform::new();
         screen_transform.translate(self.get_screen_bounds().max * 0.5);
 
@@ -353,6 +354,10 @@ impl<'t> Engine<'t> {
                         ..
                     } => {
                         engine.on_mouse_button_down(click_x, click_y);
+
+                        if !game.on_mouse_button_down(&mut engine, click_x, click_y)? {
+                            break 'main_loop;
+                        }
                     },
                     Event::MouseButtonUp {
                         x: click_x,

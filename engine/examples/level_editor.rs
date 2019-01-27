@@ -15,22 +15,74 @@ use engine::prelude::*;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
+struct LayerInfo {
+    file: String,
+    tiles: Vec<String>
+}
+
+#[derive(Serialize, Deserialize)]
 struct LevelInfo {
     width: i32,
     height: i32,
-    ground_file: String,
-    objects_file: String,
-    tiles: Vec<String>
+    ground: LayerInfo,
+    objects: LayerInfo
 }
+
 
 
 pub struct LevelEditor {
     ground: Grid2,
     ground_filename: String,
+    objects: Grid2,
+    objects_filename: String,
     controller: AxisController,
     zoom: SliderController,
-    camera_velocity: Vec2
+    camera_velocity: Vec2,
+    edit_layer: u32,
+    painting_tile: Option<u32>
 }
+
+impl LevelEditor {
+    pub fn get_edit_layer(&mut self) -> &mut Grid2 {
+        if self.edit_layer == 0 {
+            &mut self.ground
+        } else {
+            &mut self.objects
+        }
+    }
+}
+
+fn load_layer(
+    ctx: &mut Engine,
+    levels_folder: &PathBuf,
+    image_folder: &PathBuf,
+    layer_info: &LayerInfo
+) -> (Grid2, String) {
+    let mut filename = levels_folder.clone();
+    filename.push(&layer_info.file);
+
+
+    let mut grid =
+        if let Ok(loaded_ground) = Grid2::load(filename.to_str().unwrap()) {
+            loaded_ground
+        } else {
+            println!("Unable to open {}, creating new level", filename.to_str().unwrap());
+            Grid2::new(32, 18, 120)
+        };
+
+    for tile in layer_info.tiles.iter() {
+        let mut tile_filename = image_folder.clone();
+        tile_filename.push(tile);
+        println!("Loading tile texture: {:?}", tile_filename);
+
+        let texture = ctx.get_texture_registry().load(&tile_filename.to_str().unwrap()).unwrap();
+
+        grid.add_tile_type(texture);
+    }
+
+    (grid, filename.to_str().unwrap().to_string())
+}
+
 
 impl GameInterface for LevelEditor {
     fn get_title() -> &'static str { "Level editor" }
@@ -54,33 +106,15 @@ impl GameInterface for LevelEditor {
 
         let level_info : LevelInfo = serde_json::from_str(&data).unwrap();
 
-        let mut ground_filename = level_folder.clone();
-        ground_filename.push(&level_info.ground_file);
-
-        let mut ground =
-            if let Ok(loaded_ground) = Grid2::load(ground_filename.to_str().unwrap()) {
-                loaded_ground
-            } else {
-                println!("Unable to open {}, creating new level", ground_filename.to_str().unwrap());
-                Grid2::new(32, 18, 120)
-            };
-
-
-        for tile in level_info.tiles {
-            let mut tile_filename = image_folder.clone();
-            tile_filename.push(tile);
-            println!("Loading tile texture: {:?}", tile_filename);
-
-            let texture = ctx.get_texture_registry().load(&tile_filename.to_str().unwrap()).unwrap();
-
-            ground.add_tile_type(texture);
-        }
-
+        let (ground, ground_filename) =  load_layer(ctx, &level_folder, &image_folder, &level_info.ground);
+        let (objects, objects_filename) =  load_layer(ctx, &level_folder, &image_folder, &level_info.objects);
 
         let level_editor =
             LevelEditor {
                 ground: ground,
-                ground_filename: ground_filename.to_str().unwrap().to_string(),
+                ground_filename: ground_filename,
+                objects: objects,
+                objects_filename: objects_filename,
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -88,11 +122,13 @@ impl GameInterface for LevelEditor {
                     Keycode::Right
                 ),
                 zoom: SliderController::new(
-                    Keycode::Plus,
                     Keycode::Minus,
-                    (0.5, 2.0)
+                    Keycode::Plus,
+                    (1.0, 4.0)
                 ),
                 camera_velocity: Vec2::new(),
+                edit_layer: 1,
+                painting_tile: None
             };
 
         Ok(level_editor)
@@ -114,11 +150,49 @@ impl GameInterface for LevelEditor {
     {
         if let Some(drag_state) = ctx.get_mouse_drag_state() {
             if (drag_state.start - drag_state.current).len() > 10.0 {
+                let maybe_painting_tile = self.painting_tile;
 
+                let edit_layer : &mut Grid2 = self.get_edit_layer();
+
+                if let Some(painting_tile) = maybe_painting_tile {
+                    edit_layer.set_tile_at(drag_state.current, painting_tile);
+                }
             }
         }
 
         ctx.draw(&self.ground);
+
+        if self.edit_layer == 1 {
+            ctx.draw(&self.objects);
+        }
+
+        Ok(true)
+    }
+
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool)
+       -> Result<bool, Error>
+    {
+        if keycode == Keycode::L {
+            self.edit_layer = (self.edit_layer + 1) % 2;
+
+            println!("Current edit layer: {}", if self.edit_layer == 0 { "ground" } else { "objects" });
+        }
+
+        Ok(true)
+    }
+
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32)
+        -> Result<bool, Error>
+    {
+        let tile_index =
+            {
+                let edit_layer : &mut Grid2 = self.get_edit_layer();
+                let p = ctx.screen_to_world(x, y);
+                edit_layer.get_tile_at(p)
+            };
+
+
+        self.painting_tile = tile_index;
 
         Ok(true)
     }
@@ -126,24 +200,29 @@ impl GameInterface for LevelEditor {
     fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32)
         -> Result<bool, Error>
     {
+        self.painting_tile = None;
+
+        let edit_layer : &mut Grid2 = self.get_edit_layer();
+
         if let Some(drag_state) = ctx.get_mouse_drag_state() {
             if (drag_state.start - drag_state.current).len() > 10.0 {
             } else {
-                let maybe_tile = self.ground.get_tile_at(drag_state.current);
+                let maybe_tile = edit_layer.get_tile_at(drag_state.current);
 
                 if let Some(mut tile_id) = maybe_tile {
-                    tile_id = (tile_id + 1) % self.ground.get_tile_type_count();
-                    self.ground.set_tile_at(drag_state.current, tile_id);
+                    tile_id = (tile_id + 1) % edit_layer.get_tile_type_count();
+                    edit_layer.set_tile_at(drag_state.current, tile_id);
                 }
             }
-
         }
         Ok(true)
     }
 
     fn on_exit(&mut self) {
         println!("Saving ground to: {}", self.ground_filename);
-        self.ground.save_to_file(&self.ground_filename).unwrap()
+        self.ground.save_to_file(&self.ground_filename).unwrap();
+        println!("Saving objects to: {}", self.objects_filename);
+        self.objects.save_to_file(&self.objects_filename).unwrap();
     }
 }
 
