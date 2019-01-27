@@ -1,11 +1,14 @@
 use serde_json;
 
+use std::collections::HashMap;
+
 use Engine;
 use grid2::Grid2;
 
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+//use serde_json::Map;
 
 
 #[derive(Serialize, Deserialize)]
@@ -19,7 +22,8 @@ pub struct LevelInfo {
     width: i32,
     height: i32,
     ground: LayerInfo,
-    objects: LayerInfo
+    objects: LayerInfo,
+    special_blocks: HashMap<String, u32>
 }
 
 
@@ -28,6 +32,7 @@ pub struct Level {
     ground_filename: String,
     pub objects: Grid2,
     objects_filename: String,
+    pub special_blocks: HashMap<String, u32>
 }
 
 fn load_layer(
@@ -86,7 +91,8 @@ impl Level {
             ground,
             ground_filename,
             objects,
-            objects_filename
+            objects_filename,
+            special_blocks: level_info.special_blocks
         }
     }
 

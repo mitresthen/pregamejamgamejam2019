@@ -61,7 +61,7 @@ impl GoogleHomeopathicMedicine {
         let player_id = scene.add_object(player);
         scene.add_object(alex);
 
-        let roombas_in_level = mid_level.take_tile_with_id(19);
+        let roombas_in_level = mid_level.take_tile_with_id(*level.special_blocks.get("roomba").unwrap());
 
         for (_, position) in roombas_in_level.iter() {
             let mut roomba = roomba::Roomba::new(ctx)?;
@@ -69,7 +69,7 @@ impl GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
-        let dust = mid_level.take_tile_with_id(22);
+        let dust = mid_level.take_tile_with_id(*level.special_blocks.get("dust").unwrap());
 
         for (_, position) in dust.iter() {
 
@@ -83,7 +83,7 @@ impl GoogleHomeopathicMedicine {
             scene.add_object(dust);
         }
 
-        for (index, (texture, position)) in mid_level.take_tile_with_id(17).into_iter().enumerate() {
+        for (index, (texture, position)) in mid_level.take_tile_with_id(*level.special_blocks.get("door").unwrap()).into_iter().enumerate() {
             let mut door = door::Door::new(ctx, texture);
 
             if index == 2 {
@@ -93,7 +93,7 @@ impl GoogleHomeopathicMedicine {
             scene.add_object(door);
         }
 
-        let fuse_box = mid_level.take_tile_with_id(16);
+        let fuse_box = mid_level.take_tile_with_id(*level.special_blocks.get("fusebox").unwrap());
         for (_, position) in fuse_box.iter() {
             let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
             fuse_box.get_transform_mut().set_translation(*position);

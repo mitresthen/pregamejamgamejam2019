@@ -73,7 +73,9 @@ impl GameObject for FuseBox {
             self.active = true;
         }
 
-        self.sprite.set_transform(&self.transform);
+        let mut sprite_transform = self.transform.clone();
+        sprite_transform.translate(Vec2::from_coords(0.0, -120.0));
+        self.sprite.set_transform(&sprite_transform);
         self.sprite.step_time(dt * self.velocity.len() * 0.05);
 
         true

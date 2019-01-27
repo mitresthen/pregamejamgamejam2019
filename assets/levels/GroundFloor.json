@@ -53,6 +53,12 @@
             "wallTile_Blue_fuseBox_OFF.png",
             "wallTile_Blue_fuseBox_ON.png"
         ]
+    },
+    "special_blocks" : {
+        "roomba" : 19,
+        "dust" : 21,
+        "door" : 17,
+        "fusebox": 29
     }
 }
 

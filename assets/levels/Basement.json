@@ -51,6 +51,12 @@
             "blocker.png",
             "cake.png"
         ]
+    },
+    "special_blocks" : {
+        "roomba" : 20,
+        "dust" : 22,
+        "door" : 18,
+        "fusebox": 14
     }
 }
 
