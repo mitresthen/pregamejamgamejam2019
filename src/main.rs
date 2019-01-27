@@ -13,6 +13,7 @@ mod alex;
 mod audio_library;
 mod key;
 mod dust;
+mod fuse_box;
 
 use audio_library::AudioLibrary;
 
@@ -123,15 +124,26 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let dust = mid_level.take_tile_with_id(22);
 
         for (_, position) in dust.iter() {
-            
+
 
             let mut key = key::Key::new(ctx)?;
             key.get_transform_mut().set_translation(*position);
             scene.add_object(key);
-            
+
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
             scene.add_object(dust);
+        }
+
+        let fuse_box = mid_level.take_tile_with_id(16);
+
+        for (_, position) in fuse_box.iter() {
+            
+
+            let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
+            fuse_box.get_transform_mut().set_translation(*position);
+            scene.add_object(fuse_box);
+            
         }
 
 
@@ -216,8 +228,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 scene: scene,
                 player_id: player_id,
                 zoom_controller: SliderController::new(
-                    Keycode::Plus,
                     Keycode::Minus,
+                    Keycode::Plus,
                     (0.5, 2.0)
                 ),
                 camera_velocity: Vec2::new(),
