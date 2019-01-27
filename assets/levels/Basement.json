@@ -9,7 +9,8 @@
             "tile_Blue_Cracked1.png",
             "tile_Blue_Cracked2.png",
             "item_Floormat.png",
-            "stairsTop.png"
+            "stairsTop.png",
+            "single_dark_tile.png"
         ]
     },
     "objects" : {
@@ -43,7 +44,10 @@
             "items_kitchentop_oven.png",
             "item_cardboardbox_1.png",
             "item_cardboardbox_2.png",
-            "item_cardboardbox_3.png"
+            "item_cardboardbox_3.png",
+            "wallTile_projector.png",
+            "item_projector.png",
+            "item_wachingmachine.png"
         ]
     }
 }
