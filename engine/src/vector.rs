@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::{Add, Sub, Mul};
 
 use rand::Rng;
@@ -7,6 +8,12 @@ use rand;
 pub struct Vec2 {
     pub x: f32,
     pub y: f32
+}
+
+impl fmt::Display for Vec2 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "Vec2(x: {}, y:{})", self.x, self.y)
+    }
 }
 
 impl Vec2 {
@@ -23,6 +30,10 @@ impl Vec2 {
         created_vec.x = x;
         created_vec.y = y;
         created_vec.normalize()
+    }
+
+    pub fn valid(&self) -> bool {
+        self.x != std::f32::NAN && self.y != std::f32::NAN
     }
 
     pub fn len(&self) -> f32 {

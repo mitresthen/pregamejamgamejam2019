@@ -1,8 +1,8 @@
 {
-    "width" : 26,
-    "height" : 18,
+    "width" : 30,
+    "height" : 20,
     "ground" : {
-        "file" : "tilemap-Ground.dat",
+        "file" : "GroundFloor-Ground.dat",
         "tiles" : [
             "tile_Yellow_2.png",
             "tile_Blue_1.png",
@@ -12,7 +12,7 @@
         ]
     },
     "objects" : {
-        "file" : "tilemap-Objects.dat",
+        "file" : "GroundFloor-Objects.dat",
         "tiles" : [
             "blank.png",
             "wall_with_dark_top.png",
@@ -35,8 +35,7 @@
             "door_vertical_topDown_1.png",
             "Electronics_Roomba.png",
             "wallTile_withWindow.png",
-            "item_Key.png",
-            "item_Dust.png"
+            "key_in_dust.png"
         ]
     }
 }

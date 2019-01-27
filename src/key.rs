@@ -5,22 +5,22 @@ use rand::Rng;
 use rand;
 
 
-pub struct KeyInDust {
+pub struct Key {
     transform: Transform,
     velocity: Vec2
 }
 
-impl KeyInDust {
-    pub fn new(ctx: &mut Engine) -> Result<KeyInDust, Error> {
+impl Key {
+    pub fn new(ctx: &mut Engine) -> Result<Key, Error> {
 
-        let mut key_in_dust =
-            KeyInDust {
+        let mut key =
+            Key {
                 transform: Transform::new(),
                 velocity: Vec2::new()
             };
-        key_in_dust.transform.set_scale(1.0);
+        key.transform.set_scale(1.0);
 
-        Ok(key_in_dust)
+        Ok(key)
     }
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
@@ -28,7 +28,7 @@ impl KeyInDust {
     }
 }
 
-impl GameObject for KeyInDust {
+impl GameObject for Key {
 
     fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         true
@@ -58,7 +58,7 @@ impl GameObject for KeyInDust {
     }
 }
 
-impl PhysicalObject for KeyInDust {
+impl PhysicalObject for Key {
     fn get_transform(&self) -> &Transform {
         &self.transform
     }

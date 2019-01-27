@@ -95,12 +95,20 @@ impl Scene {
 
             println!("Raycast {:?} -> {:?}", origin, target);
 
-            let success : bool = collider.get_collision_vector_points(points).is_none();
+            if target.valid() && origin.valid() {
+                let success : bool = collider.get_collision_vector_points(points).is_none();
 
-            self.event_queue.submit_event(
-                EventType::RayCastReply { success, target },
-                EventReceiver::Addressed { object_id }
-            );
+                self.event_queue.submit_event(
+                    EventType::RayCastReply { success, target },
+                    EventReceiver::Addressed { object_id }
+                );
+            } else {
+                let success = false;
+                self.event_queue.submit_event(
+                    EventType::RayCastReply { success, target },
+                    EventReceiver::Addressed { object_id }
+                );
+            }
         }
 
         for (_id, object) in self.objects.iter_mut() {
@@ -129,6 +137,9 @@ impl Scene {
                 } else {
                     println!("Got RayCast request without sender id");
                 }
+            },
+            EventType::DeleteMe => {
+                
             },
             _ => { }
         }
@@ -224,6 +235,11 @@ impl Scene {
         self.current_id += 1;
         self.objects.insert(new_id, Box::new(object));
         new_id
+    }
+
+    pub fn remove_object(&mut self, objectId: SceneObjectId){
+        println!("Attempting to delet object");
+        self.objects.remove(&objectId);
     }
 
     pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {
