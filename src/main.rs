@@ -116,11 +116,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
         }
 
         let dust = mid_level.take_tile_with_id(22);
+        
+        let key = mid_level.take_tile_with_id(21);
+        for (_, position) in key.iter() {
+            let mut key = key::Key::new(ctx)?;
+            key.get_transform_mut().set_translation(*position);
+        }
+
         for (_, position) in dust.iter() {
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
             scene.add_object(dust);
         }
+
+
+
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();

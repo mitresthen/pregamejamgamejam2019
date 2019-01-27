@@ -27,7 +27,8 @@ pub enum EventType {
     Attack { damage: f32 },
     Loot { item: Item },
     Suck,
-    DeleteMe
+    DeleteMe,
+    FreeFromDust,
 }
 
 #[derive(Debug)]
