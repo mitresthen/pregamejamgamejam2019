@@ -14,6 +14,7 @@ mod audio_library;
 mod key;
 mod dust;
 mod door;
+mod fuse_box;
 
 use audio_library::AudioLibrary;
 
@@ -92,6 +93,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         sounds.insert(AudioLibrary::DoorClose2, "assets/sounds/door_close2.wav");
         sounds.insert(AudioLibrary::DoorClose1, "assets/sounds/door_close1.wav");
         sounds.insert(AudioLibrary::BigMetallicPlong, "assets/sounds/big_metallic_plong.wav");
+        sounds.insert(AudioLibrary::Victory, "assets/sounds/all_your_home.wav");
+        sounds.insert(AudioLibrary::Defeat, "assets/sounds/defeat.wav");
+        sounds.insert(AudioLibrary::Nope, "assets/sounds/nope.wav");
 
         ctx.load_sounds(sounds);
 
@@ -133,9 +137,16 @@ impl GameInterface for GoogleHomeopathicMedicine {
         }
 
         for (texture, position) in mid_level.take_tile_with_id(17) {
-            let mut door = door::Door::new(texture);
+            let mut door = door::Door::new(ctx, texture);
             door.get_transform_mut().set_translation(position);
             scene.add_object(door);
+        }
+
+        let fuse_box = mid_level.take_tile_with_id(16);
+        for (_, position) in fuse_box.iter() {
+            let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
+            fuse_box.get_transform_mut().set_translation(*position);
+            scene.add_object(fuse_box);
         }
 
 

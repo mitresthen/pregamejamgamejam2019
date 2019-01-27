@@ -21,7 +21,12 @@ pub struct Door {
 }
 
 impl Door {
-    pub fn new(texture: Texture) -> Door {
+    pub fn new(ctx: &mut Engine, texture: Texture) -> Door {
+        let lock_texture =
+            {
+                ctx.get_texture_registry().load("assets/image/item_keyhole.pnh").unwrap();
+            };
+
         Door {
             sprite: AnimatedSprite::new(Extent::new(120, 360), texture).unwrap(),
             transform: Transform::new(),
