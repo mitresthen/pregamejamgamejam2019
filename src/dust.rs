@@ -116,5 +116,7 @@ impl PhysicalObject for Dust {
 
         Some(bounding_box)
     }
+
+    fn should_block(&self) -> bool { false }
 }
 

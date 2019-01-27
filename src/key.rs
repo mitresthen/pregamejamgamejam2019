@@ -134,5 +134,7 @@ impl PhysicalObject for Key {
 
         Some(bounding_box)
     }
+
+    fn should_block(&self) -> bool { false }
 }
 
