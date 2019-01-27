@@ -84,21 +84,24 @@ impl Grid {
     pub fn get_collision_vector_points(&self, points : Vec<Vec2>)
         -> Option<Vec2>
     {
-        let upper_left = points[0];
-        let lower_right = points[1];
+        let start_x = ((points[0].x / self.tile_size as f32).floor() as i32).max(0);
+        let start_y = ((points[0].y / self.tile_size as f32).floor() as i32).max(0);
 
-        let start_x = ((upper_left.x / self.tile_size as f32).floor() as i32).max(0);
-        let start_y = ((upper_left.y / self.tile_size as f32).floor() as i32).max(0);
-
-        let end_x = ((lower_right.x / self.tile_size as f32).ceil() as i32).min(self.image.width());
-        let end_y = ((lower_right.y / self.tile_size as f32).ceil() as i32).min(self.image.height());
+        let end_x = ((points[1].x / self.tile_size as f32).ceil() as i32).min(self.image.width());
+        let end_y = ((points[1].y / self.tile_size as f32).ceil() as i32).min(self.image.height());
 
         let mut best_axis = None;
 
         let black = RGBA { r: 0, g: 0, b: 0, a: 255 };
 
-        for y in start_y..end_y {
-            for x in start_x..end_x {
+        let min_y = start_y.min(end_y);
+        let max_y = start_y.max(end_y);
+
+        let min_x = start_x.min(end_x);
+        let max_x = start_x.max(end_x);
+
+        for y in min_y..max_y {
+            for x in min_x..max_x {
                 let index = (y * self.image.width()) + x;
 
                 let tile_id = self.image.data().iter().nth(index as usize).unwrap();

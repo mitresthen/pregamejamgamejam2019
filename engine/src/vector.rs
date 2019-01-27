@@ -3,7 +3,7 @@ use std::ops::{Add, Sub, Mul};
 use rand::Rng;
 use rand;
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32

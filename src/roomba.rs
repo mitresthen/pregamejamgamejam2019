@@ -30,7 +30,7 @@ impl Roomba {
                 velocity: Vec2::new(),
                 mode: MovementMode::Random
             };
-        let vel = (Vec2::random()*50.0);
+        let vel = (Vec2::random()*250.0);
         println!("Setting roomba velocity {:#?}", vel);
         roomba.velocity = vel;
 
@@ -82,7 +82,7 @@ impl GameObject for Roomba {
                 let mut rng = rand::thread_rng();
                 let angle: f32 = rng.gen();
                 let angle = angle % std::f32::consts::PI;
-                self.velocity = force.rotated(angle)*50.0;
+                self.velocity = force.rotated(angle)*250.0;
             },
             _ => {}
         }
