@@ -24,7 +24,7 @@ impl Dust {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                delete_me: false
+                delete_me: false,
             };
         dust.transform.set_scale(1.0);
 
@@ -40,10 +40,20 @@ impl GameObject for Dust {
 
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
+            
             event_mailbox.submit_event(
-                    EventType::DeleteMe,
-                    EventReceiver::Scene
-                )
+                EventType::FreeFromDust,
+                EventReceiver::Nearest {  
+                    origin: self.transform.get_translation(),
+                    max_distance: Some(120.0)
+                }
+            );
+
+            event_mailbox.submit_event(
+                EventType::DeleteMe,
+                EventReceiver::Scene
+            );
+
         }
 
         self.sprite.set_transform(&self.transform);
