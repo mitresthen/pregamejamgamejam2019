@@ -1,5 +1,8 @@
 use engine::prelude::*;
 
+use std::collections::HashSet;
+use engine::game_object::Item;
+
 pub struct Player {
     controller: AxisController,
     sprite: AggregatedAnimatedSprite,
@@ -7,7 +10,8 @@ pub struct Player {
     velocity: Vec2,
     direction: i32,
     collision_size: f32,
-    requesting_position: Vec<SceneObjectId>
+    requesting_position: Vec<SceneObjectId>,
+    items: HashSet<Item>
 }
 
 impl Player {
@@ -39,7 +43,8 @@ impl Player {
                 velocity: Vec2::new(),
                 direction: 1,
                 collision_size: 80.0,
-                requesting_position: Vec::new()
+                requesting_position: Vec::new(),
+                items: HashSet::new()
             };
 
         player.transform.set_scale(1.0);
@@ -142,6 +147,10 @@ impl GameObject for Player {
                     self.requesting_position.push(s);
                 }
                 true
+            },
+            EventType::Loot { item } => {
+                self.items.insert(item);
+                return true;
             },
             _ => { false }
         }

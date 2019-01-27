@@ -5,6 +5,17 @@ use vector::Vec2;
 use scene::SceneObjectId;
 use Engine;
 
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub enum Items {
+    Key,
+    Gum,
+}
+
+#[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
+pub struct Item {
+    item: Items
+}
+
 #[derive(Debug, Clone)]
 pub enum EventType {
     Interact,
@@ -13,7 +24,8 @@ pub enum EventType {
     ProbeReply { p: Vec2 },
     RayCast { origin: Vec2, target: Vec2 },
     RayCastReply { success: bool, target: Vec2 },
-    Attack { damage: f32 }
+    Attack { damage: f32 },
+    Loot { item: Item }
 }
 
 #[derive(Debug)]

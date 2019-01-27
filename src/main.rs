@@ -5,6 +5,7 @@ extern crate rand;
 use engine::prelude::*;
 use sdl2::render::BlendMode;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 mod player;
 mod roomba;
@@ -228,7 +229,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         transform.set_translation(Vec2::from_coords(0.0, 0.0));
 
         if std::env::var("DO_NOT_DRAW_LIGHTMAP").is_err() {
-            ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
+            //ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
         }
 
         // Scene is now rendered as a part of the interleaved grid
