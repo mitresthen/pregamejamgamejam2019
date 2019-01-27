@@ -8,6 +8,7 @@ use std::collections::HashMap;
 
 mod player;
 mod roomba;
+mod alex;
 
 #[derive(Hash, PartialEq, Eq)]
 enum AudioLibrary {
@@ -38,6 +39,7 @@ struct GoogleHomeopathicMedicine {
     lightmap: Texture,
     player_id: SceneObjectId,
     roomba_id: SceneObjectId,
+    alex_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
@@ -150,10 +152,14 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut roomba = roomba::Roomba::new(ctx)?;
         roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
 
+        let mut alex = alex::Alex::new(ctx)?;
+        alex.get_transform_mut().set_translation(Vec2::from_coords(1135.0, 180.0));
+
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
         let roomba_id = scene.add_object(roomba);
+        let alex_id = scene.add_object(alex);
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
@@ -208,6 +214,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 scene: scene,
                 player_id: player_id,
                 roomba_id: roomba_id,
+                alex_id: alex_id,
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,
@@ -284,6 +291,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let physical_object = player_object.get_physical_object_mut().unwrap();
             let player_velocity = physical_object.get_velocity_mut();
             *player_velocity = axis * 100.0;
+        }
+
+        let alex_bbox = self.scene.get(self.alex_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_bounding_box()
+            .unwrap();
+
+        if let Some(axis) = player_bounding_box.sat_overlap(alex_bbox) {
+            let alex_object = self.scene.get_mut(self.alex_id).unwrap();
+
+            alex_object.on_event(GameEvent{
+                event_type: EventType::Interact
+            });
         }
 
         self.scene.update(ctx, dt);
