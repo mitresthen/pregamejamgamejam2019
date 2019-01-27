@@ -6,6 +6,7 @@ use rand;
 
 
 pub struct Dust {
+    sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     delete_me: bool
@@ -13,9 +14,14 @@ pub struct Dust {
 
 impl Dust {
     pub fn new(ctx: &mut Engine) -> Result<Dust, Error> {
+        let tr = ctx.get_texture_registry();
+        let texture = tr.load("assets/image/item_Dust.png")?;
+
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut dust =
             Dust {
+                sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 delete_me: false
@@ -85,10 +91,12 @@ impl PhysicalObject for Dust {
     }
 
     fn get_bounding_box(&self) -> Option<BoundingBox> {
+        let size = self.sprite.calculate_size() * 0.5;
+
         let bounding_box =
             BoundingBox::new(
-                120.0,
-                120.0,
+                size.x,
+                size.y,
                 self.transform.get_translation()
             );
 
