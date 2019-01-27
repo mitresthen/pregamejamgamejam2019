@@ -114,7 +114,7 @@ impl GameObject for Roomba {
             let origin = self.transform.get_translation();
             event_mailbox.submit_event(
                 EventType::Suck,
-                EventReceiver::Nearest { origin, max_distance: Some(120.0) }
+                EventReceiver::Nearby { origin, max_distance: Some(120.0) }
             );
             self.suck = false;
         }

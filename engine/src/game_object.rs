@@ -13,7 +13,7 @@ pub enum Items {
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Item {
-    item: Items
+    pub item: Items
 }
 
 #[derive(Debug, Clone)]
@@ -40,7 +40,9 @@ pub enum EventReceiver {
     // Send to specific object
     Addressed { object_id: SceneObjectId },
     // Send to the scene for internal handling
-    Scene
+    Scene,
+    // Only the nearby objects to the origin receives the event
+    Nearby { origin: Vec2, max_distance: Option<f32> },
 }
 
 #[derive(Debug)]
