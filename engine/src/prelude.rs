@@ -16,6 +16,7 @@ pub use game_state::*;
 pub use texture_registry::Texture;
 
 pub use grid::Grid;
+pub use grid2::Grid2;
 
 pub use axis_controller::AxisController;
 pub use slider_controller::SliderController;

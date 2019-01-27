@@ -36,5 +36,5 @@ pub trait GameObject: 'static {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> { None }
 
-    fn on_event(&mut self, event: GameEvent);
+    fn on_event(&mut self, event: GameEvent) { }
 }

@@ -16,7 +16,7 @@ impl SliderController {
             increase: increase,
             decrease: decrease,
             limits: limits,
-            value: limits.0
+            value: (limits.0 + limits.1) * 0.5
         }
     }
 

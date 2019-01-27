@@ -15,7 +15,7 @@ impl Player {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/characters.png")?;
 
-        let mut sprite = AnimatedSprite::new(32, texture)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(32, 32), texture)?;
         sprite.set_scale(4.0);
 
         let player =

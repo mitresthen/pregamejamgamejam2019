@@ -19,6 +19,7 @@ pub mod offset;
 pub mod extent;
 pub mod transform;
 pub mod grid;
+pub mod grid2;
 pub mod image;
 pub mod splash_screen;
 pub mod menu_screen;
@@ -62,6 +63,21 @@ impl From<WavError> for Error {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct MouseDragState {
+    pub start: vector::Vec2,
+    pub current: vector::Vec2
+}
+
+impl MouseDragState {
+    pub fn new(initial: vector::Vec2) -> MouseDragState {
+        MouseDragState {
+            start: initial,
+            current: initial
+        }
+    }
+}
+
 pub struct Engine<'t> {
     pub canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     width: u32,
@@ -72,6 +88,7 @@ pub struct Engine<'t> {
     camera: transform::Transform,
     pub state: game_state::GameState,
     pub last_game_state_change : timer::Timer,
+    drag_state: Option<MouseDragState>,
 }
 
 pub trait GameInterface : Sized {
@@ -143,6 +160,38 @@ impl<'t> Engine<'t> {
     pub fn on_key_up(&mut self, keycode: Keycode) {
         self.keys_down.remove(&keycode);
     }
+
+    fn screen_to_world(&self, x: i32, y: i32) -> vector::Vec2 {
+        let mut screen_transform = transform::Transform::new();
+        screen_transform.translate(self.get_screen_bounds().max * 0.5);
+
+        let mut p = vector::Vec2::from_coords(x as f32, y as f32);
+
+        p = screen_transform.transform_point_inv(p);
+        p = self.camera.transform_point(p);
+        p
+    }
+
+    pub fn on_mouse_button_down(&mut self, x: i32, y: i32) {
+        let p = self.screen_to_world(x, y);
+        self.drag_state = Some(MouseDragState::new(p));
+    }
+
+    pub fn on_mouse_move(&mut self, x: i32, y: i32) {
+        let p = self.screen_to_world(x, y);
+        if let Some(ref mut drag_state) = &mut self.drag_state {
+            drag_state.current = p;
+        }
+    }
+
+    pub fn on_mouse_button_up(&mut self, x: i32, y: i32) {
+        self.drag_state = None;
+    }
+
+    pub fn get_mouse_drag_state(&self) -> Option<MouseDragState> {
+        self.drag_state
+    }
+
 
     pub fn key_is_down(&self, keycode: Keycode) -> bool {
         self.keys_down.contains(&keycode)
@@ -220,6 +269,7 @@ impl<'t> Engine<'t> {
                 camera: transform::Transform::new(),
                 state: starting_state,
                 last_game_state_change: timer::Timer::new(),
+                drag_state: None,
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -276,6 +326,20 @@ impl<'t> Engine<'t> {
                             break 'main_loop;
                         }
                     },
+                    Event::MouseMotion {
+                        x: move_x,
+                        y: move_y,
+                        ..
+                    } => {
+                        engine.on_mouse_move(move_x, move_y);
+                    },
+                    Event::MouseButtonDown {
+                        x: click_x,
+                        y: click_y,
+                        ..
+                    } => {
+                        engine.on_mouse_button_down(click_x, click_y);
+                    },
                     Event::MouseButtonUp {
                         x: click_x,
                         y: click_y,
@@ -284,6 +348,8 @@ impl<'t> Engine<'t> {
                         if !game.on_mouse_button_up(&mut engine, click_x, click_y)? {
                             break 'main_loop;
                         }
+
+                        engine.on_mouse_button_up(click_x, click_y);
                     },
                     _ => { }
                 };
