@@ -24,7 +24,7 @@ impl Door {
     pub fn new(ctx: &mut Engine, texture: Texture) -> Door {
         let lock_texture =
             {
-                ctx.get_texture_registry().load("assets/image/item_keyhole.pnh").unwrap();
+                ctx.get_texture_registry().load("assets/image/item_keyhole.png").unwrap();
             };
 
         Door {
