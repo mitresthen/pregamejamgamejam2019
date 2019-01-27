@@ -44,6 +44,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let mut sounds = HashMap::new();
         sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
+        sounds.insert(AudioLibrary::AccidentSong, "assets/music/would_you_like_to_hear_a_song.wav");
+        sounds.insert(AudioLibrary::Intro, "assets/sounds/intro.wav");
         sounds.insert(AudioLibrary::Toilet, "assets/sounds/toilet.wav");
         sounds.insert(AudioLibrary::Switch1, "assets/sounds/switch1.wav");
         sounds.insert(AudioLibrary::Switch2, "assets/sounds/switch2.wav");
