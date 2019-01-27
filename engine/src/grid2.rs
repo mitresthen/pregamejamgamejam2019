@@ -120,7 +120,7 @@ impl Grid2 {
                 let tile_index = it.next().unwrap();
 
                 if *tile_index == id {
-                    let p = Vec2::from_coords(x as f32, y as f32) * (self.tile_size as f32);
+                    let p = Vec2::from_coords(x as f32 + 0.5, y as f32 + 0.5) * (self.tile_size as f32);
                     out.push((self.tile_list.iter().nth(*tile_index as usize).unwrap().clone(), p));
                     *tile_index = 0;
                 }

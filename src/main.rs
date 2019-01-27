@@ -13,6 +13,7 @@ mod alex;
 mod audio_library;
 mod key;
 mod dust;
+mod door;
 
 use audio_library::AudioLibrary;
 
@@ -40,7 +41,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let dimmer = { Dimmer::new(ctx).with_initial_value(0.0).with_target_value(1.0) };
-        let level = Level::load_from_file(ctx, "assets/levels/tilemap.json");
+        let level = Level::load_from_file(ctx, "assets/levels/GroundFloor.json");
 
         let mut low_level = level.ground;
         let mut mid_level = level.objects;
@@ -129,6 +130,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
             scene.add_object(dust);
+        }
+
+        for (texture, position) in mid_level.take_tile_with_id(17) {
+            let mut door = door::Door::new(texture);
+            door.get_transform_mut().set_translation(position);
+            scene.add_object(door);
         }
 
 

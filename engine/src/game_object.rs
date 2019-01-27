@@ -13,7 +13,7 @@ pub enum Items {
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub struct Item {
-    item: Items
+    pub item: Items
 }
 
 #[derive(Debug, Clone)]
@@ -26,6 +26,8 @@ pub enum EventType {
     RayCastReply { success: bool, target: Vec2 },
     Attack { damage: f32 },
     Loot { item: Item },
+    RequestItem { item: Item },
+    SendItem { item: Item },
     Suck,
     DeleteMe,
     FreeFromDust,
