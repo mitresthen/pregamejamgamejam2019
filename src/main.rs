@@ -153,7 +153,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
 
         let mut alex = alex::Alex::new(ctx)?;
-        alex.get_transform_mut().set_translation(Vec2::from_coords(350.0, 350.0));
+        alex.get_transform_mut().set_translation(Vec2::from_coords(1135.0, 180.0));
 
 
         let mut scene = Scene::new();
@@ -291,6 +291,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let physical_object = player_object.get_physical_object_mut().unwrap();
             let player_velocity = physical_object.get_velocity_mut();
             *player_velocity = axis * 100.0;
+        }
+
+        let alex_bbox = self.scene.get(self.alex_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_bounding_box()
+            .unwrap();
+
+        if let Some(axis) = player_bounding_box.sat_overlap(alex_bbox) {
+            let alex_object = self.scene.get_mut(self.alex_id).unwrap();
+
+            alex_object.on_event(GameEvent{
+                event_type: EventType::Interact
+            });
         }
 
         self.scene.update(ctx, dt);

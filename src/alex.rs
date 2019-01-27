@@ -48,6 +48,9 @@ impl GameObject for Alex {
 
     fn on_event(&mut self, event: GameEvent) {
         match event.event_type {
+            EventType::Interact => {
+                println!("Someone interacted with me!")
+            },
             _ => {}
         };
         
@@ -74,8 +77,8 @@ impl PhysicalObject for Alex {
     fn get_bounding_box(&self) -> Option<BoundingBox> {
         let bounding_box =
             BoundingBox::new(
-                64.0,
-                64.0,
+                120.0,
+                120.0,
                 self.transform.get_translation()
             );
 
