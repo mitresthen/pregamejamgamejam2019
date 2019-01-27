@@ -2,6 +2,7 @@ pub use Engine;
 pub use GameInterface;
 pub use Error;
 pub use Keycode;
+pub use MouseButton;
 pub use static_sprite::StaticSprite;
 pub use animated_sprite::{Animatable, AnimatedSprite, AggregatedAnimatedSprite, SpriteTrait};
 pub use movable_object::MovableObject;

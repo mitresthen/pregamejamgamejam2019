@@ -43,6 +43,7 @@ pub mod prelude;
 
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
+pub use sdl2::mouse::MouseButton;
 
 use audio_engine::WavError;
 
@@ -117,8 +118,8 @@ pub trait GameInterface : Sized {
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<bool, Error> { Ok(true) }
 
     fn on_exit(&mut self) { }
 }
@@ -351,20 +352,22 @@ impl<'t> Engine<'t> {
                     Event::MouseButtonDown {
                         x: click_x,
                         y: click_y,
+                        mouse_btn: button,
                         ..
                     } => {
                         engine.on_mouse_button_down(click_x, click_y);
 
-                        if !game.on_mouse_button_down(&mut engine, click_x, click_y)? {
+                        if !game.on_mouse_button_down(&mut engine, click_x, click_y, button)? {
                             break 'main_loop;
                         }
                     },
                     Event::MouseButtonUp {
                         x: click_x,
                         y: click_y,
+                        mouse_btn: button,
                         ..
                     } => {
-                        if !game.on_mouse_button_up(&mut engine, click_x, click_y)? {
+                        if !game.on_mouse_button_up(&mut engine, click_x, click_y, button)? {
                             break 'main_loop;
                         }
 

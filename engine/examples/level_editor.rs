@@ -181,7 +181,7 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32)
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton)
         -> Result<bool, Error>
     {
         let tile_index =
@@ -197,12 +197,14 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32)
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton)
         -> Result<bool, Error>
     {
         self.painting_tile = None;
 
         let edit_layer : &mut Grid2 = self.get_edit_layer();
+
+        let step = if button == MouseButton::Left { 1 } else { edit_layer.get_tile_type_count() - 1 };
 
         if let Some(drag_state) = ctx.get_mouse_drag_state() {
             if (drag_state.start - drag_state.current).len() > 10.0 {
@@ -210,7 +212,7 @@ impl GameInterface for LevelEditor {
                 let maybe_tile = edit_layer.get_tile_at(drag_state.current);
 
                 if let Some(mut tile_id) = maybe_tile {
-                    tile_id = (tile_id + 1) % edit_layer.get_tile_type_count();
+                    tile_id = (tile_id + step) % edit_layer.get_tile_type_count();
                     edit_layer.set_tile_at(drag_state.current, tile_id);
                 }
             }

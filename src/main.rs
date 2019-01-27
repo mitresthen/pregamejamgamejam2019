@@ -379,7 +379,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         self.on_key_down(ctx, keycode, true)
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32) -> Result<bool, Error> {
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, button: MouseButton)
+        -> Result<bool, Error>
+    {
         if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();
