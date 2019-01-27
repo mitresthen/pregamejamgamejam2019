@@ -11,13 +11,13 @@ mod player;
 mod roomba;
 mod alex;
 mod audio_library;
+mod key_in_dust;
 
 use audio_library::AudioLibrary;
 
 struct GoogleHomeopathicMedicine {
     low_level: Grid2,
     mid_level: Grid2,
-    lightmap: Texture,
     player_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
@@ -44,6 +44,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let mut sounds = HashMap::new();
         sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
+        sounds.insert(AudioLibrary::AccidentSong, "assets/music/would_you_like_to_hear_a_song.wav");
+        sounds.insert(AudioLibrary::Intro, "assets/sounds/intro.wav");
         sounds.insert(AudioLibrary::Toilet, "assets/sounds/toilet.wav");
         sounds.insert(AudioLibrary::Switch1, "assets/sounds/switch1.wav");
         sounds.insert(AudioLibrary::Switch2, "assets/sounds/switch2.wav");
@@ -91,8 +93,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
-
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
@@ -110,6 +110,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let mut roomba = roomba::Roomba::new(ctx)?;
             roomba.get_transform_mut().set_translation(*position);
             scene.add_object(roomba);
+        }
+
+        let key_in_dust = mid_level.take_tile_with_id(21);
+        for (_, position) in key_in_dust.iter() {
+            let mut key_in_dust = key_in_dust::KeyInDust::new(ctx)?;
+            key_in_dust.get_transform_mut().set_translation(*position);
+            scene.add_object(key_in_dust);
         }
 
         // Loading StaticSprites
@@ -193,7 +200,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
             GoogleHomeopathicMedicine {
                 low_level: low_level,
                 mid_level: mid_level,
-                lightmap: lightmap,
                 scene: scene,
                 player_id: player_id,
                 zoom_controller: SliderController::new(
@@ -239,10 +245,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let mut transform = Transform::new();
         transform.set_translation(Vec2::from_coords(0.0, 0.0));
-
-        if std::env::var("DO_NOT_DRAW_LIGHTMAP").is_err() {
-            //ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
-        }
 
         // Scene is now rendered as a part of the interleaved grid
         //self.scene.render(ctx);
