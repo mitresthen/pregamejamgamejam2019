@@ -185,7 +185,7 @@ impl Scene {
 
     pub fn update(&mut self, engine: &mut Engine, collider: Option<&LevelCollider>, dt: f32) {
         {
-            let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2)> = Vec::new();
+            let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2, bool)> = Vec::new();
 
             {
                 let mut it = self.objects.iter();
@@ -200,7 +200,11 @@ impl Scene {
                                 if let Some(bounding_box_a) = physical_object_a.get_bounding_box() {
                                     if let Some(bounding_box_b) = physical_object_b.get_bounding_box() {
                                         if let Some((axis, _)) = bounding_box_a.sat_overlap(bounding_box_b) {
-                                            collision_pairs.push((*id_a, *id_b, axis));
+                                            let should_block =
+                                                physical_object_a.should_block() &&
+                                                physical_object_b.should_block();
+
+                                            collision_pairs.push((*id_a, *id_b, axis, should_block));
                                         }
                                     }
                                 }
@@ -210,25 +214,34 @@ impl Scene {
                 }
             }
 
-            for (ob_a, ob_b, axis) in collision_pairs.drain(..) {
+
+            for (ob_a, ob_b, axis, should_block) in collision_pairs.drain(..) {
+
+                if should_block
                 {
-                    let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
-                    let velocity_a = physical_object_a.get_velocity_mut();
-                    *velocity_a = axis * -220.0;
-                    self.event_queue.submit_event(
-                        EventType::Collide { force: axis },
-                        EventReceiver::Addressed { object_id: ob_a }
-                    );
+                    {
+                        let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
+                        let velocity_a = physical_object_a.get_velocity_mut();
+                        *velocity_a = axis * -220.0;
+                    }
+
+                    {
+                        let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
+                        let velocity_b = physical_object_b.get_velocity_mut();
+                        *velocity_b = axis * 220.0;
+                    }
+
                 }
-                {
-                    let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
-                    let velocity_b = physical_object_b.get_velocity_mut();
-                    *velocity_b = axis * 220.0;
-                    self.event_queue.submit_event(
-                        EventType::Collide { force: axis },
-                        EventReceiver::Addressed { object_id: ob_b }
-                    );
-                }
+
+                self.event_queue.submit_event(
+                    EventType::Collide { force: axis },
+                    EventReceiver::Addressed { object_id: ob_a }
+                );
+
+                self.event_queue.submit_event(
+                    EventType::Collide { force: axis },
+                    EventReceiver::Addressed { object_id: ob_b }
+                );
             }
         }
 

@@ -1,7 +1,7 @@
 use engine::prelude::*;
 
 use std::collections::HashSet;
-use engine::game_object::Item;
+use engine::game_object::{Item, Items};
 
 pub struct Player {
     controller: AxisController,
@@ -13,7 +13,8 @@ pub struct Player {
     direction: i32,
     collision_size: f32,
     requesting_position: Vec<SceneObjectId>,
-    items: HashSet<Item>
+    items: HashSet<Item>,
+    outgoing_events: Vec<(EventType, EventReceiver)>
 }
 
 impl Player {
@@ -48,10 +49,14 @@ impl Player {
                 direction: 1,
                 collision_size: 80.0,
                 requesting_position: Vec::new(),
-                items: HashSet::new()
+                items: HashSet::new(),
+                outgoing_events: Vec::new()
             };
 
         player.transform.set_scale(1.0);
+
+        // Enable this line to test keys easily
+        //player.items.insert(Item { item: Items::Key});
 
         Ok(player)
     }
@@ -67,6 +72,9 @@ impl GameObject for Player {
         let target_velocity =
             self.controller.poll(ctx) * 400.0;
 
+        for (event_type, event_receiver) in self.outgoing_events.drain(..) {
+            event_mailbox.submit_event(event_type, event_receiver);
+        }
 
         if self.interact_trigger.poll(ctx) {
             
@@ -161,8 +169,19 @@ impl GameObject for Player {
             },
             EventType::Loot { item } => {
                 self.items.insert(item);
-                return true;
+                true
             },
+            EventType::RequestItem { item: which_item  } => {
+                if self.items.remove(&which_item) {
+                    self.outgoing_events.push((
+                        EventType::SendItem { item: which_item },
+                        EventReceiver::Addressed { object_id: sender.unwrap() }
+                    ));
+                } else {
+                    // TODO: "You fail sound"
+                };
+                true
+            }
             _ => { false }
         }
     }

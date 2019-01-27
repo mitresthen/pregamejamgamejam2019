@@ -26,6 +26,8 @@ pub enum EventType {
     RayCastReply { success: bool, target: Vec2 },
     Attack { damage: f32 },
     Loot { item: Item },
+    RequestItem { item: Item },
+    SendItem { item: Item },
     Suck,
     DeleteMe,
     FreeFromDust,
@@ -119,6 +121,8 @@ pub trait PhysicalObject {
     fn get_velocity_mut(&mut self) -> &mut Vec2;
 
     fn get_bounding_box(&self) -> Option<BoundingBox>;
+
+    fn should_block(&self) -> bool { true }
 }
 
 pub trait GameObject: 'static {
