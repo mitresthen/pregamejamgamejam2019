@@ -38,7 +38,7 @@ impl Dust {
 
 impl GameObject for Dust {
 
-    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             event_mailbox.submit_event(
                     EventType::DeleteMe,

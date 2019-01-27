@@ -125,10 +125,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let pause_sprite = StaticSprite::new(128, 64, tr.load("assets/image/paused.png")?)?;
-
-        let title_background = StaticSprite::new(640, 480, tr.load("assets/image/title_background.png")?)?;
-
+        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
         let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
 
         let title_screen =
@@ -148,14 +145,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     name: "Start Adventure".to_string(),
                     target_game_state: GAMEPLAY_STATE,
                     sprite: start_game_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
                 MenuChoice
                 {
                     name: "Quit Game".to_string(),
                     target_game_state: EXIT_STATE,
                     sprite: exit_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
             ].to_vec();
 
