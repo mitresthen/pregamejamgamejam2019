@@ -227,6 +227,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
+        &self.main_menu_screen.set_camera_pos(player_position);
         &self.pause_screen.set_camera_pos(player_position);
 
         self.scene.update(ctx, Some(&self.mid_level), dt);
@@ -239,6 +240,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     {
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
+        &self.main_menu_screen.set_scale(zoom);
         &self.pause_screen.set_scale(zoom);
 
         ctx.draw(&self.low_level);
