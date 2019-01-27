@@ -36,7 +36,8 @@ struct GoogleHomeopathicMedicine {
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
     dimmer: Dimmer,
-    transition_logic: TransitionLogic
+    transition_logic: TransitionLogic,
+    intro_played: bool,
 }
 
 impl GoogleHomeopathicMedicine {
@@ -190,7 +191,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-
         let (low_level, mid_level, scene, player_id) = { Self::load_level(ctx, 0)? };
 
         // Loading StaticSprites
@@ -285,7 +285,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
                 dimmer: dimmer,
-                transition_logic: TransitionLogic::ActiveLevel
+                transition_logic: TransitionLogic::ActiveLevel,
+                intro_played: false,
             };
 
         Ok(game)
@@ -327,6 +328,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         self.scene.update(ctx, Some(&self.mid_level), dt);
         self.dimmer.update(dt);
 
+        if !self.intro_played {
+            self.intro_played = true;
+            ctx.replace_sound(AudioLibrary::Intro, 0, 0);
+        }
         if ctx.is_done(0) {
             ctx.replace_sound(AudioLibrary::Music, 0, -1);
         }

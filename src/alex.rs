@@ -8,6 +8,7 @@ use rand;
 
 
 pub struct Alex {
+    sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     prompted_for_response: bool,
@@ -16,9 +17,14 @@ pub struct Alex {
 
 impl Alex {
     pub fn new(ctx: &mut Engine) -> Result<Alex, Error> {
+        let tr = ctx.get_texture_registry();
+        let texture = tr.load("assets/image/Alexa_version1.png")?;
+
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut alex =
             Alex {
+                sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 prompted_for_response: false,

@@ -47,7 +47,9 @@
             "item_cardboardbox_3.png",
             "wallTile_projector.png",
             "item_projector.png",
-            "item_wachingmachine.png"
+            "item_wachingmachine.png",
+            "blocker.png",
+            "cake.png"
         ]
     }
 }

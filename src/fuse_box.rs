@@ -6,6 +6,7 @@ use rand;
 
 use engine::game_object::Item;
 use engine::game_object::Items;
+use AudioLibrary;
 
 
 pub struct FuseBox {
@@ -13,14 +14,19 @@ pub struct FuseBox {
     transform: Transform,
     velocity: Vec2,
     delete_me: bool,
-    active: bool
+    active: bool,
+    audio_channel: usize,
 }
 
 impl FuseBox {
     pub fn new(ctx: &mut Engine) -> Result<FuseBox, Error> {
-        let tr = ctx.get_texture_registry();
-        let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on)?;
+        let mut sprite;
+        {
+            let tr = ctx.get_texture_registry();
+            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
+            sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on)?;
+        }
+        let channel = ctx.prepare_sound(AudioLibrary::Victory)?;
 
         let mut fuse_box =
             FuseBox {
@@ -28,7 +34,8 @@ impl FuseBox {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 delete_me: false,
-                active: true
+                active: true,
+                audio_channel: channel,
             };
         fuse_box.transform.set_scale(1.0);
 
@@ -62,6 +69,7 @@ impl GameObject for FuseBox {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if !self.active {
             self.toggle_texture(ctx);
+            ctx.play(self.audio_channel);
             self.active = true;
         }
 
