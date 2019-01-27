@@ -2,6 +2,8 @@ extern crate sdl2;
 extern crate stb_image;
 extern crate rand;
 
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::collections::HashSet;
 use std::time::Duration;
 
@@ -30,6 +32,7 @@ pub mod scene;
 pub mod axis_controller;
 pub mod slider_controller;
 
+pub mod sat_collider;
 
 pub mod prelude;
 
@@ -197,11 +200,15 @@ impl<'t> Engine<'t> {
         self.keys_down.contains(&keycode)
     }
 
-    pub fn play_sound(&mut self, filename: &str) -> Result<(), Error> {
-        Ok(self.audio_engine.play_sound_from_file(filename)?)
+    pub fn load_sounds<T: Hash + Eq>(&mut self, sounds: HashMap<T, &str>) -> Result<(), Error> {
+        Ok(self.audio_engine.pre_load_files(sounds)?)
     }
-    pub fn loop_sound(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
-        Ok(self.audio_engine.loop_sound_from_file(filename, repeats)?)
+
+    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<(), Error> {
+        Ok(self.audio_engine.play_sound(key)?)
+    }
+    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<(), Error> {
+        Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
 
     // TODO: Make it work with moving camera

@@ -1,5 +1,9 @@
 use engine::prelude::*;
 
+use rand::Rng;
+use rand;
+
+
 enum MovementMode {
     Tracking,
     Random,
@@ -26,7 +30,7 @@ impl Roomba {
                 velocity: Vec2::new(),
                 mode: MovementMode::Random
             };
-        let vel = Vec2::random();
+        let vel = (Vec2::random()*250.0);
         println!("Setting roomba velocity {:#?}", vel);
         roomba.velocity = vel;
 
@@ -48,7 +52,10 @@ impl Roomba {
 impl GameObject for Roomba {
 
     fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
-        let target_velocity = Vec2::new();
+        let target_velocity = Vec2{
+            x: self.velocity.x,
+            y: self.velocity.y
+        };
         self.velocity.approach(target_velocity, 240.0 * dt);
         self.transform.translate(self.velocity * dt);
         self.sprite.set_transform(&self.transform);
@@ -70,7 +77,19 @@ impl GameObject for Roomba {
     }
 
     fn on_event(&mut self, event: GameEvent) {
-        println!("Roomba handling event {:#?}", event);
+        match event.event_type {
+            EventType::Collide { force } => {
+                let mut rng = rand::thread_rng();
+                let angle: f32 = rng.gen();
+                let angle = angle % std::f32::consts::PI;
+                self.velocity = force.rotated(angle)*250.0;
+            },
+            EventType::TargetLock { target } => {
+                self.velocity = target*250.0;
+            },
+            _ => {}
+        }
+        
     }
 }
 

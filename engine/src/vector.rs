@@ -3,7 +3,7 @@ use std::ops::{Add, Sub, Mul};
 use rand::Rng;
 use rand;
 
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug, Copy, PartialEq)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32
@@ -46,6 +46,15 @@ impl Vec2 {
             self.y = target.y;
         } else {
             *self = *self + (diff * (acceleration / l));
+        }
+    }
+
+    pub fn rotated(&self, angle: f32) -> Vec2 {
+        let new_x = self.x * angle.cos() - self.y * angle.sin();
+        let new_y = self.x * angle.sin() + self.y * angle.cos();
+        Vec2 {
+            x: new_x,
+            y: new_y
         }
     }
 
