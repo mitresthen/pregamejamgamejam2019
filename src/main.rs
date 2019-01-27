@@ -136,8 +136,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(dust);
         }
 
-        for (texture, position) in mid_level.take_tile_with_id(17) {
+        for (index, (texture, position)) in mid_level.take_tile_with_id(17).into_iter().enumerate() {
             let mut door = door::Door::new(ctx, texture);
+
+            if index == 2 {
+                door = door.with_key_requirement();
+            }
             door.get_transform_mut().set_translation(position);
             scene.add_object(door);
         }

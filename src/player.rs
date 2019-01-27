@@ -3,6 +3,8 @@ use engine::prelude::*;
 use std::collections::HashSet;
 use engine::game_object::{Item, Items};
 
+use audio_library::AudioLibrary;
+
 pub struct Player {
     controller: AxisController,
     interact_trigger: Trigger,
@@ -14,7 +16,8 @@ pub struct Player {
     collision_size: f32,
     requesting_position: Vec<SceneObjectId>,
     items: HashSet<Item>,
-    outgoing_events: Vec<(EventType, EventReceiver)>
+    outgoing_events: Vec<(EventType, EventReceiver)>,
+    nope: bool
 }
 
 impl Player {
@@ -50,7 +53,8 @@ impl Player {
                 collision_size: 80.0,
                 requesting_position: Vec::new(),
                 items: HashSet::new(),
-                outgoing_events: Vec::new()
+                outgoing_events: Vec::new(),
+                nope: false
             };
 
         player.transform.set_scale(1.0);
@@ -74,6 +78,11 @@ impl GameObject for Player {
 
         for (event_type, event_receiver) in self.outgoing_events.drain(..) {
             event_mailbox.submit_event(event_type, event_receiver);
+        }
+
+        if self.nope {
+            ctx.play_sound(AudioLibrary::Nope);
+            self.nope = false;
         }
 
         if self.interact_trigger.poll(ctx) {
@@ -178,7 +187,7 @@ impl GameObject for Player {
                         EventReceiver::Addressed { object_id: sender.unwrap() }
                     ));
                 } else {
-                    // TODO: "You fail sound"
+                    self.nope = true;
                 };
                 true
             }
