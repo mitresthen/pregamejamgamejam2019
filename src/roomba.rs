@@ -111,6 +111,7 @@ impl GameObject for Roomba {
             }
         }
         if self.suck {
+            println!("Roomba attempting to suck");
             let origin = self.transform.get_translation();
             event_mailbox.submit_event(
                 EventType::Suck,
