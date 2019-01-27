@@ -92,6 +92,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.load_sounds(sounds);
 
+        ctx.reset_sound();
+
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
         let mut player = player::Player::new(ctx)?;
@@ -182,7 +184,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 MenuChoice
                 {
                     name: "Return to Main Menu".to_string(),
-                    target_game_state: MAIN_MENU_STATE,
+                    target_game_state: RESET_GAME,
                     sprite: return_to_menu_sprite,
                 },
             ].to_vec();
@@ -216,7 +218,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         Ok(game)
     }
-
 
     fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         let player_position = self.scene.get(self.player_id)
@@ -282,6 +283,18 @@ impl GameInterface for GoogleHomeopathicMedicine {
             }
             if keycode == Keycode::T && !is_repeated {
                 ctx.play_sound(AudioLibrary::Toilet);
+                return Ok(true);
+            }
+            if keycode == Keycode::M && !is_repeated {
+                ctx.toggle_mute();
+                return Ok(true);
+            }
+            if keycode == Keycode::I && !is_repeated {
+                ctx.increase_volume();
+                return Ok(true);
+            }
+            if keycode == Keycode::D && !is_repeated {
+                ctx.decrease_volume();
                 return Ok(true);
             }
         }

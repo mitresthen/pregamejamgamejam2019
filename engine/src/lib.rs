@@ -224,6 +224,30 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
 
+    pub fn reset_sound(&mut self) -> Result<(), Error> {
+        Ok(self.audio_engine.reset()?)
+    }
+
+    pub fn increase_volume(&mut self) {
+        self.audio_engine.increase_volume(0.1);
+    }
+
+    pub fn decrease_volume(&mut self) {
+        self.audio_engine.decrease_volume(0.1);
+    }
+
+    pub fn mute_volume(&mut self) {
+        self.audio_engine.mute_volume();
+    }
+
+    pub fn unmute_volume(&mut self) {
+        self.audio_engine.unmute_volume();
+    }
+
+    pub fn toggle_mute(&mut self) {
+        self.audio_engine.toggle_mute();
+    }
+
     // TODO: Make it work with moving camera
     pub fn get_screen_bounds(&self) -> rect::Rect2D {
         rect::Rect2D {
@@ -265,7 +289,7 @@ impl<'t> Engine<'t> {
 
         let mut canvas = window.into_canvas()
             .accelerated().build().map_err(|e| e.to_string())?;
-        
+
         let mut event_pump = sdl_context.event_pump()?;
 
         let texture_creator = canvas.texture_creator();
@@ -397,6 +421,13 @@ impl<'t> Engine<'t> {
                         }
                     },
                     // None               => engine.state.go_to(game_state::MAIN_MENU_STATE, engine.last_game_state_change.get_time()),
+                }
+            } else if engine.state.is_on(game_state::RESET_GAME) {
+                engine.camera = transform::Transform::new();
+                game = <T as GameInterface>::initialize(&mut engine)?;
+                if engine.state.go_to(game_state::MAIN_MENU_STATE, 60.0)
+                {
+                    engine.last_game_state_change.reset();
                 }
             } else {
                 if engine.state.gameplay_running
