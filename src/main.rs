@@ -36,7 +36,6 @@ enum AudioLibrary {
 struct GoogleHomeopathicMedicine {
     low_level: Grid2,
     mid_level: Grid2,
-    lightmap: Texture,
     player_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
@@ -110,8 +109,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-        let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
-
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
@@ -180,7 +177,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
             GoogleHomeopathicMedicine {
                 low_level: low_level,
                 mid_level: mid_level,
-                lightmap: lightmap,
                 scene: scene,
                 player_id: player_id,
                 zoom_controller: SliderController::new(
@@ -226,10 +222,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         let mut transform = Transform::new();
         transform.set_translation(Vec2::from_coords(0.0, 0.0));
-
-        if std::env::var("DO_NOT_DRAW_LIGHTMAP").is_err() {
-            ctx.get_draw_context().draw2(&self.lightmap, &transform, Origin::TopLeft);
-        }
 
         // Scene is now rendered as a part of the interleaved grid
         //self.scene.render(ctx);
