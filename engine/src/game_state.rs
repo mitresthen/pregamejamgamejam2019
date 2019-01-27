@@ -1,3 +1,4 @@
+use CHANGE_TIME;
 use std::fmt;
 
 // Game as a whole can be in those states:
@@ -33,7 +34,12 @@ impl GameState {
 
     pub fn go_to(&mut self, ogs: GameState, dt: f32) -> bool
     {
-        if dt >= 0.5
+        let mut relative_dt = dt;
+        if ogs.is_on(PAUSE_MENU_STATE)
+        {
+            relative_dt = 100.0;
+        }
+        if relative_dt >= CHANGE_TIME
         {
             self.gameplay_running   = ogs.gameplay_running;
             self.presents_menu      = ogs.presents_menu;

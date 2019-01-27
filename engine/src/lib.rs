@@ -66,6 +66,8 @@ pub enum Error {
     Unknown,
 }
 
+const CHANGE_TIME: f32 = 0.25;
+
 impl From<String> for Error {
     fn from(s: String) -> Error {
         Error::SDLError(s)
@@ -307,7 +309,12 @@ impl<'t> Engine<'t> {
 
     pub fn invert_paused_state(&mut self)
     {
-        if self.last_game_state_change.get_time() >= 1.0
+        let mut relative_dt = self.last_game_state_change.get_time();
+        if self.state.gameplay_running
+        {
+            relative_dt = 100.0;
+        }
+        if relative_dt >= CHANGE_TIME
         {
             self.state.invert_paused_state();
             self.last_game_state_change.reset();
