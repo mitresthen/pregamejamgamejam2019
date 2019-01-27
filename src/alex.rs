@@ -49,7 +49,6 @@ impl GameObject for Alex {
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
-                println!("Someone interacted with me!");
                 true
             },
             _ => {

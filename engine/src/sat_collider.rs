@@ -51,6 +51,7 @@ pub fn get_edges(points: &Vec<Vec2>) -> Vec<Vec2> {
 pub fn sat_overlap(figure_a: &Vec<Vec2> , figure_b: &Vec<Vec2>) -> Option<(Vec2, f32)> {
     let figure_a_edges = get_edges(&figure_a);
     let figure_b_edges = get_edges(&figure_b);
+
     let mut all_axes: Vec<Vec2> = Vec::new();
     all_axes.extend(&figure_a_edges);
     all_axes.extend(&figure_b_edges);

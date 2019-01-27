@@ -5,16 +5,19 @@ use rand::Rng;
 use rand;
 
 
+#[derive(PartialEq)]
 enum MovementMode {
-    Tracking,
     Random,
+    Searching,
+    Investigating(Vec2),
+    Tracking(Vec2),
 }
 
 pub struct Roomba {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
-    mode: MovementMode
+    mode: MovementMode,
 }
 
 impl Roomba {
@@ -32,7 +35,6 @@ impl Roomba {
                 mode: MovementMode::Random
             };
         let vel = (Vec2::random()*250.0);
-        println!("Setting roomba velocity {:#?}", vel);
         roomba.velocity = vel;
 
 
@@ -53,11 +55,35 @@ impl Roomba {
 impl GameObject for Roomba {
 
     fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
-        let target_velocity = Vec2{
-            x: self.velocity.x,
-            y: self.velocity.y
-        };
-        self.velocity.approach(target_velocity, 240.0 * dt);
+
+        if self.mode == MovementMode::Searching {
+            event_mailbox.submit_event(
+                EventType::Probe { hint: "player".to_string() },
+                EventReceiver::Broadcast
+            );
+            self.mode = MovementMode::Random;
+        }
+
+        if let MovementMode::Investigating(target) = self.mode {
+            let origin = self.transform.get_translation();
+            event_mailbox.submit_event(
+                EventType::RayCast { origin, target },
+                EventReceiver::Scene
+            );
+            self.mode = MovementMode::Random;
+        }
+
+        if let MovementMode::Tracking(target) = self.mode {
+            let distance = (target - self.transform.get_translation());
+            if distance.len() < 60.0 {
+                self.mode = MovementMode::Searching;
+            } else {
+                let direction = distance.normalize();
+                let target_velocity = direction * 240.0;
+                self.velocity.approach(target_velocity, 240.0 * dt);
+            }
+        }
+
         self.transform.translate(self.velocity * dt);
         self.sprite.set_transform(&self.transform);
         self.sprite.step_time(dt * self.velocity.len() * 0.05);
@@ -84,12 +110,19 @@ impl GameObject for Roomba {
                 let angle: f32 = rng.gen();
                 let angle = angle % f32::consts::PI;
                 self.velocity = force.rotated(angle)*250.0;
+                self.mode = MovementMode::Searching;
                 true
             },
-            EventType::TargetLock { target } => {
-                self.velocity = target*250.0;
+            EventType::ProbeReply { p: position } => {
+                self.mode = MovementMode::Investigating(position);
                 true
             },
+            EventType::RayCastReply { success, target } => {
+                if success {
+                    self.mode = MovementMode::Tracking(target);
+                }
+                true
+            }
             _ => {
                 false
             }

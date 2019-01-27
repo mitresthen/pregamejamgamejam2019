@@ -5,12 +5,15 @@ use vector::Vec2;
 use scene::SceneObjectId;
 use Engine;
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub enum EventType {
     Ack,
     Interact,
     Collide { force: Vec2 },
-    TargetLock { target: Vec2 },
+    Probe { hint: String },
+    ProbeReply { p: Vec2 },
+    RayCast { origin: Vec2, target: Vec2 },
+    RayCastReply { success: bool, target: Vec2 }
 }
 
 #[derive(Debug)]
@@ -18,7 +21,11 @@ pub enum EventReceiver {
     // Only the nearest object to the origin receives the event
     Nearest { origin: Vec2, max_distance: Option<f32> },
     // Every object receive the event
-    Broadcast
+    Broadcast,
+    // Send to specific object
+    Addressed { object_id: SceneObjectId },
+    // Send to the scene for internal handling
+    Scene
 }
 
 #[derive(Debug)]

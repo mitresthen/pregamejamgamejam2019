@@ -251,22 +251,23 @@ impl LevelCollider for Grid2 {
     fn get_collision_vector_points(&self, points : Vec<Vec2>)
         -> Option<Vec2>
     {
-        let start_x = ((points[0].x / self.tile_size as f32).floor() as i32).max(0);
-        let start_y = ((points[0].y / self.tile_size as f32).floor() as i32).max(0);
+        let mut rect = Rect2D::empty();
 
-        let end_x = ((points[1].x / self.tile_size as f32).ceil() as i32).min(self.width);
-        let end_y = ((points[1].y / self.tile_size as f32).ceil() as i32).min(self.height);
+        for p in points.iter() {
+            rect.expand(*p);
+        }
+
+        let start_x = ((rect.min.x / self.tile_size as f32).floor() as i32).max(0);
+        let start_y = ((rect.min.y / self.tile_size as f32).floor() as i32).max(0);
+
+        let end_x = ((rect.max.x / self.tile_size as f32).ceil() as i32).min(self.width);
+        let end_y = ((rect.max.y / self.tile_size as f32).ceil() as i32).min(self.height);
+
 
         let mut best_axis = None;
 
-        let min_y = start_y.min(end_y);
-        let max_y = start_y.max(end_y);
-
-        let min_x = start_x.min(end_x);
-        let max_x = start_x.max(end_x);
-
-        for y in min_y..max_y {
-            for x in min_x..max_x {
+        for y in start_y..end_y {
+            for x in start_x..end_x {
                 let index = (y * self.width) + x;
 
                 let tile_id = self.buffer.iter().nth(index as usize).unwrap();
@@ -290,6 +291,7 @@ impl LevelCollider for Grid2 {
                 }
             }
         }
+
 
         best_axis.map(|x| x.0)
     }

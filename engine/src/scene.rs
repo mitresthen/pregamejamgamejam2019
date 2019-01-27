@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 
-use game_object::{GameObject, EventQueue, EventReceiver, EventType};
+use game_object::{GameObject, EventQueue, EventReceiver, EventType, EventMailbox};
 use bounding_box::BoundingBox;
 use drawable::DrawContext;
 use vector::Vec2;
@@ -12,7 +12,8 @@ pub type SceneObjectId = i32;
 pub struct Scene {
     objects: BTreeMap<SceneObjectId, Box<GameObject>>,
     current_id: SceneObjectId,
-    event_queue: EventQueue
+    event_queue: EventQueue,
+    pending_raycasts: Vec<(Vec2, Vec2, SceneObjectId)>
 }
 
 pub trait LevelCollider {
@@ -26,7 +27,8 @@ impl Scene {
         Scene {
             objects: BTreeMap::new(),
             current_id: 0,
-            event_queue: EventQueue::new()
+            event_queue: EventQueue::new(),
+            pending_raycasts: Vec::new()
         }
     }
 
@@ -72,7 +74,7 @@ impl Scene {
                 break;
             }
 
-            if object.on_event(event, sender) {
+            if object.on_event(event.clone(), sender) {
                 // Object handlet the event. 
                 break;
             }
@@ -81,11 +83,26 @@ impl Scene {
 
     pub fn broadcast_event(&mut self, event: EventType, sender: Option<SceneObjectId>) {
         for (_id, object) in self.objects.iter_mut() {
-            object.on_event(event, sender);
+            object.on_event(event.clone(), sender);
         }
     }
 
     pub fn do_level_collision(&mut self, collider: &LevelCollider) {
+        for (origin, target, object_id) in self.pending_raycasts.drain(..) {
+            let mut points = Vec::new();
+            points.push(target);
+            points.push(origin);
+
+            println!("Raycast {:?} -> {:?}", origin, target);
+
+            let success : bool = collider.get_collision_vector_points(points).is_none();
+
+            self.event_queue.submit_event(
+                EventType::RayCastReply { success, target },
+                EventReceiver::Addressed { object_id }
+            );
+        }
+
         for (_id, object) in self.objects.iter_mut() {
             let mut maybe_axis = None;
             if let Some(physical_object) = object.get_physical_object_mut() {
@@ -104,6 +121,19 @@ impl Scene {
         }
     }
 
+    pub fn handle_scene_event(&mut self, event_type: EventType, sender: Option<SceneObjectId>) {
+        match (event_type) {
+            EventType::RayCast { origin, target } => {
+                if let Some(s) = sender {
+                    self.pending_raycasts.push((origin, target, s));
+                } else {
+                    println!("Got RayCast request without sender id");
+                }
+            },
+            _ => { }
+        }
+    }
+
     pub fn update(&mut self, engine: &mut Engine, dt: f32) {
         for (id, object) in self.objects.iter_mut() {
             object.update(engine, &mut self.event_queue.bind_to_sender(*id), dt);
@@ -117,6 +147,12 @@ impl Scene {
                 },
                 EventReceiver::Broadcast => {
                     self.broadcast_event(event.event_type, event.sender)
+                },
+                EventReceiver::Scene => {
+                    self.handle_scene_event(event.event_type, event.sender);
+                },
+                EventReceiver::Addressed { object_id } => {
+                    self.objects.get_mut(&object_id).unwrap().on_event(event.event_type, event.sender);
                 }
             }
         }

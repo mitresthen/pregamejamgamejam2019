@@ -6,7 +6,8 @@ pub struct Player {
     transform: Transform,
     velocity: Vec2,
     direction: i32,
-    collision_size: f32
+    collision_size: f32,
+    requesting_position: Vec<SceneObjectId>
 }
 
 impl Player {
@@ -37,7 +38,8 @@ impl Player {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 direction: 1,
-                collision_size: 80.0
+                collision_size: 80.0,
+                requesting_position: Vec::new()
             };
 
         player.transform.set_scale(1.0);
@@ -65,6 +67,15 @@ impl GameObject for Player {
                     max_distance: Some(140.0)
                 }
             );
+        }
+
+        for object_id in self.requesting_position.drain(..) {
+            let p = self.transform.get_translation();
+
+            event_mailbox.submit_event(
+                EventType::ProbeReply { p },
+                EventReceiver::Addressed { object_id }
+            )
         }
 
         self.velocity.approach(target_velocity, 400.0 * dt);
@@ -120,7 +131,19 @@ impl GameObject for Player {
     }
 
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
-        false
+        match event {
+            EventType::Probe { hint } => {
+                if hint != "player" {
+                    return false;
+                }
+
+                if let Some(s) = sender {
+                    self.requesting_position.push(s);
+                }
+                true
+            },
+            _ => { false }
+        }
     }
 }
 
