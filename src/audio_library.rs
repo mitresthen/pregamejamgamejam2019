@@ -19,6 +19,5 @@ pub enum AudioLibrary {
     DoubleDrop, DoubleDropDull,
     DoorOpen1, DoorOpen2, DoorOpen3,
     DoorClose3, DoorClose2, DoorClose1,
+    Intro, AccidentSong,
 }
-
-

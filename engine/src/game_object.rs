@@ -25,7 +25,9 @@ pub enum EventType {
     RayCast { origin: Vec2, target: Vec2 },
     RayCastReply { success: bool, target: Vec2 },
     Attack { damage: f32 },
-    Loot { item: Item }
+    Loot { item: Item },
+    Suck,
+    DeleteMe
 }
 
 #[derive(Debug)]

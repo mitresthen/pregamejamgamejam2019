@@ -6,9 +6,9 @@ use std::vec::Vec;
 pub struct ExampleGame{
     player_object: MovableObject,
     autonomous_moving_objects: Vec<MovableObject>,
-    pause_sprite: StaticSprite,
     title_screen: SplashScreen,
     main_menu_screen: MenuScreen,
+    pause_screen: MenuScreen,
 }
 
 impl GameInterface for ExampleGame {
@@ -51,7 +51,7 @@ impl GameInterface for ExampleGame {
         let roomba = MovableObject::new(roombasprite).unwrap();
         game_objects.push(roomba);
 
-        let mut main_menu_background = StaticSprite::new(640, 480, tr.load("assets/main_menu_background.png")?)?;
+        let mut main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/main_menu_background.png")?)?;
         let mut start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/start_button.png")?)?;
         let mut exit_sprite = StaticSprite::new(128, 64, tr.load("assets/exit_button.png")?)?;
 
@@ -81,6 +81,34 @@ impl GameInterface for ExampleGame {
                 options: main_menu_choices,
             };
 
+        let mut pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/pause_menu_background.png")?)?;
+        let mut continue_sprite = StaticSprite::new(128, 64, tr.load("assets/continue_button.png")?)?;
+        let mut return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/return_to_menu_button.png")?)?;
+
+        let pause_menu_choices =
+            [
+                MenuChoice
+                {
+                    name: "Continue Adventure".to_string(),
+                    target_game_state: GAMEPLAY_STATE,
+                    sprite: continue_sprite,
+                },
+                MenuChoice
+                {
+                    name: "Return to Main Menu".to_string(),
+                    target_game_state: MAIN_MENU_STATE,
+                    sprite: return_to_menu_sprite,
+                },
+            ].to_vec();
+
+        let pause_screen =
+            MenuScreen
+            {
+                name: "Pause Menu".to_string(),
+                background: pause_menu_background,
+                options: pause_menu_choices,
+            };
+
         let game =
             ExampleGame
             {
@@ -88,7 +116,7 @@ impl GameInterface for ExampleGame {
                 autonomous_moving_objects: game_objects,
                 title_screen: title_screen,
                 main_menu_screen: main_menu_screen,
-                pause_sprite: pause_sprite,
+                pause_screen: pause_screen,
             };
 
         Ok(game)
@@ -156,7 +184,7 @@ impl GameInterface for ExampleGame {
     }
 
     fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
-        ctx.draw(&self.pause_sprite);
+        ctx.draw(&self.pause_screen);
 
         Ok(true)
     }
@@ -172,14 +200,6 @@ impl GameInterface for ExampleGame {
         if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();
-            return Ok(true);
-        }
-        if ctx.state.is_on(MAIN_MENU_STATE)
-        {
-            if ctx.state.go_to(GAMEPLAY_STATE, ctx.last_game_state_change.get_time())
-            {
-                ctx.last_game_state_change.reset();
-            }
             return Ok(true);
         }
 
@@ -198,7 +218,7 @@ impl GameInterface for ExampleGame {
             ctx.end_title_screen();
             return Ok(true);
         }
-        if ctx.state.is_on(MAIN_MENU_STATE)
+        if ctx.state.presents_menu
         {
             // Click as "visible" in regards to camera.
             let mut cbc = Vec2 {
@@ -209,15 +229,25 @@ impl GameInterface for ExampleGame {
             screen_transform.translate(ctx.get_screen_bounds().max * 0.5);
             cbc = screen_transform.transform_point_inv(cbc);
             cbc = ctx.get_camera().transform_point(cbc);
+            let current_screen = if ctx.state.gameplay_displayed
+            {
+                self.pause_screen.clone()
+            } else {
+                self.main_menu_screen.clone()
+            };
 
-            match self.main_menu_screen.get_target_from_pos(cbc)
+            match current_screen.get_target_from_pos(cbc)
             {
                 Some(game_state) => {
-                    let gs_clone = game_state.clone();
-                    ctx.state.go_to(game_state, ctx.last_game_state_change.get_time());
-                    ctx.last_game_state_change.reset();
-                    if (gs_clone.is_on(EXIT_STATE)) {
-                        return Ok(false);
+                    let dt = ctx.last_game_state_change.get_time();
+                    if dt >= 0.5
+                    {
+                        let gs_clone = game_state.clone();
+                        ctx.state.go_to(game_state, dt);
+                        ctx.last_game_state_change.reset();
+                        if (gs_clone.is_on(EXIT_STATE)) {
+                            return Ok(false);
+                        }
                     }
                     return Ok(true)
                 },
@@ -229,5 +259,5 @@ impl GameInterface for ExampleGame {
 }
 
 fn main() {
-    Engine::execute::<ExampleGame>(1920, 1680).unwrap();
+    Engine::execute::<ExampleGame>(1280, 720).unwrap();
 }

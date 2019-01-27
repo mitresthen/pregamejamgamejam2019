@@ -130,6 +130,9 @@ impl Scene {
                     println!("Got RayCast request without sender id");
                 }
             },
+            EventType::DeleteMe => {
+                
+            },
             _ => { }
         }
     }
@@ -224,6 +227,10 @@ impl Scene {
         self.current_id += 1;
         self.objects.insert(new_id, Box::new(object));
         new_id
+    }
+
+    pub fn remove_object(&mut self, objectId: SceneObjectId){
+        self.objects.remove(&objectId);
     }
 
     pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {
