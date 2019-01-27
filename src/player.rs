@@ -164,7 +164,8 @@ impl GameObject for Player {
     }
 
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
-        println!("PLAYER: {:?}", event);
+        // For event debugging
+        //println!("PLAYER: {:?}", event);
         match event {
             EventType::Probe { hint } => {
                 if hint != "player" {
