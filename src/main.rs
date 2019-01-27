@@ -4,16 +4,40 @@ extern crate rand;
 
 use engine::prelude::*;
 use sdl2::render::BlendMode;
+use std::collections::HashMap;
 
 mod player;
 mod roomba;
+
+#[derive(Hash, PartialEq, Eq)]
+enum AudioLibrary {
+    Music,
+    Toilet, Drain,
+    Switch1, Switch2,
+    Steps1, Steps2,
+    Rustle,
+    MoveMetalObject,
+    BigMetallicPlong, MetallicPlong, MetallicPling, MetallicHit,
+    LockerOpen, LockerClose,
+    HooverStart, HooverStop, HooverLoop,
+    HeavySwitch, HeavySwitchMetallic,
+    HeavySteps1, HeavySteps2,
+    FluorescentLight1, FluorescentLight2, FluorescentLight3,
+    FloorSqueak, FloorCreakShort, FloorCreakLong,
+    Drop1, Drop2, Drop3,
+    DrawerOpenSlow, DrawerOpenFast,
+    DrawerCloseSlow, DrawerCloseFast,
+    DoubleDrop, DoubleDropDull,
+    DoorOpen1, DoorOpen2, DoorOpen3,
+    DoorClose3, DoorClose2, DoorClose1,
+}
 
 struct GoogleHomeopathicMedicine {
     low_level: Grid,
     mid_level: Grid,
     lightmap: Texture,
     player_id: SceneObjectId,
-    roomba_id: SceneObjectId, 
+    roomba_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
@@ -35,7 +59,54 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let low_level : Image<RGBA> = Image::load("assets/image/temp_level_low.png")?;
         let mid_level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
 
-        ctx.loop_sound("assets/music/home_automation.wav", -1)?;
+        let mut sounds = HashMap::new();
+        sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
+        sounds.insert(AudioLibrary::Toilet, "assets/sounds/toilet.wav");
+        sounds.insert(AudioLibrary::Switch1, "assets/sounds/switch1.wav");
+        sounds.insert(AudioLibrary::Switch2, "assets/sounds/switch2.wav");
+        sounds.insert(AudioLibrary::Steps1, "assets/sounds/steps1.wav");
+        sounds.insert(AudioLibrary::Steps2, "assets/sounds/steps2.wav");
+        sounds.insert(AudioLibrary::Rustle, "assets/sounds/rustle.wav");
+        sounds.insert(AudioLibrary::MoveMetalObject, "assets/sounds/move_metal_object_on_floor.wav");
+        sounds.insert(AudioLibrary::MetallicPlong, "assets/sounds/metallic_plong.wav");
+        sounds.insert(AudioLibrary::MetallicPling, "assets/sounds/metallic_pling.wav");
+        sounds.insert(AudioLibrary::MetallicHit, "assets/sounds/metallic_hit.wav");
+        sounds.insert(AudioLibrary::LockerOpen, "assets/sounds/locker_open.wav");
+        sounds.insert(AudioLibrary::LockerClose, "assets/sounds/locker_close.wav");
+        sounds.insert(AudioLibrary::HooverStart, "assets/sounds/hoover_start.wav");
+        sounds.insert(AudioLibrary::HooverStop, "assets/sounds/hoover_stop.wav");
+        sounds.insert(AudioLibrary::HooverLoop, "assets/sounds/hoover_loop.wav");
+        sounds.insert(AudioLibrary::HeavySwitch, "assets/sounds/heavy_switch.wav");
+        sounds.insert(AudioLibrary::HeavySwitchMetallic, "assets/sounds/heavy_switch_metallic.wav");
+        sounds.insert(AudioLibrary::HeavySteps1, "assets/sounds/heavy_steps1.wav");
+        sounds.insert(AudioLibrary::HeavySteps2, "assets/sounds/heavy_steps2.wav");
+        sounds.insert(AudioLibrary::FluorescentLight1, "assets/sounds/fluorescent_light_start1.wav");
+        sounds.insert(AudioLibrary::FluorescentLight2, "assets/sounds/fluorescent_light_start2.wav");
+        sounds.insert(AudioLibrary::FluorescentLight3, "assets/sounds/fluorescent_light_start3.wav");
+        sounds.insert(AudioLibrary::FloorSqueak, "assets/sounds/floor_squeak.wav");
+        sounds.insert(AudioLibrary::FloorCreakShort, "assets/sounds/floor_creak_short.wav");
+        sounds.insert(AudioLibrary::FloorCreakLong, "assets/sounds/floor_creak_long.wav");
+        sounds.insert(AudioLibrary::Drop1, "assets/sounds/drop1.wav");
+        sounds.insert(AudioLibrary::Drop2, "assets/sounds/drop2.wav");
+        sounds.insert(AudioLibrary::Drop3, "assets/sounds/drop3.wav");
+        sounds.insert(AudioLibrary::DrawerOpenSlow, "assets/sounds/drawer_open_slow.wav");
+        sounds.insert(AudioLibrary::DrawerOpenFast, "assets/sounds/drawer_open_fast.wav");
+        sounds.insert(AudioLibrary::DrawerCloseSlow, "assets/sounds/drawer_close_slow.wav");
+        sounds.insert(AudioLibrary::DrawerCloseFast, "assets/sounds/drawer_close_fast.wav");
+        sounds.insert(AudioLibrary::Drain, "assets/sounds/drain.wav");
+        sounds.insert(AudioLibrary::DoubleDrop, "assets/sounds/double_drop.wav");
+        sounds.insert(AudioLibrary::DoubleDropDull, "assets/sounds/double_drop_dull.wav");
+        sounds.insert(AudioLibrary::DoorOpen1, "assets/sounds/door_open1.wav");
+        sounds.insert(AudioLibrary::DoorOpen2, "assets/sounds/door_open2.wav");
+        sounds.insert(AudioLibrary::DoorOpen3, "assets/sounds/door_open3.wav");
+        sounds.insert(AudioLibrary::DoorClose3, "assets/sounds/door_close3.wav");
+        sounds.insert(AudioLibrary::DoorClose2, "assets/sounds/door_close2.wav");
+        sounds.insert(AudioLibrary::DoorClose1, "assets/sounds/door_close1.wav");
+        sounds.insert(AudioLibrary::BigMetallicPlong, "assets/sounds/big_metallic_plong.wav");
+
+        ctx.load_sounds(sounds);
+
+        ctx.loop_sound(AudioLibrary::Music, -1)?;
 
         let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
 
@@ -269,6 +340,14 @@ impl GameInterface for GoogleHomeopathicMedicine {
         {
             if keycode == Keycode::P && !is_repeated {
                 ctx.invert_paused_state();
+                return Ok(true);
+            }
+            if keycode == Keycode::S && !is_repeated {
+                ctx.play_sound(AudioLibrary::HeavySwitch);
+                return Ok(true);
+            }
+            if keycode == Keycode::T && !is_repeated {
+                ctx.play_sound(AudioLibrary::Toilet);
                 return Ok(true);
             }
         }
