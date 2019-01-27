@@ -131,8 +131,6 @@ impl PhysicalObject for Player {
     }
 
     fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let size = self.sprite.calculate_size() * 0.5;
-
         let bounding_box =
             BoundingBox::new(
                 self.collision_size,
