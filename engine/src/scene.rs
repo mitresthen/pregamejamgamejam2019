@@ -155,7 +155,9 @@ impl Scene {
                 if let Some(bounding_box) = physical_object.get_bounding_box() {
                     if let Some(axis) = collider.get_collision_vector(bounding_box) {
                         let velocity = physical_object.get_velocity_mut();
-                        *velocity = axis * 100.0;
+                        let perp = axis.perpendicular();
+
+                        *velocity = (axis * 100.0) + (perp * perp.dot_product(*velocity));
                         maybe_axis = Some(axis);
                     }
                 }
@@ -219,16 +221,18 @@ impl Scene {
 
                 if should_block
                 {
+                    let perp = axis.perpendicular();
+
                     {
                         let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                         let velocity_a = physical_object_a.get_velocity_mut();
-                        *velocity_a = axis * -220.0;
+                        *velocity_a = (axis * -220.0) + (perp * perp.dot_product(*velocity_a));
                     }
 
                     {
                         let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                         let velocity_b = physical_object_b.get_velocity_mut();
-                        *velocity_b = axis * 220.0;
+                        *velocity_b = axis * 220.0 + (perp * perp.dot_product(*velocity_b));;
                     }
 
                 }
