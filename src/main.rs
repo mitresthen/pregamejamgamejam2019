@@ -272,7 +272,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     println!("Setting targeted roomba dir");
                     let direction = (player_position - roomba_position).normalize();
                     roomba_object.on_event(GameEvent{
-                        event_type: EventType::Collide {  force: direction }
+                        event_type: EventType::TargetLock {  target: direction }
                     });
                 }
             }

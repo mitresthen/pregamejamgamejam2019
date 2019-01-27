@@ -84,6 +84,9 @@ impl GameObject for Roomba {
                 let angle = angle % std::f32::consts::PI;
                 self.velocity = force.rotated(angle)*250.0;
             },
+            EventType::TargetLock { target } => {
+                self.velocity = target*250.0;
+            },
             _ => {}
         }
         
