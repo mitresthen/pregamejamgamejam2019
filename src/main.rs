@@ -1,5 +1,6 @@
 extern crate engine;
 extern crate sdl2;
+extern crate rand;
 
 use engine::prelude::*;
 use sdl2::render::BlendMode;
@@ -193,7 +194,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let mut roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
             if let Some(axis) = self.mid_level.get_collision_vector(roomba_bbox) {
                 roomba_object.on_event(GameEvent{
-                    event_type: EventType::Collide
+                    event_type: EventType::Collide {  force: axis }
                 });
                 //*roomba_velocity = axis * 100.0;
             }
