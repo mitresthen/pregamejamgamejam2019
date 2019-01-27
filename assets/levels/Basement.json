@@ -8,14 +8,15 @@
             "tile_Yellow_2.png",
             "tile_Blue_Cracked1.png",
             "tile_Blue_Cracked2.png",
-            "item_Floormat.png"
+            "item_Floormat.png",
+            "stairsTop.png"
         ]
     },
     "objects" : {
         "file" : "Basement-Objects.dat",
         "tiles" : [
             "blank.png",
-            "wall_with_dark_top.png",
+            "wallTile_Blue1_black.png",
             "wall_dark_only.png",
             "Alexa_version1.png",
             "item_Nightstand_col1.png",
@@ -27,15 +28,22 @@
             "item_fridge.png",
             "items_kitchentop_1box.png",
             "items_kitchentop_bottom.png",
-            "wallTile_Blue_2height.png",
-            "wallTile_Blue_Cracked.png",
-            "wallTile_Blue_fuseBox_OFF.png",
+            "wall_with_dark_top.png",
             "wallTile_Blue_fuseBox_ON.png",
+            "wallTile_Blue_fuseBox_OFF.png",
+            "wallTile_Green1_black.png",
+            "wallTile_Green2_black.png",
             "door_closed_ver1.png",
             "door_vertical_topDown_1.png",
             "Electronics_Roomba.png",
             "wallTile_withWindow.png",
-            "key_in_dust.png"
+            "key_in_dust.png",
+            "item_Kommode_Blue.png",
+            "item_Kommode_Gul.png",
+            "items_kitchentop_oven.png",
+            "item_cardboardbox_1.png",
+            "item_cardboardbox_2.png",
+            "item_cardboardbox_3.png"
         ]
     }
 }
