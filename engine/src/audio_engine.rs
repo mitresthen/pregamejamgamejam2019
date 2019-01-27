@@ -60,17 +60,60 @@ impl SoundInstance {
 #[derive(Clone)]
 pub struct AudioMixer {
     playing: Arc<Mutex<Vec<SoundInstance>>>,
+    master_volume: Arc<Mutex<f32>>,
+    mute: Arc<Mutex<bool>>,
 }
 
 impl AudioMixer {
-    pub fn new() -> AudioMixer {
+    pub fn new(master_volume: f32) -> AudioMixer {
         AudioMixer {
-            playing: Arc::new(Mutex::new(Vec::new()))
+            playing: Arc::new(Mutex::new(Vec::new())),
+            master_volume: Arc::new(Mutex::new(master_volume)),
+            mute: Arc::new(Mutex::new(false)),
         }
     }
 
     pub fn play_sound(&mut self, sound: SoundInstance) {
         self.playing.lock().unwrap().push(sound);
+    }
+
+    pub fn reset(&mut self) {
+        self.playing.lock().unwrap().clear();
+    }
+
+    pub fn set_volume(&mut self, volume: f32) {
+        *self.master_volume.lock().unwrap() = volume;
+    }
+
+    pub fn set_mute(&mut self, mute: bool) {
+        let mut self_mute = self.mute.lock().unwrap();
+        *self_mute = mute;
+    }
+
+    pub fn toggle_mute(&mut self) {
+        let mut self_mute = self.mute.lock().unwrap();
+        *self_mute = !*self_mute;
+    }
+
+    pub fn change_volume(&mut self, volume_diff: f32) {
+        let mut master_volume = self.master_volume.lock().unwrap();
+        *master_volume += volume_diff;
+
+        if *master_volume < 0.0 {
+            *master_volume = 0.0;
+        }
+
+        if *master_volume > 2.0 {
+            *master_volume = 2.0;
+        }
+    }
+
+    pub fn is_mute(&self) -> bool {
+        return *self.mute.lock().unwrap();
+    }
+
+    pub fn get_master_volume(&self) -> f32 {
+        return *self.master_volume.lock().unwrap();
     }
 }
 
@@ -87,8 +130,11 @@ impl AudioCallback for AudioMixer {
         }
         for i in 0..out.len() {
             out[i] = 0.0;
+            if self.is_mute() {
+                continue;
+            }
             for s in samples.iter() {
-                out[i] += (*s)[i];
+                out[i] += self.get_master_volume() * (*s)[i];
             }
         }
 
@@ -113,7 +159,7 @@ impl AudioEngine {
             samples: None      // default
         };
 
-        let mixer = AudioMixer::new();
+        let mixer = AudioMixer::new(1.0);
 
         let device = audio_subsystem.open_playback(None, &desired_spec, |spec| {
             if spec.format != AudioFormat::F32LSB {
@@ -197,4 +243,30 @@ impl AudioEngine {
     pub fn loop_sound_data(&mut self, data: Vec<f32>, repeats: i32) {
         self.mixer.play_sound(SoundInstance::new(data, repeats));
     }
+
+    pub fn reset(&mut self) -> Result<(), Error> {
+        self.mixer.reset();
+        Ok(())
+    }
+
+    pub fn increase_volume(&mut self, diff: f32) {
+        self.mixer.change_volume(diff);
+    }
+
+    pub fn decrease_volume(&mut self, diff: f32) {
+        self.mixer.change_volume(-diff);
+    }
+
+    pub fn mute_volume(&mut self) {
+        self.mixer.set_mute(true);
+    }
+
+    pub fn unmute_volume(&mut self) {
+        self.mixer.set_mute(false);
+    }
+
+    pub fn toggle_mute(&mut self) {
+        self.mixer.toggle_mute();
+    }
+
 }
