@@ -2,8 +2,6 @@ use vector::Vec2;
 use std::vec::Vec;
 use std::f32;
 
-use super::Error;
-
 #[derive(Clone, Copy, Debug)]
 struct Range {
     min: f32,
@@ -45,7 +43,6 @@ pub fn get_edges(points: &Vec<Vec2>) -> Vec<Vec2> {
         let a = points[i];
         let b = points[(i+1) % points.len()];
         let ab = b-a;
-        let ab_a = ab;
         edges.push(ab);
     }
     edges

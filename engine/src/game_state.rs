@@ -1,7 +1,5 @@
 use std::fmt;
 
-use Engine;
-
 // Game as a whole can be in those states:
 //              | gameplay_running | presents_menu | gameplay_displayed | exit
 // Title Screen :                N |             N |                  N |    N

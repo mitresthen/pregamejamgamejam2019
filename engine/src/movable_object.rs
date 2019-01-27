@@ -8,13 +8,12 @@ pub struct MovableObject {
     pub animated_sprite: AnimatedSprite, 
     player_position: Vec2,
     player_velocity: Vec2,
-    max_speed: f32,
     acceleration: Vec2,
     pub bounding_box: BoundingBox
 }
 
 impl MovableObject {
-    pub fn new(sprite: AnimatedSprite, maximum_speed: f32) -> Result<MovableObject, Error> {
+    pub fn new(sprite: AnimatedSprite) -> Result<MovableObject, Error> {
         let size = sprite.calculate_size();
 
         let movable_object = 
@@ -22,7 +21,6 @@ impl MovableObject {
                 animated_sprite: sprite,
                 player_position: Vec2::new(),
                 player_velocity: Vec2::new(),
-                max_speed: maximum_speed,
                 acceleration: Vec2::new(),
                 bounding_box: BoundingBox::new(size.x, size.y, Vec2::new())
             };
@@ -52,7 +50,7 @@ impl MovableObject {
     pub fn overlaps(&self, other_object: BoundingBox) -> bool {
         let overlap =  self.bounding_box.sat_overlap(other_object);
         match overlap {
-            Some(x) => {
+            Some(_) => {
                 return true
             }
             None => return false

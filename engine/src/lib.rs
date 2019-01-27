@@ -12,7 +12,6 @@ extern crate serde;
 use std::collections::HashMap;
 use std::hash::Hash;
 use std::collections::HashSet;
-use std::time::Duration;
 
 pub mod audio_engine;
 pub mod drawable;
@@ -112,18 +111,18 @@ pub trait GameInterface : Sized {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
     // Update - broken down into 2 stages for game engine: update and draw
-    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn update_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+
     // Optional part of update - drawing pause or main menu
-    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_pause_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_main_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
 
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
+    fn on_key_down(&mut self, _ctx: &mut Engine, _keycode: Keycode, _is_repeated: bool) -> Result<bool, Error> { Ok(true) }
+    fn on_key_up(&mut self, _ctx: &mut Engine, _keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 
-    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
-
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<bool, Error> { Ok(true) }
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
 
     fn on_exit(&mut self) { }
 }
@@ -200,7 +199,7 @@ impl<'t> Engine<'t> {
         }
     }
 
-    pub fn on_mouse_button_up(&mut self, x: i32, y: i32) {
+    pub fn on_mouse_button_up(&mut self, _x: i32, _y: i32) {
         self.drag_state = None;
     }
 
@@ -319,11 +318,11 @@ impl<'t> Engine<'t> {
                         if key == Keycode::F {
                             let curr_fullscreen_state = engine.canvas.window().fullscreen_state();
                             if curr_fullscreen_state != sdl2::video::FullscreenType::True {
-                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True);
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True).unwrap();
                             }
                             else
                             {
-                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off);
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off).unwrap();
                             }
                             let window_size = engine.canvas.window().size();
                             engine.width = window_size.0;

@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use texture_registry::Texture;
-use drawable::{Drawable, DrawContext, Origin};
+use drawable::{Drawable, DrawContext};
 use transform::Transform;
 use vector::Vec2;
 use image::{Image, RGBA};
-use sdl2::render::BlendMode;
 use bounding_box::BoundingBox;
 use scene::Scene;
 use rect::Rect2D;

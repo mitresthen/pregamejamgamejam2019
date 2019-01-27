@@ -1,9 +1,7 @@
-use std::collections::HashMap;
 use texture_registry::Texture;
-use drawable::{Drawable, DrawContext, Origin};
+use drawable::{Drawable, DrawContext};
 use transform::Transform;
 use vector::Vec2;
-use sdl2::render::BlendMode;
 use bounding_box::BoundingBox;
 use scene::Scene;
 use rect::Rect2D;
@@ -14,8 +12,6 @@ use Error;
 use super::bincode;
 
 pub type TileIndex = u32;
-
-use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 struct GridData {

@@ -4,7 +4,6 @@ use std::f32;
 
 
 use sat_collider::sat_overlap;
-use super::Error;
 
 #[derive(Clone, Copy, Debug)]
 pub struct BoundingBox {
@@ -51,9 +50,7 @@ impl BoundingBox {
             let a = points[i];
             let b = points[(i+1) % points.len()];
             let ab = b-a;
-            let ab_a = ab;
             edges.push(ab);
-            //println!("Creating edge {:#?}", ab_a);
         }
 
         edges

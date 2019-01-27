@@ -64,7 +64,7 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
+    fn draw_gameplay(&mut self, ctx: &mut Engine, _dt: f32)
         -> Result<bool, Error>
     {
         if let Some(drag_state) = ctx.get_mouse_drag_state() {
@@ -74,7 +74,7 @@ impl GameInterface for LevelEditor {
                 let edit_layer : &mut Grid2 = self.get_edit_layer();
 
                 if let Some(painting_tile) = maybe_painting_tile {
-                    edit_layer.set_tile_at(drag_state.current, painting_tile);
+                    edit_layer.set_tile_at(drag_state.current, painting_tile).is_ok();
                 }
             }
         }
@@ -88,7 +88,7 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool)
+    fn on_key_down(&mut self, _ctx: &mut Engine, keycode: Keycode, _is_repeated: bool)
        -> Result<bool, Error>
     {
         if keycode == Keycode::L {
@@ -100,7 +100,7 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton)
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, _button: MouseButton)
         -> Result<bool, Error>
     {
         let tile_index =
@@ -116,7 +116,7 @@ impl GameInterface for LevelEditor {
         Ok(true)
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton)
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, _x: i32, _y: i32, button: MouseButton)
         -> Result<bool, Error>
     {
         self.painting_tile = None;
@@ -132,7 +132,7 @@ impl GameInterface for LevelEditor {
 
                 if let Some(mut tile_id) = maybe_tile {
                     tile_id = (tile_id + step) % edit_layer.get_tile_type_count();
-                    edit_layer.set_tile_at(drag_state.current, tile_id);
+                    edit_layer.set_tile_at(drag_state.current, tile_id).is_ok();
                 }
             }
         }
