@@ -35,8 +35,8 @@
             "door_vertical_topDown_1.png",
             "Electronics_Roomba.png",
             "wallTile_withWindow.png",
-            "key.png",
-            "dust.png"
+            "item_Key.png",
+            "item_Dust.png"
         ]
     }
 }
