@@ -32,6 +32,10 @@ impl Vec2 {
         created_vec.normalize()
     }
 
+    pub fn valid(&self) -> bool {
+        self.x != std::f32::NAN && self.y != std::f32::NAN
+    }
+
     pub fn len(&self) -> f32 {
         ((self.x * self.x) + (self.y * self.y)).sqrt()
     }
