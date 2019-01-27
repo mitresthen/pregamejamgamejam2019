@@ -1,5 +1,6 @@
 use engine::prelude::*;
 
+use std::f32;
 use rand::Rng;
 use rand;
 
@@ -81,7 +82,7 @@ impl GameObject for Roomba {
             EventType::Collide { force } => {
                 let mut rng = rand::thread_rng();
                 let angle: f32 = rng.gen();
-                let angle = angle % std::f32::consts::PI;
+                let angle = angle % f32::consts::PI;
                 self.velocity = force.rotated(angle)*250.0;
             },
             EventType::TargetLock { target } => {
