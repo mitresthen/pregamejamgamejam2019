@@ -29,6 +29,7 @@ pub mod scene;
 pub mod axis_controller;
 pub mod slider_controller;
 
+pub mod sat_collider;
 
 pub mod prelude;
 

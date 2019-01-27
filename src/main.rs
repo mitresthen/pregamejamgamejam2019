@@ -193,10 +193,24 @@ impl GameInterface for GoogleHomeopathicMedicine {
             //*roomba_velocity = roomba_target_vector * 100.0;
             let mut roomba_object = self.scene.get_mut(self.roomba_id).unwrap();
             if let Some(axis) = self.mid_level.get_collision_vector(roomba_bbox) {
-                roomba_object.on_event(GameEvent{
-                    event_type: EventType::Collide {  force: axis }
-                });
-                //*roomba_velocity = axis * 100.0;
+                let mut points = Vec::new();
+                points.push(player_position);
+                points.push(roomba_position);
+
+                if let Some(axis) = self.mid_level.get_collision_vector_points(points) {
+                    println!("Setting random roomba dir");
+                    roomba_object.on_event(GameEvent{
+                        event_type: EventType::Collide {  force: axis }
+                    });
+                }
+                else
+                {
+                    println!("Setting targeted roomba dir");
+                    let direction = player_position - roomba_position;
+                    roomba_object.on_event(GameEvent{
+                        event_type: EventType::Collide {  force: direction }
+                    });
+                }
             }
 
         }

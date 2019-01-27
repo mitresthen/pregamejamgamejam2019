@@ -7,7 +7,8 @@ use Engine;
 #[derive(Debug)]
 pub enum EventType {
     Interact,
-    Collide { force: Vec2 }
+    Collide { force: Vec2 },
+    TargetLock { target: Vec2 }
 }
 
 #[derive(Debug)]
