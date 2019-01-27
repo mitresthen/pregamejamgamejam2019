@@ -38,8 +38,6 @@ struct GoogleHomeopathicMedicine {
     mid_level: Grid2,
     lightmap: Texture,
     player_id: SceneObjectId,
-    roomba_id: SceneObjectId,
-    alex_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
     camera_velocity: Vec2,
@@ -117,17 +115,21 @@ impl GameInterface for GoogleHomeopathicMedicine {
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
-        let mut roomba = roomba::Roomba::new(ctx)?;
-        roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
-
         let mut alex = alex::Alex::new(ctx)?;
         alex.get_transform_mut().set_translation(Vec2::from_coords(8.5 * 120.0, 1.5 * 120.0));
 
 
         let mut scene = Scene::new();
         let player_id = scene.add_object(player);
-        let roomba_id = scene.add_object(roomba);
-        let alex_id = scene.add_object(alex);
+        scene.add_object(alex);
+
+        let roombas_in_level = mid_level.take_tile_with_id(19);
+
+        for (_, position) in roombas_in_level.iter() {
+            let mut roomba = roomba::Roomba::new(ctx)?;
+            roomba.get_transform_mut().set_translation(*position);
+            scene.add_object(roomba);
+        }
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
@@ -181,8 +183,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 lightmap: lightmap,
                 scene: scene,
                 player_id: player_id,
-                roomba_id: roomba_id,
-                alex_id: alex_id,
                 zoom_controller: SliderController::new(
                     Keycode::Plus,
                     Keycode::Minus,

@@ -32,7 +32,9 @@
             "wallTile_Blue_fuseBox_OFF.png",
             "wallTile_Blue_fuseBox_ON.png",
             "door_closed_ver1.png",
-            "door_vertical_topDown_1.png"
+            "door_vertical_topDown_1.png",
+            "Electronics_Roomba.png",
+            "wallTile_withWindow.png"
         ]
     }
 }

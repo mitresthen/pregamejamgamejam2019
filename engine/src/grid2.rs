@@ -109,6 +109,27 @@ impl Grid2 {
         }
     }
 
+    pub fn take_tile_with_id(&mut self, id: u32) -> Vec<(Texture, Vec2)> {
+        let mut out : Vec<(Texture, Vec2)> = Vec::new();
+
+        let mut it = self.buffer.iter_mut();
+        for y in 0..self.height {
+            for x in 0..self.width {
+                let index = ((y * self.width) + x) as usize;
+
+                let tile_index = it.next().unwrap();
+
+                if *tile_index == id {
+                    let p = Vec2::from_coords(x as f32, y as f32) * (self.tile_size as f32);
+                    out.push((self.tile_list.iter().nth(*tile_index as usize).unwrap().clone(), p));
+                    *tile_index = 0;
+                }
+            }
+        }
+
+        out
+    }
+
     fn draw_with_interleaved_scene(
         &self,
         ctx: &mut DrawContext,
@@ -160,7 +181,7 @@ impl Grid2 {
                     // overlap the tile above
                     let extra_height = texture.extent().height - self.tile_size as i32;
                     let extra_width = texture.extent().width - self.tile_size as i32;
-                    transform.translate(Vec2::from_coords(extra_width as f32 * 0.5, extra_height as f32 * -0.5));
+                    transform.translate(Vec2::from_coords(extra_width as f32 * -0.5, extra_height as f32 * -0.5));
 
                     ctx.draw(&texture, &transform)
                 }
