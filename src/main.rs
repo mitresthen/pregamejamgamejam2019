@@ -242,6 +242,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         self.scene.update(ctx, Some(&self.mid_level), dt);
         self.dimmer.update(dt);
 
+        if ctx.is_done(0) {
+            ctx.replace_sound(AudioLibrary::Music, 0, -1);
+        }
+
         Ok(true)
     }
 
