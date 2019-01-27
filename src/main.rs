@@ -91,6 +91,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         sounds.insert(AudioLibrary::DoorClose2, "assets/sounds/door_close2.wav");
         sounds.insert(AudioLibrary::DoorClose1, "assets/sounds/door_close1.wav");
         sounds.insert(AudioLibrary::BigMetallicPlong, "assets/sounds/big_metallic_plong.wav");
+        sounds.insert(AudioLibrary::Victory, "assets/sounds/all_your_home.wav");
+        sounds.insert(AudioLibrary::Defeat, "assets/sounds/defeat.wav");
+        sounds.insert(AudioLibrary::Nope, "assets/sounds/nope.wav");
 
         ctx.load_sounds(sounds);
 
