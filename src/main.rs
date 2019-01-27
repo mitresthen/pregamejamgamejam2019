@@ -13,6 +13,7 @@ mod alex;
 mod audio_library;
 mod key;
 mod dust;
+mod fuse_box;
 
 use audio_library::AudioLibrary;
 
@@ -129,6 +130,17 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
             scene.add_object(dust);
+        }
+
+        let fuse_box = mid_level.take_tile_with_id(16);
+
+        for (_, position) in fuse_box.iter() {
+            
+
+            let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
+            fuse_box.get_transform_mut().set_translation(*position);
+            scene.add_object(fuse_box);
+            
         }
 
 

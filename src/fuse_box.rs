@@ -20,7 +20,7 @@ impl FuseBox {
     pub fn new(ctx: &mut Engine) -> Result<FuseBox, Error> {
         let tr = ctx.get_texture_registry();
         let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_on)?;
 
         let mut fuse_box =
             FuseBox {
@@ -28,23 +28,27 @@ impl FuseBox {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 delete_me: false,
-                free_for_grabs: false
+                active: true
             };
         fuse_box.transform.set_scale(1.0);
 
         Ok(fuse_box)
     }
 
-    pub fn toggle_texture(&mut self) {
-        if active {
-            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
-            self.sprite = sprite;
+    pub fn toggle_texture(&mut self, ctx: &mut Engine) {
+        let tr = ctx.get_texture_registry();
+
+        println!("Toggeling texture to {:#?}", self.active);
+
+        if self.active {
+            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png");
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_on.unwrap());
+            self.sprite = sprite.unwrap();
         }
         else{
-            let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png")?;
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
-            self.sprite = sprite;
+            let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png");
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_off.unwrap());
+            self.sprite = sprite.unwrap();
         }
     }
 
@@ -56,21 +60,9 @@ impl FuseBox {
 impl GameObject for FuseBox {
 
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
-        if self.delete_me {
-            event_mailbox.submit_event(
-                    EventType::Loot { item: Item{
-                        item: Items::FuseBox
-                    }},
-                    EventReceiver::Nearest {  
-                        origin: self.transform.get_translation(),
-                        max_distance: Some(120.0)
-                    }
-                );
-
-            event_mailbox.submit_event(
-                    EventType::DeleteMe,
-                    EventReceiver::Scene
-                );
+        if !self.active {
+            self.toggle_texture(ctx);
+            self.active = true;
         }
 
         self.sprite.set_transform(&self.transform);
@@ -94,8 +86,8 @@ impl GameObject for FuseBox {
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
-                self.active = true;
-                self.toggle_texture();
+                println!("Someone tried to switch off the fuse");
+                self.active = false;
                 true
             },
             _ => {
