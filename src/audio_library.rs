@@ -20,4 +20,6 @@ pub enum AudioLibrary {
     DoorOpen1, DoorOpen2, DoorOpen3,
     DoorClose3, DoorClose2, DoorClose1,
     Intro, AccidentSong,
+    Victory, Defeat,
+    Nope,
 }
