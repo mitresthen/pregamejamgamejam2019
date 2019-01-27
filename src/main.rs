@@ -122,11 +122,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
-        let dust = mid_level.take_tile_with_id(22);
+        let dust = mid_level.take_tile_with_id(21);
 
         for (_, position) in dust.iter() {
-
-
             let mut key = key::Key::new(ctx)?;
             key.get_transform_mut().set_translation(*position);
             scene.add_object(key);
@@ -146,15 +144,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(door);
         }
 
-        let fuse_box = mid_level.take_tile_with_id(16);
+        let fuse_box = mid_level.take_tile_with_id(29);
         for (_, position) in fuse_box.iter() {
             let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
             fuse_box.get_transform_mut().set_translation(*position);
             scene.add_object(fuse_box);
         }
-
-
-
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();

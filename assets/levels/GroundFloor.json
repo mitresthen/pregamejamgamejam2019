@@ -43,13 +43,15 @@
             "door_vertical_topDown_1.png",
             "Electronics_Roomba.png",
             "wallTile_withWindow.png",
-            "key_in_dust.png",
+            "item_Dust.png",
             "item_Kommode_Blue.png",
             "item_Kommode_Gul.png",
             "items_kitchentop_oven.png",
             "item_flatscreenTV.png",
             "item_wachingmachine.png",
-            "blocker.png"
+            "blocker.png",
+            "wallTile_Blue_fuseBox_OFF.png",
+            "wallTile_Blue_fuseBox_ON.png"
         ]
     }
 }
