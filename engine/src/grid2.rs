@@ -143,6 +143,52 @@ impl Grid2 {
         best_axis.map(|x| x.0)
     }
 
+    pub fn get_collision_vector_points(&self, points : Vec<Vec2>)
+        -> Option<Vec2>
+    {
+        let start_x = ((points[0].x / self.tile_size as f32).floor() as i32).max(0);
+        let start_y = ((points[0].y / self.tile_size as f32).floor() as i32).max(0);
+
+        let end_x = ((points[1].x / self.tile_size as f32).ceil() as i32).min(self.width);
+        let end_y = ((points[1].y / self.tile_size as f32).ceil() as i32).min(self.height);
+
+        let mut best_axis = None;
+
+        let min_y = start_y.min(end_y);
+        let max_y = start_y.max(end_y);
+
+        let min_x = start_x.min(end_x);
+        let max_x = start_x.max(end_x);
+
+        for y in min_y..max_y {
+            for x in min_x..max_x {
+                let index = (y * self.width) + x;
+
+                let tile_id = self.buffer.iter().nth(index as usize).unwrap();
+
+                if *tile_id == 0 {
+                    continue;
+                }
+
+                let tile_bb =
+                    BoundingBox::new(
+                        self.tile_size as f32,
+                        self.tile_size as f32,
+                        Vec2::from_coords(
+                            x as f32 + 0.5,
+                            y as f32 + 0.5
+                        ) * self.tile_size as f32
+                    );
+
+                if let Some(result) = tile_bb.sat_overlap_points(&points) {
+                    best_axis = Some(best_axis.map(|x: (Vec2, f32)| if x.1 > result.1 { x } else { result }).unwrap_or(result));
+                }
+            }
+        }
+
+        best_axis.map(|x| x.0)
+    }
+
     fn get_row_rect(&self, y: i32) -> Rect2D {
         use std::f32;
         Rect2D {

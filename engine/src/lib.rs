@@ -4,6 +4,8 @@ extern crate rand;
 extern crate bincode;
 #[macro_use]
 extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
 extern crate serde;
 
 
@@ -38,6 +40,8 @@ pub mod axis_controller;
 pub mod slider_controller;
 
 pub mod sat_collider;
+
+pub mod level;
 
 pub mod prelude;
 

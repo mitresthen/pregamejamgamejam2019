@@ -28,3 +28,5 @@ pub use transform::Transform;
 
 pub use game_object::{PhysicalObject, GameObject, EventType, GameEvent};
 pub use scene::{SceneObjectId, Scene};
+
+pub use level::Level;

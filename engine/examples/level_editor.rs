@@ -1,40 +1,9 @@
 extern crate engine;
-#[macro_use]
-extern crate serde;
-#[macro_use]
-extern crate serde_derive;
-#[macro_use]
-extern crate serde_json;
-
-use std::fs::File;
-use std::io::Read;
-use std::path::PathBuf;
 
 use engine::prelude::*;
 
-use serde::{Deserialize, Serialize};
-
-#[derive(Serialize, Deserialize)]
-struct LayerInfo {
-    file: String,
-    tiles: Vec<String>
-}
-
-#[derive(Serialize, Deserialize)]
-struct LevelInfo {
-    width: i32,
-    height: i32,
-    ground: LayerInfo,
-    objects: LayerInfo
-}
-
-
-
 pub struct LevelEditor {
-    ground: Grid2,
-    ground_filename: String,
-    objects: Grid2,
-    objects_filename: String,
+    level: Level,
     controller: AxisController,
     zoom: SliderController,
     camera_velocity: Vec2,
@@ -45,42 +14,11 @@ pub struct LevelEditor {
 impl LevelEditor {
     pub fn get_edit_layer(&mut self) -> &mut Grid2 {
         if self.edit_layer == 0 {
-            &mut self.ground
+            &mut self.level.ground
         } else {
-            &mut self.objects
+            &mut self.level.objects
         }
     }
-}
-
-fn load_layer(
-    ctx: &mut Engine,
-    levels_folder: &PathBuf,
-    image_folder: &PathBuf,
-    layer_info: &LayerInfo
-) -> (Grid2, String) {
-    let mut filename = levels_folder.clone();
-    filename.push(&layer_info.file);
-
-
-    let mut grid =
-        if let Ok(loaded_ground) = Grid2::load(filename.to_str().unwrap()) {
-            loaded_ground
-        } else {
-            println!("Unable to open {}, creating new level", filename.to_str().unwrap());
-            Grid2::new(32, 18, 120)
-        };
-
-    for tile in layer_info.tiles.iter() {
-        let mut tile_filename = image_folder.clone();
-        tile_filename.push(tile);
-        println!("Loading tile texture: {:?}", tile_filename);
-
-        let texture = ctx.get_texture_registry().load(&tile_filename.to_str().unwrap()).unwrap();
-
-        grid.add_tile_type(texture);
-    }
-
-    (grid, filename.to_str().unwrap().to_string())
 }
 
 
@@ -91,30 +29,11 @@ impl GameInterface for LevelEditor {
         use std::env;
         let args: Vec<String> = env::args().collect();
 
-        let tilemap_filename = args.iter().nth(1).unwrap();
-
-        let mut level_folder : PathBuf = tilemap_filename.into();
-        level_folder.pop();
-
-        let mut image_folder = level_folder.clone();
-        image_folder.pop();
-        image_folder.push("image");
-
-        let mut file = File::open(&tilemap_filename).unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
-
-        let level_info : LevelInfo = serde_json::from_str(&data).unwrap();
-
-        let (ground, ground_filename) =  load_layer(ctx, &level_folder, &image_folder, &level_info.ground);
-        let (objects, objects_filename) =  load_layer(ctx, &level_folder, &image_folder, &level_info.objects);
+        let level_filename = args.iter().nth(1).unwrap();
 
         let level_editor =
             LevelEditor {
-                ground: ground,
-                ground_filename: ground_filename,
-                objects: objects,
-                objects_filename: objects_filename,
+                level: Level::load_from_file(ctx, &level_filename),
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -160,10 +79,10 @@ impl GameInterface for LevelEditor {
             }
         }
 
-        ctx.draw(&self.ground);
+        ctx.draw(&self.level.ground);
 
         if self.edit_layer == 1 {
-            ctx.draw(&self.objects);
+            ctx.draw(&self.level.objects);
         }
 
         Ok(true)
@@ -221,10 +140,7 @@ impl GameInterface for LevelEditor {
     }
 
     fn on_exit(&mut self) {
-        println!("Saving ground to: {}", self.ground_filename);
-        self.ground.save_to_file(&self.ground_filename).unwrap();
-        println!("Saving objects to: {}", self.objects_filename);
-        self.objects.save_to_file(&self.objects_filename).unwrap();
+        self.level.save();
     }
 }
 

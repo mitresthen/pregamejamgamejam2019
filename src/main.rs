@@ -34,8 +34,8 @@ enum AudioLibrary {
 }
 
 struct GoogleHomeopathicMedicine {
-    low_level: Grid,
-    mid_level: Grid,
+    low_level: Grid2,
+    mid_level: Grid2,
     lightmap: Texture,
     player_id: SceneObjectId,
     roomba_id: SceneObjectId,
@@ -58,8 +58,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let low_level : Image<RGBA> = Image::load("assets/image/temp_level_low.png")?;
-        let mid_level : Image<RGBA> = Image::load("assets/image/temp_level.png")?;
+        let level = Level::load_from_file(ctx, "assets/levels/tilemap.json");
+
+        let mut low_level = level.ground;
+        let mut mid_level = level.objects;
 
         let mut sounds = HashMap::new();
         sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
@@ -111,40 +113,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
         let lightmap = ctx.get_texture_registry().load2("assets/image/grid_test_lightmap.png", BlendMode::Mod)?;
-
-        let mut low_level = Grid::new(low_level, 120);
-        let mut mid_level = Grid::new(mid_level, 120);
-
-
-        {
-            let tr = ctx.get_texture_registry();
-
-            low_level.register_tile_type(
-                RGBA { r: 0, g: 0, b: 0, a: 255 },
-                tr.load("assets/image/tile_Yellow_2.png")?
-            );
-
-            mid_level.register_tile_type(
-                RGBA { r: 255, g: 0, b: 0, a: 255 },
-                tr.load("assets/image/wall_with_dark_top.png")?
-            );
-            mid_level.register_tile_type(
-                RGBA { r: 254, g: 0, b: 0, a: 255 },
-                tr.load("assets/image/wall_dark_only.png")?
-            );
-            mid_level.register_tile_type(
-                RGBA { r: 253, g: 0, b: 0, a: 255 },
-                tr.load("assets/image/single_dark_tile.png")?
-            );
-            mid_level.register_tile_type(
-                RGBA { r: 0, g: 0, b: 255, a: 255 },
-                tr.load("assets/image/item_bed_col1.png")?
-            );
-            mid_level.register_tile_type(
-                RGBA { r: 255, g: 0, b: 255, a: 255 },
-                tr.load("assets/image/Alexa_version1.png")?
-            );
-        }
 
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
