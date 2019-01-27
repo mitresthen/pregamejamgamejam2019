@@ -7,9 +7,23 @@ use sdl2::render::BlendMode;
 use bounding_box::BoundingBox;
 use scene::Scene;
 use rect::Rect2D;
+use std::fs::File;
+use std::io::Read;
+use std::io::Write;
 use Error;
+use super::bincode;
 
 pub type TileIndex = u32;
+
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize)]
+struct GridData {
+    width: i32,
+    height: i32,
+    tile_size: u32,
+    buffer: Vec<TileIndex>,
+}
 
 pub struct Grid2 {
     buffer: Vec<TileIndex>,
@@ -29,6 +43,50 @@ impl Grid2 {
             tile_size: tile_size,
             tile_list: Vec::new(),
             interleaved_scene: None
+        }
+    }
+
+    pub fn load(filename: &str) -> Result<Grid2, Error> {
+        match  File::open(filename) {
+            Ok(mut f) => {
+                let mut bytes : Vec<u8> = Vec::new();
+                f.read_to_end(&mut bytes).unwrap();
+                let grid_data = bincode::deserialize::<GridData>(&bytes).unwrap();
+
+                Ok(
+                    Grid2 {
+                        buffer: grid_data.buffer,
+                        width: grid_data.width,
+                        height: grid_data.height,
+                        tile_size: grid_data.tile_size,
+                        tile_list: Vec::new(),
+                        interleaved_scene: None
+                    }
+                )
+            },
+            Err(e) => {
+                println!("IO error: {:?}, filename={}", e, filename);
+                Err(Error::IO { path: Some(filename.to_string()) })
+            }
+        }
+    }
+
+    pub fn save_to_file(&self, filename: &str) -> Result<(), Error> {
+        if let Ok(mut f) = File::create(filename) {
+            let grid_data = 
+                GridData {
+                    width: self.width,
+                    height: self.height,
+                    buffer: self.buffer.clone(),
+                    tile_size: self.tile_size
+                };
+            let bytes = bincode::serialize(&grid_data).unwrap();
+
+            f.write(&bytes).unwrap();
+
+            Ok(())
+        } else {
+            Err(Error::IO { path: Some(filename.to_string()) })
         }
     }
 

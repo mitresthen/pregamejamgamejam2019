@@ -1,6 +1,11 @@
 extern crate sdl2;
 extern crate stb_image;
 extern crate rand;
+extern crate bincode;
+#[macro_use]
+extern crate serde_derive;
+extern crate serde;
+
 
 use std::collections::HashMap;
 use std::hash::Hash;
@@ -113,6 +118,8 @@ pub trait GameInterface : Sized {
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 
     fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
+
+    fn on_exit(&mut self) { }
 }
 
 impl<'t> Engine<'t> {
@@ -412,6 +419,8 @@ impl<'t> Engine<'t> {
             // Limit framerate to 100 fps
             // std::thread::sleep(Duration::from_millis(10));
         }
+
+        game.on_exit();
 
         Ok(())
     }

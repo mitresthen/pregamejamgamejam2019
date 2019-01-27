@@ -16,12 +16,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 struct LevelInfo {
+    width: i32,
+    height: i32,
+    ground_file: String,
+    objects_file: String,
     tiles: Vec<String>
 }
 
 
 pub struct LevelEditor {
-    grid: Grid2,
+    ground: Grid2,
+    ground_filename: String,
     controller: AxisController,
     zoom: SliderController,
     camera_velocity: Vec2
@@ -36,8 +41,10 @@ impl GameInterface for LevelEditor {
 
         let tilemap_filename = args.iter().nth(1).unwrap();
 
-        let mut image_folder : PathBuf = tilemap_filename.into();
-        image_folder.pop();
+        let mut level_folder : PathBuf = tilemap_filename.into();
+        level_folder.pop();
+
+        let mut image_folder = level_folder.clone();
         image_folder.pop();
         image_folder.push("image");
 
@@ -47,22 +54,33 @@ impl GameInterface for LevelEditor {
 
         let level_info : LevelInfo = serde_json::from_str(&data).unwrap();
 
-        let mut grid = Grid2::new(32, 18, 120);
+        let mut ground_filename = level_folder.clone();
+        ground_filename.push(&level_info.ground_file);
+
+        let mut ground =
+            if let Ok(loaded_ground) = Grid2::load(ground_filename.to_str().unwrap()) {
+                loaded_ground
+            } else {
+                println!("Unable to open {}, creating new level", ground_filename.to_str().unwrap());
+                Grid2::new(32, 18, 120)
+            };
+
 
         for tile in level_info.tiles {
             let mut tile_filename = image_folder.clone();
             tile_filename.push(tile);
-            println!("Full path: {:?}", tile_filename);
+            println!("Loading tile texture: {:?}", tile_filename);
 
             let texture = ctx.get_texture_registry().load(&tile_filename.to_str().unwrap()).unwrap();
 
-            grid.add_tile_type(texture);
+            ground.add_tile_type(texture);
         }
 
 
         let level_editor =
             LevelEditor {
-                grid: grid,
+                ground: ground,
+                ground_filename: ground_filename.to_str().unwrap().to_string(),
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -100,7 +118,7 @@ impl GameInterface for LevelEditor {
             }
         }
 
-        ctx.draw(&self.grid);
+        ctx.draw(&self.ground);
 
         Ok(true)
     }
@@ -111,16 +129,21 @@ impl GameInterface for LevelEditor {
         if let Some(drag_state) = ctx.get_mouse_drag_state() {
             if (drag_state.start - drag_state.current).len() > 10.0 {
             } else {
-                let maybe_tile = self.grid.get_tile_at(drag_state.current);
+                let maybe_tile = self.ground.get_tile_at(drag_state.current);
 
                 if let Some(mut tile_id) = maybe_tile {
-                    tile_id = (tile_id + 1) % self.grid.get_tile_type_count();
-                    self.grid.set_tile_at(drag_state.current, tile_id);
+                    tile_id = (tile_id + 1) % self.ground.get_tile_type_count();
+                    self.ground.set_tile_at(drag_state.current, tile_id);
                 }
             }
-    
+
         }
         Ok(true)
+    }
+
+    fn on_exit(&mut self) {
+        println!("Saving ground to: {}", self.ground_filename);
+        self.ground.save_to_file(&self.ground_filename).unwrap()
     }
 }
 
