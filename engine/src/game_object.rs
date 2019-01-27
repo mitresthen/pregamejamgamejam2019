@@ -27,7 +27,8 @@ pub enum EventType {
     Attack { damage: f32 },
     Loot { item: Item },
     Suck,
-    DeleteMe
+    DeleteMe,
+    FreeFromDust,
 }
 
 #[derive(Debug)]
@@ -119,7 +120,7 @@ pub trait PhysicalObject {
 }
 
 pub trait GameObject: 'static {
-    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool;
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool;
 
     fn render(&self, ctx: &mut DrawContext);
 

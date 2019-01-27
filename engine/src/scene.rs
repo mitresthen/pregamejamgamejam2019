@@ -139,7 +139,7 @@ impl Scene {
                 }
             },
             EventType::DeleteMe => {
-                
+                self.remove_object(sender.unwrap());
             },
             _ => { }
         }
@@ -177,11 +177,19 @@ impl Scene {
                     let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                     let velocity_a = physical_object_a.get_velocity_mut();
                     *velocity_a = axis * -220.0;
+                    self.event_queue.submit_event(
+                        EventType::Collide { force: axis },
+                        EventReceiver::Addressed { object_id: ob_a }
+                    );
                 }
                 {
                     let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                     let velocity_b = physical_object_b.get_velocity_mut();
                     *velocity_b = axis * 220.0;
+                    self.event_queue.submit_event(
+                        EventType::Collide { force: axis },
+                        EventReceiver::Addressed { object_id: ob_b }
+                    );
                 }
             }
         }

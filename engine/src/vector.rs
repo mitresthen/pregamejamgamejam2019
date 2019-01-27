@@ -33,7 +33,8 @@ impl Vec2 {
     }
 
     pub fn valid(&self) -> bool {
-        self.x != std::f32::NAN && self.y != std::f32::NAN
+        use std::f32;
+        self.x != f32::NAN && self.y != f32::NAN
     }
 
     pub fn len(&self) -> f32 {

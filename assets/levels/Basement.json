@@ -2,28 +2,21 @@
     "width" : 30,
     "height" : 20,
     "ground" : {
-        "file" : "GroundFloor-Ground.dat",
+        "file" : "Basement-Ground.dat",
         "tiles" : [
-            "tile_Yellow_2.png",
             "tile_Blue_1.png",
+            "tile_Yellow_2.png",
             "tile_Blue_Cracked1.png",
             "tile_Blue_Cracked2.png",
-            "Floormat_on_Green.png",
-            "Floormat_on_Blue.png",
-            "Floormat_on_Yellow.png",
-            "stairsTop.png",
-            "tile_Green_1.png",
-            "tile_Green_cracked.png",
-            "tile_grass_1.png",
-            "tile_grass_2.png",
-            "tile_grass_3.png"
+            "item_Floormat.png",
+            "stairsTop.png"
         ]
     },
     "objects" : {
-        "file" : "GroundFloor-Objects.dat",
+        "file" : "Basement-Objects.dat",
         "tiles" : [
             "blank.png",
-            "wall_with_dark_top.png",
+            "wallTile_Blue1_black.png",
             "wall_dark_only.png",
             "Alexa_version1.png",
             "item_Nightstand_col1.png",
@@ -35,8 +28,9 @@
             "item_fridge.png",
             "items_kitchentop_1box.png",
             "items_kitchentop_bottom.png",
-            "wallTile_Blue1_black.png",
-            "blank.png",
+            "wall_with_dark_top.png",
+            "wallTile_Blue_fuseBox_ON.png",
+            "wallTile_Blue_fuseBox_OFF.png",
             "wallTile_Green1_black.png",
             "wallTile_Green2_black.png",
             "door_closed_ver1.png",
@@ -46,7 +40,10 @@
             "key_in_dust.png",
             "item_Kommode_Blue.png",
             "item_Kommode_Gul.png",
-            "items_kitchentop_oven.png"
+            "items_kitchentop_oven.png",
+            "item_cardboardbox_1.png",
+            "item_cardboardbox_2.png",
+            "item_cardboardbox_3.png"
         ]
     }
 }

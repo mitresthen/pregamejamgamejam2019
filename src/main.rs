@@ -115,20 +115,27 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
+        let dust = mid_level.take_tile_with_id(22);
+        
         let key = mid_level.take_tile_with_id(21);
         for (_, position) in key.iter() {
             let mut key = key::Key::new(ctx)?;
             key.get_transform_mut().set_translation(*position);
-            scene.add_object(key);
         }
+
+        for (_, position) in dust.iter() {
+            let mut dust = dust::Dust::new(ctx)?;
+            dust.get_transform_mut().set_translation(*position);
+            scene.add_object(dust);
+        }
+
+
+
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let pause_sprite = StaticSprite::new(128, 64, tr.load("assets/image/paused.png")?)?;
-
-        let title_background = StaticSprite::new(640, 480, tr.load("assets/image/title_background.png")?)?;
-
+        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
         let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
 
         let title_screen =
@@ -148,14 +155,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     name: "Start Adventure".to_string(),
                     target_game_state: GAMEPLAY_STATE,
                     sprite: start_game_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
                 MenuChoice
                 {
                     name: "Quit Game".to_string(),
                     target_game_state: EXIT_STATE,
                     sprite: exit_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
             ].to_vec();
 

@@ -4,6 +4,8 @@ use std::f32;
 use rand::Rng;
 use rand;
 
+use audio_library::AudioLibrary;
+
 
 #[derive(PartialEq)]
 enum RoombaState {
@@ -19,6 +21,8 @@ pub struct Roomba {
     transform: Transform,
     velocity: Vec2,
     mode: RoombaState,
+    aggro: f32,
+    suck: bool
 }
 
 impl Roomba {
@@ -33,8 +37,11 @@ impl Roomba {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                mode: RoombaState::Random
+                mode: RoombaState::Random,
+                aggro: -1.0,
+                suck: false
             };
+
         let vel = (Vec2::random()*250.0);
         roomba.velocity = vel;
 
@@ -55,7 +62,7 @@ impl Roomba {
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
 
         if self.mode == RoombaState::Searching {
             event_mailbox.submit_event(
@@ -85,7 +92,15 @@ impl GameObject for Roomba {
             self.mode = RoombaState::Random;
         }
 
+        let aggro_tolerance = 0.5;
+
         if let RoombaState::Tracking(target) = self.mode {
+            self.aggro += dt;
+
+            if self.aggro > aggro_tolerance && self.aggro - dt <= aggro_tolerance {
+                ctx.play_sound(AudioLibrary::HooverStart);
+            }
+
             let distance = (target - self.transform.get_translation());
             if distance.len() < 60.0 {
                 self.mode = RoombaState::Searching;
@@ -93,6 +108,22 @@ impl GameObject for Roomba {
                 let direction = distance.normalize();
                 let target_velocity = direction * 340.0;
                 self.velocity.approach(target_velocity, 340.0 * dt);
+            }
+        }
+        if self.suck {
+            let origin = self.transform.get_translation();
+            event_mailbox.submit_event(
+                EventType::Suck,
+                EventReceiver::Nearest { origin, max_distance: Some(120.0) }
+            );
+            self.suck = false;
+        }
+
+        if self.mode == RoombaState::Random {
+            self.aggro -= dt;
+
+            if self.aggro < -aggro_tolerance && self.aggro + dt >= -aggro_tolerance {
+                ctx.play_sound(AudioLibrary::HooverStop);
             }
         }
 
@@ -122,10 +153,14 @@ impl GameObject for Roomba {
                 let angle: f32 = rng.gen();
                 let angle = angle % f32::consts::PI;
                 self.velocity = force.rotated(angle) * 150.0;
+                self.suck = true;
 
                 if let RoombaState::Tracking(_) = self.mode {
                     self.mode = RoombaState::Attacking;
                 } else {
+                    if self.aggro > 0.0 {
+                        self.aggro = 0.0;
+                    }
                     self.mode = RoombaState::Searching;
                 }
                 true
@@ -137,6 +172,9 @@ impl GameObject for Roomba {
             EventType::RayCastReply { success, target } => {
                 if success {
                     self.mode = RoombaState::Tracking(target);
+                    if self.aggro < 0.0 {
+                        self.aggro = 0.0;
+                    }
                 }
                 true
             }

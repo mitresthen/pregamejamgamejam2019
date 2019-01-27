@@ -1,5 +1,7 @@
 use engine::prelude::*;
 
+use audio_library::AudioLibrary;
+
 use std::f32;
 use rand::Rng;
 use rand;
@@ -7,7 +9,8 @@ use rand;
 
 pub struct Alex {
     transform: Transform,
-    velocity: Vec2
+    velocity: Vec2,
+    prompted_for_response: bool
 }
 
 impl Alex {
@@ -16,7 +19,8 @@ impl Alex {
         let mut alex =
             Alex {
                 transform: Transform::new(),
-                velocity: Vec2::new()
+                velocity: Vec2::new(),
+                prompted_for_response: false
             };
         alex.transform.set_scale(1.0);
 
@@ -30,7 +34,12 @@ impl Alex {
 
 impl GameObject for Alex {
 
-    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+        if self.prompted_for_response {
+            ctx.play_sound(AudioLibrary::Rustle).unwrap();
+            self.prompted_for_response = false;
+        }
+
         true
     }
 
@@ -49,6 +58,7 @@ impl GameObject for Alex {
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
+                self.prompted_for_response = true;
                 true
             },
             _ => {
