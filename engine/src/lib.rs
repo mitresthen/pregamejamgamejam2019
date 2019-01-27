@@ -45,6 +45,8 @@ pub mod level;
 
 pub mod prelude;
 
+pub mod dimmer;
+
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 pub use sdl2::mouse::MouseButton;
