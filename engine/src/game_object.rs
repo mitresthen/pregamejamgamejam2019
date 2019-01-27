@@ -121,6 +121,8 @@ pub trait PhysicalObject {
     fn get_velocity_mut(&mut self) -> &mut Vec2;
 
     fn get_bounding_box(&self) -> Option<BoundingBox>;
+
+    fn should_block(&self) -> bool { true }
 }
 
 pub trait GameObject: 'static {
