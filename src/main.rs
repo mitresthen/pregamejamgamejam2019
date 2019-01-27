@@ -155,6 +155,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 name: "Main Menu".to_string(),
                 background: main_menu_background,
                 options: main_menu_choices,
+                current_zoom: 1.0,
+                camera_pos: Vec2::new(),
             };
 
         let mut pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
@@ -183,6 +185,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 name: "Pause Menu".to_string(),
                 background: pause_menu_background,
                 options: pause_menu_choices,
+                current_zoom: 1.0,
+                camera_pos: Vec2::new(),
             };
 
         let game =
@@ -216,7 +220,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
-        // &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
+        &self.pause_screen.set_camera_pos(player_position);
 
         self.scene.update(ctx, Some(&self.mid_level), dt);
 
@@ -228,7 +232,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     {
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
-        // &self.pause_sprite.set_scale(1.0/zoom);
+        &self.pause_screen.set_scale(zoom);
 
         ctx.draw(&self.low_level);
         ctx.draw(&self.mid_level.interleave_scene(&self.scene));
