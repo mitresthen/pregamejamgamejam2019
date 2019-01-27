@@ -2,6 +2,7 @@ use engine::prelude::*;
 
 pub struct Player {
     controller: AxisController,
+    interact_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
@@ -34,6 +35,7 @@ impl Player {
                     Keycode::Left,
                     Keycode::Right,
                 ),
+                interact_trigger: Trigger::new(Keycode::Space),
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
@@ -59,7 +61,7 @@ impl GameObject for Player {
             self.controller.poll(ctx) * 400.0;
 
 
-        if ctx.key_is_down(Keycode::Space) {
+        if self.interact_trigger.poll(ctx) {
             event_mailbox.submit_event(
                 EventType::Interact,
                 EventReceiver::Nearest {

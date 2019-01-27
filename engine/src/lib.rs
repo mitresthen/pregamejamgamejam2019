@@ -37,6 +37,7 @@ pub mod scene;
 
 pub mod axis_controller;
 pub mod slider_controller;
+pub mod trigger;
 
 pub mod sat_collider;
 
