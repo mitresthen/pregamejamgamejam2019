@@ -15,6 +15,7 @@ enum DoorState {
 
 pub struct Door {
     sprite: AnimatedSprite,
+    lock_sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     state: DoorState
@@ -24,11 +25,12 @@ impl Door {
     pub fn new(ctx: &mut Engine, texture: Texture) -> Door {
         let lock_texture =
             {
-                ctx.get_texture_registry().load("assets/image/item_keyhole.png").unwrap();
+                ctx.get_texture_registry().load("assets/image/item_keyhole.png").unwrap()
             };
 
         Door {
             sprite: AnimatedSprite::new(Extent::new(120, 360), texture).unwrap(),
+            lock_sprite: AnimatedSprite::new(Extent::new(120, 120), lock_texture).unwrap(),
             transform: Transform::new(),
             velocity: Vec2::new(),
             state: DoorState::ClosedAndUnlocked
@@ -102,11 +104,20 @@ impl GameObject for Door {
         let mut sprite_transform = self.transform.clone();
         sprite_transform.translate(Vec2::from_coords(0.0, -120.0));
         self.sprite.set_transform(&sprite_transform);
+        self.lock_sprite.set_transform(&sprite_transform);
         true
     }
 
     fn render(&self, ctx: &mut DrawContext) {
         self.sprite.draw(ctx);
+
+        match (self.state) {
+            DoorState::ClosedAndLocked |
+            DoorState::RequestingKey(_) => {
+                self.lock_sprite.draw(ctx);
+            },
+            _ => {}
+        }
     }
 
     fn get_physical_object(&self) -> Option<&PhysicalObject> { Some(self) }
