@@ -38,6 +38,10 @@ impl Dimmer {
         }
     }
 
+    pub fn set_target(&mut self, value: f32) {
+        self.target_value = value;
+    }
+
     pub fn get_value(&self) -> f32 { self.value }
 
     pub fn set_value(&mut self, value: f32) {

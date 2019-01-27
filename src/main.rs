@@ -18,6 +18,13 @@ mod fuse_box;
 
 use audio_library::AudioLibrary;
 
+enum TransitionLogic {
+    ActiveLevel,
+    FadingOutLevel { target_level: i32 },
+    FadingInLevel { target_level: i32 }
+
+}
+
 struct GoogleHomeopathicMedicine {
     low_level: Grid2,
     mid_level: Grid2,
@@ -29,6 +36,90 @@ struct GoogleHomeopathicMedicine {
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
     dimmer: Dimmer,
+    transition_logic: TransitionLogic
+}
+
+impl GoogleHomeopathicMedicine {
+    fn load_level(ctx: &mut Engine, level_index: i32) -> Result<(Grid2, Grid2, Scene, SceneObjectId), Error> {
+
+        let levels = ["assets/levels/GroundFloor.json", "assets/levels/Basement.json"];
+
+        let level = Level::load_from_file(ctx, levels[level_index as usize]);
+
+        let mut low_level = level.ground;
+        let mut mid_level = level.objects;
+
+        let mut player = player::Player::new(ctx)?;
+        player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
+
+        let mut alex = alex::Alex::new(ctx)?;
+        alex.get_transform_mut().set_translation(Vec2::from_coords(8.5 * 120.0, 1.5 * 120.0));
+
+
+        let mut scene = Scene::new();
+        let player_id = scene.add_object(player);
+        scene.add_object(alex);
+
+        let roombas_in_level = mid_level.take_tile_with_id(19);
+
+        for (_, position) in roombas_in_level.iter() {
+            let mut roomba = roomba::Roomba::new(ctx)?;
+            roomba.get_transform_mut().set_translation(*position);
+            scene.add_object(roomba);
+        }
+
+        let dust = mid_level.take_tile_with_id(22);
+
+        for (_, position) in dust.iter() {
+
+
+            let mut key = key::Key::new(ctx)?;
+            key.get_transform_mut().set_translation(*position);
+            scene.add_object(key);
+
+            let mut dust = dust::Dust::new(ctx)?;
+            dust.get_transform_mut().set_translation(*position);
+            scene.add_object(dust);
+        }
+
+        for (index, (texture, position)) in mid_level.take_tile_with_id(17).into_iter().enumerate() {
+            let mut door = door::Door::new(ctx, texture);
+
+            if index == 2 {
+                door = door.with_key_requirement();
+            }
+            door.get_transform_mut().set_translation(position);
+            scene.add_object(door);
+        }
+
+        let fuse_box = mid_level.take_tile_with_id(16);
+        for (_, position) in fuse_box.iter() {
+            let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
+            fuse_box.get_transform_mut().set_translation(*position);
+            scene.add_object(fuse_box);
+        }
+
+
+
+
+        Ok((low_level, mid_level, scene, player_id))
+    }
+
+    pub fn change_level(&mut self, ctx: &mut Engine, level_index: i32) {
+        let old_position =
+            self.scene.get(self.player_id).unwrap().get_physical_object().unwrap().get_transform().get_translation();
+
+        let (low_level, mid_level, scene, player_id) = Self::load_level(ctx, level_index).unwrap();
+
+
+        self.low_level = low_level;
+        self.mid_level = mid_level;
+        self.scene = scene;
+        self.player_id = player_id;
+
+        self.scene.get_mut(self.player_id).unwrap().get_physical_object_mut().unwrap().get_transform_mut().set_translation(
+            old_position);
+    }
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -40,13 +131,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         Some(self.title_screen.clone())
     }
 
+
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
         let dimmer = { Dimmer::new(ctx).with_initial_value(0.0).with_target_value(1.0) };
-        let level = Level::load_from_file(ctx, "assets/levels/GroundFloor.json");
-
-        let mut low_level = level.ground;
-        let mut mid_level = level.objects;
-
         let mut sounds = HashMap::new();
         sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
         sounds.insert(AudioLibrary::AccidentSong, "assets/music/would_you_like_to_hear_a_song.wav");
@@ -103,70 +190,11 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-        let mut player = player::Player::new(ctx)?;
-        player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
 
-        let mut alex = alex::Alex::new(ctx)?;
-        alex.get_transform_mut().set_translation(Vec2::from_coords(8.5 * 120.0, 1.5 * 120.0));
-
-
-        let mut scene = Scene::new();
-        let player_id = scene.add_object(player);
-        scene.add_object(alex);
-
-        let roombas_in_level = mid_level.take_tile_with_id(19);
-
-        for (_, position) in roombas_in_level.iter() {
-            let mut roomba = roomba::Roomba::new(ctx)?;
-            roomba.get_transform_mut().set_translation(*position);
-            scene.add_object(roomba);
-        }
-
-        let dust = mid_level.take_tile_with_id(22);
-
-        for (_, position) in dust.iter() {
-
-
-            let mut key = key::Key::new(ctx)?;
-            key.get_transform_mut().set_translation(*position);
-            scene.add_object(key);
-
-            let mut dust = dust::Dust::new(ctx)?;
-            dust.get_transform_mut().set_translation(*position);
-            scene.add_object(dust);
-        }
-
-        for (index, (texture, position)) in mid_level.take_tile_with_id(17).into_iter().enumerate() {
-            let mut door = door::Door::new(ctx, texture);
-
-            if index == 2 {
-                door = door.with_key_requirement();
-            }
-            door.get_transform_mut().set_translation(position);
-            scene.add_object(door);
-        }
-
-        let fuse_box = mid_level.take_tile_with_id(16);
-        for (_, position) in fuse_box.iter() {
-            let mut fuse_box = fuse_box::FuseBox::new(ctx)?;
-            fuse_box.get_transform_mut().set_translation(*position);
-            scene.add_object(fuse_box);
-        }
-
-
-
+        let (low_level, mid_level, scene, player_id) = { Self::load_level(ctx, 0)? };
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
-
-        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
-        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
-
-        let title_screen =
-            SplashScreen {
-                background: title_background,
-                foreground: title_sprite,
-            };
 
         let mut main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
         let mut start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
@@ -187,6 +215,18 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     sprite: exit_sprite,
                 },
             ].to_vec();
+
+
+        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
+        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
+
+        let title_screen =
+            SplashScreen {
+                background: title_background,
+                foreground: title_sprite,
+            };
+
+
 
         let main_menu_screen =
             MenuScreen
@@ -228,6 +268,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 camera_pos: Vec2::new(),
             };
 
+
         let game =
             GoogleHomeopathicMedicine {
                 low_level: low_level,
@@ -244,12 +285,34 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
                 dimmer: dimmer,
+                transition_logic: TransitionLogic::ActiveLevel
             };
 
         Ok(game)
     }
 
     fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+
+        match self.transition_logic {
+            TransitionLogic::FadingOutLevel { target_level: next_level } => {
+                self.dimmer.set_target(0.0);
+
+                if self.dimmer.get_value() == 0.0 {
+                    self.transition_logic = TransitionLogic::FadingInLevel { target_level: next_level };
+
+                    self.change_level(ctx, next_level);
+                }
+            },
+            TransitionLogic::FadingInLevel { target_level: next_level } => {
+                self.dimmer.set_target(1.0);
+
+                if self.dimmer.get_value() == 1.0 {
+                    self.transition_logic = TransitionLogic::ActiveLevel;
+                }
+            },
+            TransitionLogic::ActiveLevel => { }
+        };
+
         let player_position = self.scene.get(self.player_id)
             .unwrap()
             .get_physical_object()
@@ -344,7 +407,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
+        if keycode == Keycode::M {
+            self.transition_logic = TransitionLogic::FadingOutLevel { target_level: 1 };
+        }
+
         self.on_key_down(ctx, keycode, true)
+
     }
 
     fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, button: MouseButton)
