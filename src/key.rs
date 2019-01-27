@@ -30,7 +30,7 @@ impl Key {
 
 impl GameObject for Key {
 
-    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         true
     }
 

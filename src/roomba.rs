@@ -21,7 +21,8 @@ pub struct Roomba {
     transform: Transform,
     velocity: Vec2,
     mode: RoombaState,
-    aggro: f32
+    aggro: f32,
+    suck: bool
 }
 
 impl Roomba {
@@ -37,7 +38,8 @@ impl Roomba {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 mode: RoombaState::Random,
-                aggro: -1.0
+                aggro: -1.0,
+                suck: false
             };
 
         let vel = (Vec2::random()*250.0);
@@ -108,6 +110,14 @@ impl GameObject for Roomba {
                 self.velocity.approach(target_velocity, 340.0 * dt);
             }
         }
+        if self.suck {
+            let origin = self.transform.get_translation();
+            event_mailbox.submit_event(
+                EventType::Suck,
+                EventReceiver::Nearest { origin, max_distance: Some(120.0) }
+            );
+            self.suck = false;
+        }
 
         if self.mode == RoombaState::Random {
             self.aggro -= dt;
@@ -143,6 +153,7 @@ impl GameObject for Roomba {
                 let angle: f32 = rng.gen();
                 let angle = angle % f32::consts::PI;
                 self.velocity = force.rotated(angle) * 150.0;
+                self.suck = true;
 
                 if let RoombaState::Tracking(_) = self.mode {
                     self.mode = RoombaState::Attacking;

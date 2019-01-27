@@ -92,6 +92,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.load_sounds(sounds);
 
+        ctx.reset_sound();
+
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
         let mut player = player::Player::new(ctx)?;
@@ -113,20 +115,17 @@ impl GameInterface for GoogleHomeopathicMedicine {
             scene.add_object(roomba);
         }
 
-        let key = mid_level.take_tile_with_id(21);
-        for (_, position) in key.iter() {
-            let mut key = key::Key::new(ctx)?;
-            key.get_transform_mut().set_translation(*position);
-            scene.add_object(key);
+        let dust = mid_level.take_tile_with_id(22);
+        for (_, position) in dust.iter() {
+            let mut dust = dust::Dust::new(ctx)?;
+            dust.get_transform_mut().set_translation(*position);
+            scene.add_object(dust);
         }
 
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let pause_sprite = StaticSprite::new(128, 64, tr.load("assets/image/paused.png")?)?;
-
-        let title_background = StaticSprite::new(640, 480, tr.load("assets/image/title_background.png")?)?;
-
+        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
         let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
 
         let title_screen =
@@ -146,14 +145,12 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     name: "Start Adventure".to_string(),
                     target_game_state: GAMEPLAY_STATE,
                     sprite: start_game_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
                 MenuChoice
                 {
                     name: "Quit Game".to_string(),
                     target_game_state: EXIT_STATE,
                     sprite: exit_sprite,
-                    // sprite: pause_sprite.clone(),
                 },
             ].to_vec();
 
@@ -182,7 +179,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 MenuChoice
                 {
                     name: "Return to Main Menu".to_string(),
-                    target_game_state: MAIN_MENU_STATE,
+                    target_game_state: RESET_GAME,
                     sprite: return_to_menu_sprite,
                 },
             ].to_vec();
@@ -217,7 +214,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
         Ok(game)
     }
 
-
     fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
         let player_position = self.scene.get(self.player_id)
             .unwrap()
@@ -227,6 +223,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
             .get_translation();
 
         ctx.set_camera_position(player_position);
+        &self.main_menu_screen.set_camera_pos(player_position);
         &self.pause_screen.set_camera_pos(player_position);
 
         self.scene.update(ctx, Some(&self.mid_level), dt);
@@ -239,6 +236,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     {
         let zoom = self.zoom_controller.poll(&ctx, dt);
         ctx.set_camera_zoom(zoom);
+        &self.main_menu_screen.set_scale(zoom);
         &self.pause_screen.set_scale(zoom);
 
         ctx.draw(&self.low_level);
@@ -280,6 +278,18 @@ impl GameInterface for GoogleHomeopathicMedicine {
             }
             if keycode == Keycode::T && !is_repeated {
                 ctx.play_sound(AudioLibrary::Toilet);
+                return Ok(true);
+            }
+            if keycode == Keycode::M && !is_repeated {
+                ctx.toggle_mute();
+                return Ok(true);
+            }
+            if keycode == Keycode::I && !is_repeated {
+                ctx.increase_volume();
+                return Ok(true);
+            }
+            if keycode == Keycode::D && !is_repeated {
+                ctx.decrease_volume();
                 return Ok(true);
             }
         }
