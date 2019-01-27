@@ -2,7 +2,7 @@
     "width" : 26,
     "height" : 18,
     "ground" : {
-        "file" : "FirstFloor-Ground.dat",
+        "file" : "tilemap-Ground.dat",
         "tiles" : [
             "tile_Yellow_2.png",
             "tile_Blue_1.png",
@@ -12,7 +12,7 @@
         ]
     },
     "objects" : {
-        "file" : "FirstFloor-Objects.dat",
+        "file" : "tilemap-Objects.dat",
         "tiles" : [
             "blank.png",
             "wall_with_dark_top.png",
