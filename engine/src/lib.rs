@@ -224,6 +224,30 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
 
+    pub fn reset_sound(&mut self) -> Result<(), Error> {
+        Ok(self.audio_engine.reset()?)
+    }
+
+    pub fn increase_volume(&mut self) {
+        self.audio_engine.increase_volume(0.1);
+    }
+
+    pub fn decrease_volume(&mut self) {
+        self.audio_engine.decrease_volume(0.1);
+    }
+
+    pub fn mute_volume(&mut self) {
+        self.audio_engine.mute_volume();
+    }
+
+    pub fn unmute_volume(&mut self) {
+        self.audio_engine.unmute_volume();
+    }
+
+    pub fn toggle_mute(&mut self) {
+        self.audio_engine.toggle_mute();
+    }
+
     // TODO: Make it work with moving camera
     pub fn get_screen_bounds(&self) -> rect::Rect2D {
         rect::Rect2D {
