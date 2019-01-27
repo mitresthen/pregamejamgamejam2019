@@ -1,9 +1,24 @@
 use engine::prelude::*;
 
+use std::f32;
+use rand::Rng;
+use rand;
+
+
+#[derive(PartialEq)]
+enum RoombaState {
+    Random,
+    Searching,
+    Investigating(Vec2),
+    Tracking(Vec2),
+    Attacking
+}
+
 pub struct Roomba {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
+    mode: RoombaState,
 }
 
 impl Roomba {
@@ -17,8 +32,12 @@ impl Roomba {
             Roomba {
                 sprite: sprite,
                 transform: Transform::new(),
-                velocity: Vec2::new()
+                velocity: Vec2::new(),
+                mode: RoombaState::Random
             };
+        let vel = (Vec2::random()*250.0);
+        roomba.velocity = vel;
+
 
         roomba.transform.set_scale(1.0);
 
@@ -28,13 +47,55 @@ impl Roomba {
     pub fn get_transform_mut(&mut self) -> &mut Transform {
         &mut self.transform
     }
+
+    pub fn new_random_direction(&mut self) {
+        self.velocity = Vec2::random();
+    }
 }
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
-        let target_velocity = Vec2::new();
-        self.velocity.approach(target_velocity, 240.0 * dt);
+    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+
+        if self.mode == RoombaState::Searching {
+            event_mailbox.submit_event(
+                EventType::Probe { hint: "player".to_string() },
+                EventReceiver::Broadcast
+            );
+            self.mode = RoombaState::Random;
+        }
+
+        if self.mode == RoombaState::Attacking {
+            let origin = self.transform.get_translation();
+
+            event_mailbox.submit_event(
+                EventType::Attack { damage: 100.0 },
+                EventReceiver::Nearest { origin, max_distance: Some(120.0) }
+            );
+
+            self.mode = RoombaState::Searching;
+        }
+
+        if let RoombaState::Investigating(target) = self.mode {
+            let origin = self.transform.get_translation();
+            event_mailbox.submit_event(
+                EventType::RayCast { origin, target },
+                EventReceiver::Scene
+            );
+            self.mode = RoombaState::Random;
+        }
+
+        if let RoombaState::Tracking(target) = self.mode {
+            let distance = (target - self.transform.get_translation());
+            if distance.len() < 60.0 {
+                self.mode = RoombaState::Searching;
+            } else {
+                let direction = distance.normalize();
+                let target_velocity = direction * 340.0;
+                self.velocity.approach(target_velocity, 340.0 * dt);
+            }
+        }
+
         self.transform.translate(self.velocity * dt);
         self.sprite.set_transform(&self.transform);
         self.sprite.step_time(dt * self.velocity.len() * 0.05);
@@ -52,6 +113,37 @@ impl GameObject for Roomba {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
         Some(self)
+    }
+
+    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+        match event {
+            EventType::Collide { force } => {
+                let mut rng = rand::thread_rng();
+                let angle: f32 = rng.gen();
+                let angle = angle % f32::consts::PI;
+                self.velocity = force.rotated(angle) * 150.0;
+
+                if let RoombaState::Tracking(_) = self.mode {
+                    self.mode = RoombaState::Attacking;
+                } else {
+                    self.mode = RoombaState::Searching;
+                }
+                true
+            },
+            EventType::ProbeReply { p: position } => {
+                self.mode = RoombaState::Investigating(position);
+                true
+            },
+            EventType::RayCastReply { success, target } => {
+                if success {
+                    self.mode = RoombaState::Tracking(target);
+                }
+                true
+            }
+            _ => {
+                false
+            }
+        }
     }
 }
 

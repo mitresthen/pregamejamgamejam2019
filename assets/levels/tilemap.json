@@ -1,0 +1,41 @@
+{
+    "width" : 26,
+    "height" : 18,
+    "ground" : {
+        "file" : "FirstFloor-Ground.dat",
+        "tiles" : [
+            "tile_Yellow_2.png",
+            "tile_Blue_1.png",
+            "tile_Blue_Cracked1.png",
+            "tile_Blue_Cracked2.png",
+            "item_Floormat.png"
+        ]
+    },
+    "objects" : {
+        "file" : "FirstFloor-Objects.dat",
+        "tiles" : [
+            "blank.png",
+            "wall_with_dark_top.png",
+            "wall_dark_only.png",
+            "Alexa_version1.png",
+            "item_Nightstand_col1.png",
+            "item_Nightstand_col2.png",
+            "item_bed_col1.png",
+            "item_chair_back.png",
+            "item_chair_front.png",
+            "item_chair_sideways.png",
+            "item_fridge.png",
+            "items_kitchentop_1box.png",
+            "items_kitchentop_bottom.png",
+            "wallTile_Blue_2height.png",
+            "wallTile_Blue_Cracked.png",
+            "wallTile_Blue_fuseBox_OFF.png",
+            "wallTile_Blue_fuseBox_ON.png",
+            "door_closed_ver1.png",
+            "door_vertical_topDown_1.png",
+            "Electronics_Roomba.png",
+            "wallTile_withWindow.png"
+        ]
+    }
+}
+

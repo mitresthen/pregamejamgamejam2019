@@ -13,7 +13,7 @@ pub trait PixelType : Sized + PartialEq + Eq + Hash {
     fn channel_count() -> usize;
 }
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone)]
 pub struct RGBA {
     pub r: u8,
     pub g: u8,
@@ -45,6 +45,7 @@ impl PixelType for RGBA {
     fn channel_count() -> usize { 4 }
 }
 
+#[derive(Clone)]
 pub struct Image<T: PixelType> {
     data: Vec<T>,
     width: i32,

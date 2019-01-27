@@ -1,8 +1,17 @@
 extern crate sdl2;
 extern crate stb_image;
+extern crate rand;
+extern crate bincode;
+#[macro_use]
+extern crate serde_derive;
+#[macro_use]
+extern crate serde_json;
+extern crate serde;
 
+
+use std::collections::HashMap;
+use std::hash::Hash;
 use std::collections::HashSet;
-use std::time::Duration;
 
 pub mod audio_engine;
 pub mod drawable;
@@ -18,6 +27,7 @@ pub mod offset;
 pub mod extent;
 pub mod transform;
 pub mod grid;
+pub mod grid2;
 pub mod image;
 pub mod splash_screen;
 pub mod menu_screen;
@@ -27,12 +37,17 @@ pub mod scene;
 
 pub mod axis_controller;
 pub mod slider_controller;
+pub mod trigger;
 
+pub mod sat_collider;
+
+pub mod level;
 
 pub mod prelude;
 
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
+pub use sdl2::mouse::MouseButton;
 
 use audio_engine::WavError;
 
@@ -61,6 +76,21 @@ impl From<WavError> for Error {
     }
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct MouseDragState {
+    pub start: vector::Vec2,
+    pub current: vector::Vec2
+}
+
+impl MouseDragState {
+    pub fn new(initial: vector::Vec2) -> MouseDragState {
+        MouseDragState {
+            start: initial,
+            current: initial
+        }
+    }
+}
+
 pub struct Engine<'t> {
     pub canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     width: u32,
@@ -71,6 +101,7 @@ pub struct Engine<'t> {
     camera: transform::Transform,
     pub state: game_state::GameState,
     pub last_game_state_change : timer::Timer,
+    drag_state: Option<MouseDragState>,
 }
 
 pub trait GameInterface : Sized {
@@ -81,17 +112,20 @@ pub trait GameInterface : Sized {
     fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
 
     // Update - broken down into 2 stages for game engine: update and draw
-    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_gameplay(  &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn update_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+
     // Optional part of update - drawing pause or main menu
-    fn draw_pause_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_main_menu( &mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_pause_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
+    fn draw_main_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
 
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> { Ok(true) }
+    fn on_key_down(&mut self, _ctx: &mut Engine, _keycode: Keycode, _is_repeated: bool) -> Result<bool, Error> { Ok(true) }
+    fn on_key_up(&mut self, _ctx: &mut Engine, _keycode: Keycode) -> Result<bool, Error> { Ok(true) }
 
-    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
+    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32) -> Result<bool, Error> { Ok(true) }
+    fn on_exit(&mut self) { }
 }
 
 impl<'t> Engine<'t> {
@@ -99,17 +133,19 @@ impl<'t> Engine<'t> {
         &mut self.texture_registry
     }
 
-    pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+    pub fn get_draw_context<'k>(&'k mut self) -> drawable::DrawContext<'k> {
         let bounds = self.get_screen_bounds();
 
-        let mut ctx =
-            drawable::DrawContext::new(
-                &mut self.canvas,
-                &mut self.texture_registry,
-                &self.camera,
-                bounds
-            );
+        drawable::DrawContext::new(
+            &mut self.canvas,
+            &mut self.texture_registry,
+            &self.camera,
+            bounds
+        )
+    }
 
+    pub fn draw<T: drawable::Drawable>(&mut self, drawable: &T) {
+        let mut ctx = self.get_draw_context();
         drawable.draw(&mut ctx);
     }
 
@@ -141,15 +177,51 @@ impl<'t> Engine<'t> {
         self.keys_down.remove(&keycode);
     }
 
+    pub fn screen_to_world(&self, x: i32, y: i32) -> vector::Vec2 {
+        let mut screen_transform = transform::Transform::new();
+        screen_transform.translate(self.get_screen_bounds().max * 0.5);
+
+        let mut p = vector::Vec2::from_coords(x as f32, y as f32);
+
+        p = screen_transform.transform_point_inv(p);
+        p = self.camera.transform_point(p);
+        p
+    }
+
+    pub fn on_mouse_button_down(&mut self, x: i32, y: i32) {
+        let p = self.screen_to_world(x, y);
+        self.drag_state = Some(MouseDragState::new(p));
+    }
+
+    pub fn on_mouse_move(&mut self, x: i32, y: i32) {
+        let p = self.screen_to_world(x, y);
+        if let Some(ref mut drag_state) = &mut self.drag_state {
+            drag_state.current = p;
+        }
+    }
+
+    pub fn on_mouse_button_up(&mut self, _x: i32, _y: i32) {
+        self.drag_state = None;
+    }
+
+    pub fn get_mouse_drag_state(&self) -> Option<MouseDragState> {
+        self.drag_state
+    }
+
+
     pub fn key_is_down(&self, keycode: Keycode) -> bool {
         self.keys_down.contains(&keycode)
     }
 
-    pub fn play_sound(&mut self, filename: &str) -> Result<(), Error> {
-        Ok(self.audio_engine.play_sound_from_file(filename)?)
+    pub fn load_sounds<T: Hash + Eq>(&mut self, sounds: HashMap<T, &str>) -> Result<(), Error> {
+        Ok(self.audio_engine.pre_load_files(sounds)?)
     }
-    pub fn loop_sound(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
-        Ok(self.audio_engine.loop_sound_from_file(filename, repeats)?)
+
+    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<(), Error> {
+        Ok(self.audio_engine.play_sound(key)?)
+    }
+    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<(), Error> {
+        Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
 
     // TODO: Make it work with moving camera
@@ -199,6 +271,13 @@ impl<'t> Engine<'t> {
         let texture_creator = canvas.texture_creator();
         let texture_registry = texture_registry::TextureRegistry::new(&texture_creator);
 
+        let starting_state =
+            if std::env::var("QUICK_START").is_ok() {
+                game_state::GAMEPLAY_STATE
+            } else {
+                game_state::TITLE_STATE
+            };
+
         let mut engine =
             Engine {
                 canvas: &mut canvas,
@@ -208,8 +287,9 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: game_state::TITLE_STATE,
+                state: starting_state,
                 last_game_state_change: timer::Timer::new(),
+                drag_state: None,
             };
 
         let mut game = <T as GameInterface>::initialize(&mut engine)?;
@@ -239,11 +319,11 @@ impl<'t> Engine<'t> {
                         if key == Keycode::F {
                             let curr_fullscreen_state = engine.canvas.window().fullscreen_state();
                             if curr_fullscreen_state != sdl2::video::FullscreenType::True {
-                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True);
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True).unwrap();
                             }
                             else
                             {
-                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off);
+                                engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off).unwrap();
                             }
                             let window_size = engine.canvas.window().size();
                             engine.width = window_size.0;
@@ -266,14 +346,36 @@ impl<'t> Engine<'t> {
                             break 'main_loop;
                         }
                     },
+                    Event::MouseMotion {
+                        x: move_x,
+                        y: move_y,
+                        ..
+                    } => {
+                        engine.on_mouse_move(move_x, move_y);
+                    },
+                    Event::MouseButtonDown {
+                        x: click_x,
+                        y: click_y,
+                        mouse_btn: button,
+                        ..
+                    } => {
+                        engine.on_mouse_button_down(click_x, click_y);
+
+                        if !game.on_mouse_button_down(&mut engine, click_x, click_y, button)? {
+                            break 'main_loop;
+                        }
+                    },
                     Event::MouseButtonUp {
                         x: click_x,
                         y: click_y,
+                        mouse_btn: button,
                         ..
                     } => {
-                        if !game.on_mouse_button_up(&mut engine, click_x, click_y)? {
+                        if !game.on_mouse_button_up(&mut engine, click_x, click_y, button)? {
                             break 'main_loop;
                         }
+
+                        engine.on_mouse_button_up(click_x, click_y);
                     },
                     _ => { }
                 };
@@ -329,6 +431,8 @@ impl<'t> Engine<'t> {
             // Limit framerate to 100 fps
             // std::thread::sleep(Duration::from_millis(10));
         }
+
+        game.on_exit();
 
         Ok(())
     }

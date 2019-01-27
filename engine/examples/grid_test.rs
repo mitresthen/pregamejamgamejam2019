@@ -23,7 +23,7 @@ impl GameInterface for GridTest {
         let level : Image<RGBA> = Image::load("assets/grid_test.png")?;
         let lightmap = tr.load("assets/grid_test_lightmap.png")?;
 
-        let mut grid = Grid::new(level, 120, lightmap);
+        let mut grid = Grid::new(level, 120);
 
         grid.register_tile_type(RGBA { r: 255, g: 0, b: 0, a: 255 }, tr.load("assets/stolen.png")?);
 

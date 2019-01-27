@@ -1,4 +1,7 @@
 use std::sync::{Arc, Mutex};
+use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::collections::hash_map::DefaultHasher;
 
 use sdl2::AudioSubsystem;
 use sdl2::audio::{AudioFormat, AudioDevice, AudioCallback, AudioSpecDesired,AudioSpecWAV};
@@ -98,6 +101,7 @@ impl AudioCallback for AudioMixer {
 pub struct AudioEngine {
     _audio_device: AudioDevice<AudioMixer>,
     mixer: AudioMixer,
+    _sound_map: HashMap<u64, Vec<f32>>,
 }
 
 
@@ -124,15 +128,29 @@ impl AudioEngine {
 
         AudioEngine {
             _audio_device: device,
-            mixer: mixer
+            mixer: mixer,
+            _sound_map: HashMap::new(),
         }
     }
 
-    pub fn play_sound_from_file(&mut self, filename: &str) -> Result<(), Error> {
-        return self.loop_sound_from_file(filename, 0);
+    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<(), Error> {
+        return self.loop_sound(key, 0);
     }
 
-    pub fn loop_sound_from_file(&mut self, filename: &str, repeats:i32) -> Result<(), Error> {
+    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<(), Error> {
+        let pcm_mono_float = self._sound_map.get(&self.get_hash(key)).unwrap().to_vec();
+        self.loop_sound_data(pcm_mono_float, repeats);
+        Ok(())
+    }
+
+    pub fn pre_load_files<T: Hash + Eq>(&mut self, file_map: HashMap<T, &str>) -> Result<(), Error> {
+        for (key, filename) in file_map {
+            self.pre_load_file(key, filename).unwrap();
+        }
+        Ok(())
+
+    }
+    pub fn pre_load_file<T: Hash>(&mut self, key: T,  filename: &str) -> Result<(), Error> {
         use std::slice;
         use std::mem;
         use std::i16;
@@ -161,17 +179,22 @@ impl AudioEngine {
         let pcm_stereo_float : Vec<f32> = pcm_stereo_16.iter().map(|x| (*x as f32) / (i16::MAX as f32)).collect();
 
         let pcm_mono_float = pcm_stereo_float.chunks(2).map(|lr| (lr[0] + lr[1]) / 2.0).collect();
-
-        self.loop_sound(pcm_mono_float, repeats);
-
+        let hash = self.get_hash(key);
+        self._sound_map.insert(hash, pcm_mono_float);
         Ok(())
     }
 
-    pub fn play_sound(&mut self, data: Vec<f32>) {
+    fn get_hash<T: Hash>(&self, t: T) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        t.hash(&mut hasher);
+        return hasher.finish();
+    }
+
+    pub fn play_sound_data(&mut self, data: Vec<f32>) {
         self.mixer.play_sound(SoundInstance::new(data, 0));
     }
 
-    pub fn loop_sound(&mut self, data: Vec<f32>, repeats: i32) {
+    pub fn loop_sound_data(&mut self, data: Vec<f32>, repeats: i32) {
         self.mixer.play_sound(SoundInstance::new(data, repeats));
     }
 }

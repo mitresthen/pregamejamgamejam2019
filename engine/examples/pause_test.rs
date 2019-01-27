@@ -39,7 +39,7 @@ impl GameInterface for ExampleGame {
         sprite.set_scale(4.0);
         sprite.set_position(Vec2::from_coords(100.0, 100.0));
 
-        let mainchar = MovableObject::new(sprite, 400.0).unwrap();
+        let mainchar = MovableObject::new(sprite).unwrap();
 
         let mut game_objects: Vec<MovableObject> = Vec::new();
 
@@ -48,7 +48,7 @@ impl GameInterface for ExampleGame {
         roombasprite.set_scale(4.0);
         roombasprite.set_position(Vec2::from_coords(100.0, 100.0));
 
-        let roomba = MovableObject::new(roombasprite, 420.0).unwrap();
+        let roomba = MovableObject::new(roombasprite).unwrap();
         game_objects.push(roomba);
 
         let mut main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/main_menu_background.png")?)?;
@@ -210,7 +210,9 @@ impl GameInterface for ExampleGame {
         self.on_key_down(ctx, keycode, true)
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32) -> Result<bool, Error> {
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, button: MouseButton)
+        -> Result<bool, Error>
+    {
         if ctx.state.is_on(TITLE_STATE)
         {
             ctx.end_title_screen();

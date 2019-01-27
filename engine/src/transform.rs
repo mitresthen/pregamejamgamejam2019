@@ -19,7 +19,7 @@ impl Transform {
     }
 
     pub fn transform_point_inv(&self, p: Vec2) -> Vec2 {
-        (p - self.translation) * self.scale
+        (p - self.translation) * (1.0 / self.scale)
     }
 
     pub fn set_translation(&mut self, p: Vec2) {

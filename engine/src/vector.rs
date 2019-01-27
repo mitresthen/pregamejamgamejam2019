@@ -1,6 +1,9 @@
 use std::ops::{Add, Sub, Mul};
 
-#[derive(Clone, Debug, Copy)]
+use rand::Rng;
+use rand;
+
+#[derive(Clone, Debug, Copy, PartialEq)]
 pub struct Vec2 {
     pub x: f32,
     pub y: f32
@@ -9,6 +12,17 @@ pub struct Vec2 {
 impl Vec2 {
     pub fn new() -> Vec2 {
         Vec2 { x: 0.0, y: 0.0 }
+    }
+
+    pub fn random() -> Vec2 {
+        let mut created_vec = Vec2::new();
+        let mut rng = rand::thread_rng();
+        let x: f32 = rng.gen();
+        let y: f32 = rng.gen();
+
+        created_vec.x = x;
+        created_vec.y = y;
+        created_vec.normalize()
     }
 
     pub fn len(&self) -> f32 {
@@ -35,6 +49,15 @@ impl Vec2 {
         }
     }
 
+    pub fn rotated(&self, angle: f32) -> Vec2 {
+        let new_x = self.x * angle.cos() - self.y * angle.sin();
+        let new_y = self.x * angle.sin() + self.y * angle.cos();
+        Vec2 {
+            x: new_x,
+            y: new_y
+        }
+    }
+
     pub fn round(&self) -> Vec2 {
         Vec2 { x: self.x.round(), y: self.y.round() }
     }
@@ -44,6 +67,9 @@ impl Vec2 {
     }
 
     pub fn normalize(&self) -> Vec2 {
+        if self.len() == 0.0 {
+            return Vec2::new()
+        }
         self.clone() * (1.0 / self.len())
     }
 

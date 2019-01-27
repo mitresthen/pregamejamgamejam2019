@@ -1,12 +1,18 @@
 use engine::prelude::*;
 
+use std::collections::HashSet;
+use engine::game_object::Item;
+
 pub struct Player {
     controller: AxisController,
+    interact_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     direction: i32,
-    collision_size: f32
+    collision_size: f32,
+    requesting_position: Vec<SceneObjectId>,
+    items: HashSet<Item>
 }
 
 impl Player {
@@ -33,11 +39,14 @@ impl Player {
                     Keycode::Left,
                     Keycode::Right,
                 ),
+                interact_trigger: Trigger::new(Keycode::Space),
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 direction: 1,
-                collision_size: 80.0
+                collision_size: 80.0,
+                requesting_position: Vec::new(),
+                items: HashSet::new()
             };
 
         player.transform.set_scale(1.0);
@@ -52,9 +61,29 @@ impl Player {
 
 impl GameObject for Player {
 
-    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
+    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         let target_velocity =
             self.controller.poll(ctx) * 400.0;
+
+
+        if self.interact_trigger.poll(ctx) {
+            event_mailbox.submit_event(
+                EventType::Interact,
+                EventReceiver::Nearest {
+                    origin: self.transform.get_translation(),
+                    max_distance: Some(140.0)
+                }
+            );
+        }
+
+        for object_id in self.requesting_position.drain(..) {
+            let p = self.transform.get_translation();
+
+            event_mailbox.submit_event(
+                EventType::ProbeReply { p },
+                EventReceiver::Addressed { object_id }
+            )
+        }
 
         self.velocity.approach(target_velocity, 400.0 * dt);
         self.transform.translate(self.velocity * dt);
@@ -107,6 +136,27 @@ impl GameObject for Player {
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
         Some(self)
     }
+
+    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+        println!("PLAYER: {:?}", event);
+        match event {
+            EventType::Probe { hint } => {
+                if hint != "player" {
+                    return false;
+                }
+
+                if let Some(s) = sender {
+                    self.requesting_position.push(s);
+                }
+                true
+            },
+            EventType::Loot { item } => {
+                self.items.insert(item);
+                return true;
+            },
+            _ => { false }
+        }
+    }
 }
 
 impl PhysicalObject for Player {
@@ -127,8 +177,6 @@ impl PhysicalObject for Player {
     }
 
     fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let size = self.sprite.calculate_size() * 0.5;
-
         let bounding_box =
             BoundingBox::new(
                 self.collision_size,
