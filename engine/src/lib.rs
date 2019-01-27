@@ -222,6 +222,10 @@ impl<'t> Engine<'t> {
     pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
         Ok(self.audio_engine.play_sound(key)?)
     }
+
+    pub fn prepare_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
+        Ok(self.audio_engine.prepare_sound(key)?)
+    }
     pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<usize, Error> {
         Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
@@ -276,6 +280,10 @@ impl<'t> Engine<'t> {
 
     pub fn is_done(& self, id: usize) -> bool {
         self.audio_engine.is_done(id)
+    }
+
+    pub fn is_playing(& self, id: usize) -> bool {
+        self.audio_engine.is_playing(id)
     }
 
     pub fn replace_sound<T: Hash>(&mut self, key: T, id: usize, repeats: i32) -> Result<usize, Error> {
