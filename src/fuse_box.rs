@@ -20,7 +20,7 @@ impl FuseBox {
     pub fn new(ctx: &mut Engine) -> Result<FuseBox, Error> {
         let tr = ctx.get_texture_registry();
         let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_on)?;
+        let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on)?;
 
         let mut fuse_box =
             FuseBox {
@@ -42,12 +42,12 @@ impl FuseBox {
 
         if self.active {
             let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png");
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_on.unwrap());
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on.unwrap());
             self.sprite = sprite.unwrap();
         }
         else{
             let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png");
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture_off.unwrap());
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_off.unwrap());
             self.sprite = sprite.unwrap();
         }
     }
