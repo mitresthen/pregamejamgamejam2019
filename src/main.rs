@@ -5,33 +5,15 @@ extern crate rand;
 use engine::prelude::*;
 use sdl2::render::BlendMode;
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 mod player;
 mod roomba;
 mod alex;
+mod audio_library;
+mod key_in_dust;
 
-#[derive(Hash, PartialEq, Eq)]
-enum AudioLibrary {
-    Music,
-    Toilet, Drain,
-    Switch1, Switch2,
-    Steps1, Steps2,
-    Rustle,
-    MoveMetalObject,
-    BigMetallicPlong, MetallicPlong, MetallicPling, MetallicHit,
-    LockerOpen, LockerClose,
-    HooverStart, HooverStop, HooverLoop,
-    HeavySwitch, HeavySwitchMetallic,
-    HeavySteps1, HeavySteps2,
-    FluorescentLight1, FluorescentLight2, FluorescentLight3,
-    FloorSqueak, FloorCreakShort, FloorCreakLong,
-    Drop1, Drop2, Drop3,
-    DrawerOpenSlow, DrawerOpenFast,
-    DrawerCloseSlow, DrawerCloseFast,
-    DoubleDrop, DoubleDropDull,
-    DoorOpen1, DoorOpen2, DoorOpen3,
-    DoorClose3, DoorClose2, DoorClose1,
-}
+use audio_library::AudioLibrary;
 
 struct GoogleHomeopathicMedicine {
     low_level: Grid2,
@@ -126,6 +108,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let mut roomba = roomba::Roomba::new(ctx)?;
             roomba.get_transform_mut().set_translation(*position);
             scene.add_object(roomba);
+        }
+
+        let key_in_dust = mid_level.take_tile_with_id(21);
+        for (_, position) in key_in_dust.iter() {
+            let mut key_in_dust = key_in_dust::KeyInDust::new(ctx)?;
+            key_in_dust.get_transform_mut().set_translation(*position);
+            scene.add_object(key_in_dust);
         }
 
         // Loading StaticSprites

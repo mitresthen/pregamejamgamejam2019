@@ -21,6 +21,7 @@ pub use grid2::Grid2;
 
 pub use axis_controller::AxisController;
 pub use slider_controller::SliderController;
+pub use trigger::Trigger;
 
 pub use image::{Image, RGBA};
 
