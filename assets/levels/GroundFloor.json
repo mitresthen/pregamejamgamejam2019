@@ -48,7 +48,8 @@
             "item_Kommode_Gul.png",
             "items_kitchentop_oven.png",
             "item_flatscreenTV.png",
-            "item_wachingmachine.png"
+            "item_wachingmachine.png",
+            "blocker.png"
         ]
     }
 }
