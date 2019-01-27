@@ -30,12 +30,12 @@ impl Alex {
 
 impl GameObject for Alex {
 
-    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
+    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         true
     }
 
     fn render(&self, ctx: &mut DrawContext) {
-        
+
     }
 
     fn get_physical_object(&self) -> Option<&PhysicalObject> {
@@ -46,14 +46,16 @@ impl GameObject for Alex {
         Some(self)
     }
 
-    fn on_event(&mut self, event: GameEvent) {
-        match event.event_type {
+    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+        match event {
             EventType::Interact => {
-                println!("Someone interacted with me!")
+                println!("Someone interacted with me!");
+                true
             },
-            _ => {}
-        };
-        
+            _ => {
+                false
+            }
+        }
     }
 }
 

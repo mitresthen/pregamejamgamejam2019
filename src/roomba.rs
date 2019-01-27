@@ -52,7 +52,7 @@ impl Roomba {
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
+    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         let target_velocity = Vec2{
             x: self.velocity.x,
             y: self.velocity.y
@@ -77,20 +77,23 @@ impl GameObject for Roomba {
         Some(self)
     }
 
-    fn on_event(&mut self, event: GameEvent) {
-        match event.event_type {
+    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+        match event {
             EventType::Collide { force } => {
                 let mut rng = rand::thread_rng();
                 let angle: f32 = rng.gen();
                 let angle = angle % f32::consts::PI;
                 self.velocity = force.rotated(angle)*250.0;
+                true
             },
             EventType::TargetLock { target } => {
                 self.velocity = target*250.0;
+                true
             },
-            _ => {}
+            _ => {
+                false
+            }
         }
-        
     }
 }
 

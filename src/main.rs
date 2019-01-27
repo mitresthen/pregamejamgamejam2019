@@ -121,7 +121,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         roomba.get_transform_mut().set_translation(Vec2::from_coords(400.0, 400.0));
 
         let mut alex = alex::Alex::new(ctx)?;
-        alex.get_transform_mut().set_translation(Vec2::from_coords(1135.0, 180.0));
+        alex.get_transform_mut().set_translation(Vec2::from_coords(8.5 * 120.0, 1.5 * 120.0));
 
 
         let mut scene = Scene::new();
@@ -209,6 +209,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         ctx.set_camera_position(player_position);
         &self.pause_sprite.set_position(player_position.shifted(0.0, -75.0));
 
+/*
         let player_bounding_box = self.scene.get(self.player_id)
             .unwrap()
             .get_physical_object()
@@ -239,7 +240,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 if let Some(point_axis) = self.mid_level.get_collision_vector_points(points) {
                     println!("Setting random roomba dir2");
                     roomba_object.on_event(GameEvent{
-                        event_type: EventType::Collide {  force: axis }
+                        event_type: EventType::Collide {  force: axis },
+                        receiver: EventReceiver::Broadcast
                     });
                 }
                 else
@@ -247,7 +249,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     println!("Setting targeted roomba dir");
                     let direction = (player_position - roomba_position).normalize();
                     roomba_object.on_event(GameEvent{
-                        event_type: EventType::TargetLock {  target: direction }
+                        event_type: EventType::TargetLock {  target: direction },
+                        receiver: EventReceiver::Broadcast
                     });
                 }
             }
@@ -272,10 +275,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
             let alex_object = self.scene.get_mut(self.alex_id).unwrap();
 
             alex_object.on_event(GameEvent{
-                event_type: EventType::Interact
+                event_type: EventType::Interact,
+                receiver: EventReceiver::Broadcast
             });
         }
+        */
 
+        self.scene.do_level_collision(&self.mid_level);
         self.scene.update(ctx, dt);
 
         Ok(true)

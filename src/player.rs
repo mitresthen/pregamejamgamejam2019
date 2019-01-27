@@ -52,9 +52,20 @@ impl Player {
 
 impl GameObject for Player {
 
-    fn update(&mut self, ctx: &Engine, dt: f32) -> bool {
+    fn update(&mut self, ctx: &Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         let target_velocity =
             self.controller.poll(ctx) * 400.0;
+
+
+        if ctx.key_is_down(Keycode::Space) {
+            event_mailbox.submit_event(
+                EventType::Interact,
+                EventReceiver::Nearest {
+                    origin: self.transform.get_translation(),
+                    max_distance: Some(140.0)
+                }
+            );
+        }
 
         self.velocity.approach(target_velocity, 400.0 * dt);
         self.transform.translate(self.velocity * dt);
@@ -108,8 +119,8 @@ impl GameObject for Player {
         Some(self)
     }
 
-    fn on_event(&mut self, event: GameEvent) {
-        println!("Player handling event {:#?}", event);
+    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+        false
     }
 }
 

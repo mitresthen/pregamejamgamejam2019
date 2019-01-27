@@ -26,7 +26,7 @@ pub use image::{Image, RGBA};
 
 pub use transform::Transform;
 
-pub use game_object::{PhysicalObject, GameObject, EventType, GameEvent};
+pub use game_object::{PhysicalObject, GameObject, EventType, EventReceiver, GameEvent, EventMailbox};
 pub use scene::{SceneObjectId, Scene};
 
 pub use level::Level;
