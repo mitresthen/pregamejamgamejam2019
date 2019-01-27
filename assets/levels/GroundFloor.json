@@ -46,7 +46,9 @@
             "key_in_dust.png",
             "item_Kommode_Blue.png",
             "item_Kommode_Gul.png",
-            "items_kitchentop_oven.png"
+            "items_kitchentop_oven.png",
+            "item_flatscreenTV.png",
+            "item_wachingmachine.png"
         ]
     }
 }
