@@ -254,7 +254,9 @@ impl Scene {
                     self.handle_scene_event(event.event_type, event.sender);
                 },
                 EventReceiver::Addressed { object_id } => {
-                    self.objects.get_mut(&object_id).unwrap().on_event(event.event_type, event.sender);
+                    if self.objects.contains_key(&object_id) {
+                        self.objects.get_mut(&object_id).unwrap().on_event(event.event_type, event.sender);
+                    }
                 },
                 EventReceiver::Nearby { origin, max_distance } => {
                     self.dispatch_nearby_event(origin, max_distance, event.event_type, event.sender)
@@ -287,8 +289,10 @@ impl Scene {
     }
 
     pub fn remove_object(&mut self, objectId: SceneObjectId){
-        println!("Attempting to delet object");
-        self.objects.remove(&objectId);
+        println!("Attempting to delete object");
+        if self.objects.contains_key(&objectId) {
+            self.objects.remove(&objectId);
+        }
     }
 
     pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {

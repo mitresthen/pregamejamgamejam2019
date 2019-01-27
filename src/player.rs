@@ -6,6 +6,7 @@ use engine::game_object::Item;
 pub struct Player {
     controller: AxisController,
     interact_trigger: Trigger,
+    inventory_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
@@ -40,6 +41,7 @@ impl Player {
                     Keycode::Right,
                 ),
                 interact_trigger: Trigger::new(Keycode::Space),
+                inventory_trigger: Trigger::new(Keycode::I),
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
@@ -78,6 +80,11 @@ impl GameObject for Player {
             );
         }
 
+        if self.inventory_trigger.poll(ctx) {
+            println!("inventory contains: {:#?}", self.items);
+
+
+        }
         for object_id in self.requesting_position.drain(..) {
             let p = self.transform.get_translation();
 
