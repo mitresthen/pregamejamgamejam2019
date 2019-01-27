@@ -26,6 +26,7 @@ struct GoogleHomeopathicMedicine {
     title_screen: SplashScreen,
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
+    dimmer: Dimmer,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -38,6 +39,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
     }
 
     fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
+        let dimmer = { Dimmer::new(ctx).with_initial_value(0.0).with_target_value(1.0) };
         let level = Level::load_from_file(ctx, "assets/levels/tilemap.json");
 
         let mut low_level = level.ground;
@@ -219,6 +221,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 title_screen: title_screen,
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
+                dimmer: dimmer,
             };
 
         Ok(game)
@@ -237,6 +240,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         &self.pause_screen.set_camera_pos(player_position);
 
         self.scene.update(ctx, Some(&self.mid_level), dt);
+        self.dimmer.update(dt);
 
         Ok(true)
     }
@@ -259,6 +263,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         //self.scene.render(ctx);
 
         // let fps = (1.0 / dt) as i32;
+        self.dimmer.draw(ctx);
 
         Ok(true)
     }

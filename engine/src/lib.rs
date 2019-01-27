@@ -45,6 +45,8 @@ pub mod level;
 
 pub mod prelude;
 
+pub mod dimmer;
+
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 pub use sdl2::mouse::MouseButton;
@@ -217,10 +219,10 @@ impl<'t> Engine<'t> {
         Ok(self.audio_engine.pre_load_files(sounds)?)
     }
 
-    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<(), Error> {
+    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
         Ok(self.audio_engine.play_sound(key)?)
     }
-    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<(), Error> {
+    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<usize, Error> {
         Ok(self.audio_engine.loop_sound(key, repeats)?)
     }
 
@@ -246,6 +248,38 @@ impl<'t> Engine<'t> {
 
     pub fn toggle_mute(&mut self) {
         self.audio_engine.toggle_mute();
+    }
+
+    pub fn set_volume(&mut self, volume: f32, id: usize) {
+        self.audio_engine.set_volume(volume, id);
+    }
+
+    pub fn pause(&mut self, id: usize) {
+        self.audio_engine.pause(id);
+    }
+
+    pub fn stop(&mut self, id: usize) {
+        self.audio_engine.stop(id);
+    }
+
+    pub fn stop_repetition(&mut self, id: usize) {
+        self.audio_engine.stop_repetition(id);
+    }
+
+    pub fn play(&mut self, id: usize) {
+        self.audio_engine.play(id);
+    }
+
+    pub fn toggle_pause(&mut self, id: usize) {
+        self.audio_engine.toggle_pause(id);
+    }
+
+    pub fn is_done(& self, id: usize) -> bool {
+        self.audio_engine.is_done(id)
+    }
+
+    pub fn replace_sound<T: Hash>(&mut self, key: T, id: usize, repeats: i32) -> Result<usize, Error> {
+        Ok(self.audio_engine.replace_sound(key, id, repeats)?)
     }
 
     // TODO: Make it work with moving camera

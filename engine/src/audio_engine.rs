@@ -13,6 +13,8 @@ pub struct SoundInstance {
     position: usize,
     repeats: i32,
     is_done: bool,
+    paused: bool,
+    volume: f32,
 }
 
 #[derive(Debug, Copy, Clone)]
@@ -24,10 +26,47 @@ pub enum WavError {
 
 impl SoundInstance {
     pub fn new(data: Vec<f32>, repeats: i32) -> SoundInstance {
-        SoundInstance { data, position: 0, repeats, is_done: false }
+        SoundInstance { data, position: 0, repeats, is_done: false, paused: false, volume: 1.0 }
     }
 
-    pub fn request_samples(&mut self, amount : usize) -> Vec<f32>{
+    pub fn clear(&mut self) {
+        self.data.clear();
+        self.position = 0;
+        self.repeats = 0;
+        self.is_done = true;
+        self.paused = true;
+        self.volume = 0.0;
+    }
+
+    pub fn set_volume(&mut self, volume: f32) {
+        self.volume = volume;
+    }
+
+    pub fn pause(&mut self) {
+        self.paused = true;
+    }
+
+    pub fn stop(&mut self) {
+        self.paused = true;
+        self.position = 0;
+    }
+
+    pub fn stop_repetition(&mut self) {
+        self.repeats = 0;
+    }
+
+    pub fn play(&mut self) {
+        self.paused = false;
+    }
+
+    pub fn toggle_pause(&mut self) {
+        self.paused = !self.paused;
+    }
+
+    pub fn request_samples(&mut self, amount : usize) -> Option<Vec<f32>> {
+        if self.is_done || self.paused {
+            return None;
+        }
         let mut return_vec = Vec::new();
         let mut remaining = amount;
         while remaining > 0 {
@@ -52,7 +91,7 @@ impl SoundInstance {
                 }
             }
         }
-        return return_vec;
+        return Some(return_vec.iter().map(|x| x * self.volume).collect());
     }
 
 }
@@ -73,15 +112,58 @@ impl AudioMixer {
         }
     }
 
-    pub fn play_sound(&mut self, sound: SoundInstance) {
-        self.playing.lock().unwrap().push(sound);
+    pub fn play_sound(&mut self, sound: SoundInstance) -> usize {
+        let mut vector = self.playing.lock().unwrap();
+        vector.push(sound);
+        return vector.len() - 1;
+    }
+
+    pub fn replace_sound(&mut self, sound: SoundInstance, id: usize) -> usize {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id] = sound;
+        return id;
+    }
+
+    pub fn set_volume(&mut self, volume: f32, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].set_volume(volume);
+    }
+
+    pub fn pause(&mut self, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].pause();
+    }
+
+    pub fn stop(&mut self, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].stop();
+    }
+
+    pub fn stop_repetition(&mut self, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].stop_repetition();
+    }
+
+    pub fn play(&mut self, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].play();
+    }
+
+    pub fn toggle_pause(&mut self, id: usize) {
+        let mut vector = self.playing.lock().unwrap();
+        vector[id].toggle_pause();
+    }
+
+    pub fn is_done(&self, id: usize) -> bool {
+        let vector = self.playing.lock().unwrap();
+        vector[id].is_done
     }
 
     pub fn reset(&mut self) {
         self.playing.lock().unwrap().clear();
     }
 
-    pub fn set_volume(&mut self, volume: f32) {
+    pub fn set_master_volume(&mut self, volume: f32) {
         *self.master_volume.lock().unwrap() = volume;
     }
 
@@ -126,7 +208,11 @@ impl AudioCallback for AudioMixer {
 
         let mut samples = Vec::new();
         for sound_instance in sounds.iter_mut() {
-            samples.push(sound_instance.request_samples(out.len()));
+            match sound_instance.request_samples(out.len()) {
+                None => {},
+                Some(sound_samples) => samples.push(sound_samples),
+            }
+
         }
         for i in 0..out.len() {
             out[i] = 0.0;
@@ -138,8 +224,11 @@ impl AudioCallback for AudioMixer {
             }
         }
 
-        let mut old : Vec<SoundInstance>  = sounds.drain(..).collect();
-        *sounds = old.drain(..).filter(|s| !s.is_done).collect();
+       for sound in &mut *sounds {
+           if sound.is_done {
+               sound.clear();
+           }
+       }
     }
 }
 
@@ -179,14 +268,19 @@ impl AudioEngine {
         }
     }
 
-    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<(), Error> {
+    pub fn replace_sound<T: Hash>(&mut self, key: T, id: usize, repeats: i32) -> Result<usize, Error> {
+        let pcm_mono_float = self._sound_map.get(&self.get_hash(key)).unwrap().to_vec();
+        return Ok(self.mixer.replace_sound(SoundInstance::new(pcm_mono_float, repeats), id));
+    }
+
+    pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
         return self.loop_sound(key, 0);
     }
 
-    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<(), Error> {
+    pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<usize, Error> {
         let pcm_mono_float = self._sound_map.get(&self.get_hash(key)).unwrap().to_vec();
-        self.loop_sound_data(pcm_mono_float, repeats);
-        Ok(())
+        let id = self.loop_sound_data(pcm_mono_float, repeats);
+        Ok(id)
     }
 
     pub fn pre_load_files<T: Hash + Eq>(&mut self, file_map: HashMap<T, &str>) -> Result<(), Error> {
@@ -236,12 +330,40 @@ impl AudioEngine {
         return hasher.finish();
     }
 
-    pub fn play_sound_data(&mut self, data: Vec<f32>) {
-        self.mixer.play_sound(SoundInstance::new(data, 0));
+    pub fn play_sound_data(&mut self, data: Vec<f32>) -> usize {
+        return self.mixer.play_sound(SoundInstance::new(data, 0));
     }
 
-    pub fn loop_sound_data(&mut self, data: Vec<f32>, repeats: i32) {
-        self.mixer.play_sound(SoundInstance::new(data, repeats));
+    pub fn loop_sound_data(&mut self, data: Vec<f32>, repeats: i32) -> usize {
+        return self.mixer.play_sound(SoundInstance::new(data, repeats));
+    }
+
+    pub fn set_volume(&mut self, volume: f32, id: usize) {
+        self.mixer.set_volume(volume, id);
+    }
+
+    pub fn pause(&mut self, id: usize) {
+        self.mixer.pause(id);
+    }
+
+    pub fn stop(&mut self, id: usize) {
+        self.mixer.stop(id);
+    }
+
+    pub fn stop_repetition(&mut self, id: usize) {
+        self.mixer.stop_repetition(id);
+    }
+
+    pub fn play(&mut self, id: usize) {
+        self.mixer.play(id);
+    }
+
+    pub fn toggle_pause(&mut self, id: usize) {
+        self.mixer.toggle_pause(id);
+    }
+
+    pub fn is_done(&self, id: usize) -> bool {
+        self.mixer.is_done(id)
     }
 
     pub fn reset(&mut self) -> Result<(), Error> {
