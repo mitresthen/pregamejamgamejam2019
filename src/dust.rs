@@ -45,11 +45,15 @@ impl GameObject for Dust {
                     EventReceiver::Scene
                 )
         }
+
+        self.sprite.set_transform(&self.transform);
+        self.sprite.step_time(dt * self.velocity.len() * 0.05);
+
         true
     }
 
     fn render(&self, ctx: &mut DrawContext) {
-
+        self.sprite.draw(ctx)
     }
 
     fn get_physical_object(&self) -> Option<&PhysicalObject> {

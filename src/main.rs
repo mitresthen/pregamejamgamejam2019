@@ -116,6 +116,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         }
 
         let dust = mid_level.take_tile_with_id(22);
+        
         for (_, position) in dust.iter() {
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
