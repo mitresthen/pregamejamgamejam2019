@@ -377,10 +377,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
             {
                 Some(game_state) => {
                     let dt = ctx.last_game_state_change.get_time();
-                    if dt >= 0.5
+                    let gs_clone = game_state.clone();
+                    if ctx.state.go_to(game_state, dt)
                     {
-                        let gs_clone = game_state.clone();
-                        ctx.state.go_to(game_state, dt);
                         ctx.last_game_state_change.reset();
                         if gs_clone.is_on(EXIT_STATE) {
                             return Ok(false);
