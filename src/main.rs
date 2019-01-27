@@ -29,6 +29,7 @@ struct GoogleHomeopathicMedicine {
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
     dimmer: Dimmer,
+    intro_played: bool,
 }
 
 impl GameInterface for GoogleHomeopathicMedicine {
@@ -244,6 +245,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
                 dimmer: dimmer,
+                intro_played: false,
             };
 
         Ok(game)
@@ -264,6 +266,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
         self.scene.update(ctx, Some(&self.mid_level), dt);
         self.dimmer.update(dt);
 
+        if !self.intro_played {
+            self.intro_played = true;
+            ctx.replace_sound(AudioLibrary::Intro, 0, 0);
+        }
         if ctx.is_done(0) {
             ctx.replace_sound(AudioLibrary::Music, 0, -1);
         }
