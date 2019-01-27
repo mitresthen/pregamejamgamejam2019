@@ -67,9 +67,11 @@ impl GameObject for Player {
 
 
         if self.interact_trigger.poll(ctx) {
+            
+            println!("Submitting loot event");
             event_mailbox.submit_event(
                 EventType::Interact,
-                EventReceiver::Nearest {
+                EventReceiver::Nearby {
                     origin: self.transform.get_translation(),
                     max_distance: Some(140.0)
                 }

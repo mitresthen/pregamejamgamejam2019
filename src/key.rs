@@ -4,6 +4,9 @@ use std::f32;
 use rand::Rng;
 use rand;
 
+use engine::game_object::Item;
+use engine::game_object::Items;
+
 
 pub struct Key {
     sprite: AnimatedSprite,
@@ -43,9 +46,19 @@ impl GameObject for Key {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             event_mailbox.submit_event(
+                    EventType::Loot { item: Item{
+                        item: Items::Key
+                    }},
+                    EventReceiver::Nearest {  
+                        origin: self.transform.get_translation(),
+                        max_distance: Some(120.0)
+                    }
+                );
+
+            event_mailbox.submit_event(
                     EventType::DeleteMe,
                     EventReceiver::Scene
-                )
+                );
         }
 
         self.sprite.set_transform(&self.transform);
@@ -70,15 +83,18 @@ impl GameObject for Key {
         match event {
             EventType::Interact => {
                 if self.free_for_grabs{
+                    println!("Free key grabbed");
                     self.delete_me = true;
                     true
                 }
                 else
                 {
+                    println!("Attempted grabbing dusty key");
                     false
                 }
             },
             EventType::FreeFromDust => {
+                println!("Key became free from dust");
                 self.free_for_grabs = true;
                 true
             },
