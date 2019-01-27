@@ -36,7 +36,7 @@ impl GameObject for Alex {
 
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.prompted_for_response {
-            ctx.play_sound(AudioLibrary::Rustle).unwrap();
+            ctx.play_sound(AudioLibrary::AccidentSong).unwrap();
             self.prompted_for_response = false;
         }
 
