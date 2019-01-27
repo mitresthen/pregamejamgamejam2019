@@ -81,6 +81,44 @@ impl Scene {
         }
     }
 
+    pub fn dispatch_nearby_event(
+        &mut self,
+        origin: Vec2,
+        max_distance: Option<f32>,
+        event: EventType,
+        sender: Option<SceneObjectId>
+    ) {
+        use std::f32;
+
+        let mut objects_with_distance : Vec<(f32, &mut Box<GameObject>)> =
+            self.objects.iter_mut().map(
+                |(_id, ob)| {
+                    let distance = 
+                        if let Some(pob) = ob.get_physical_object() {
+                            let position = pob.get_transform().get_translation();
+                            (position - origin).len()
+                        } else {
+                            f32::MAX
+                        };
+
+                    (distance, ob)
+                }
+            ).collect();
+
+        objects_with_distance.sort_by(|(dA, _oA), (dB, _oB)| dA.partial_cmp(dB).unwrap());
+
+        let mut it = objects_with_distance.iter_mut();
+
+        while let Some((distance, object)) = it.next() {
+            if *distance > max_distance.unwrap_or(f32::MAX) {
+                println!("Event lost because max distance was reached: distance={}", distance);
+                break;
+            }
+
+            object.on_event(event.clone(), sender);
+        }
+    }
+
     pub fn broadcast_event(&mut self, event: EventType, sender: Option<SceneObjectId>) {
         for (_id, object) in self.objects.iter_mut() {
             object.on_event(event.clone(), sender);
@@ -216,7 +254,12 @@ impl Scene {
                     self.handle_scene_event(event.event_type, event.sender);
                 },
                 EventReceiver::Addressed { object_id } => {
-                    self.objects.get_mut(&object_id).unwrap().on_event(event.event_type, event.sender);
+                    if self.objects.contains_key(&object_id) {
+                        self.objects.get_mut(&object_id).unwrap().on_event(event.event_type, event.sender);
+                    }
+                },
+                EventReceiver::Nearby { origin, max_distance } => {
+                    self.dispatch_nearby_event(origin, max_distance, event.event_type, event.sender)
                 }
             }
         }
@@ -246,8 +289,10 @@ impl Scene {
     }
 
     pub fn remove_object(&mut self, objectId: SceneObjectId){
-        println!("Attempting to delet object");
-        self.objects.remove(&objectId);
+        println!("Attempting to delete object");
+        if self.objects.contains_key(&objectId) {
+            self.objects.remove(&objectId);
+        }
     }
 
     pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {

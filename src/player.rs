@@ -6,6 +6,7 @@ use engine::game_object::{Item, Items};
 pub struct Player {
     controller: AxisController,
     interact_trigger: Trigger,
+    inventory_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
@@ -41,6 +42,7 @@ impl Player {
                     Keycode::Right,
                 ),
                 interact_trigger: Trigger::new(Keycode::Space),
+                inventory_trigger: Trigger::new(Keycode::I),
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
@@ -75,15 +77,22 @@ impl GameObject for Player {
         }
 
         if self.interact_trigger.poll(ctx) {
+            
+            println!("Submitting loot event");
             event_mailbox.submit_event(
                 EventType::Interact,
-                EventReceiver::Nearest {
+                EventReceiver::Nearby {
                     origin: self.transform.get_translation(),
                     max_distance: Some(140.0)
                 }
             );
         }
 
+        if self.inventory_trigger.poll(ctx) {
+            println!("inventory contains: {:#?}", self.items);
+
+
+        }
         for object_id in self.requesting_position.drain(..) {
             let p = self.transform.get_translation();
 

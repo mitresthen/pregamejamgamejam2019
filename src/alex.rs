@@ -10,7 +10,8 @@ use rand;
 pub struct Alex {
     transform: Transform,
     velocity: Vec2,
-    prompted_for_response: bool
+    prompted_for_response: bool,
+    sound_channel: usize,
 }
 
 impl Alex {
@@ -20,7 +21,8 @@ impl Alex {
             Alex {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                prompted_for_response: false
+                prompted_for_response: false,
+                sound_channel: 0,
             };
         alex.transform.set_scale(1.0);
 
@@ -36,7 +38,8 @@ impl GameObject for Alex {
 
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.prompted_for_response {
-            ctx.play_sound(AudioLibrary::AccidentSong).unwrap();
+            let id = ctx.replace_sound(AudioLibrary::AccidentSong, self.sound_channel, 0).unwrap();
+            ctx.play(id);
             self.prompted_for_response = false;
         }
 

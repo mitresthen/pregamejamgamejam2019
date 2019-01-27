@@ -8,32 +8,44 @@ use engine::game_object::Item;
 use engine::game_object::Items;
 
 
-pub struct Key {
+pub struct FuseBox {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     delete_me: bool,
-    free_for_grabs: bool
+    active: bool
 }
 
-impl Key {
-    pub fn new(ctx: &mut Engine) -> Result<Key, Error> {
+impl FuseBox {
+    pub fn new(ctx: &mut Engine) -> Result<FuseBox, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/item_Key.png")?;
-
+        let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
         let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
-        let mut key =
-            Key {
+        let mut fuse_box =
+            FuseBox {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 delete_me: false,
                 free_for_grabs: false
             };
-        key.transform.set_scale(1.0);
+        fuse_box.transform.set_scale(1.0);
 
-        Ok(key)
+        Ok(fuse_box)
+    }
+
+    pub fn toggle_texture(&mut self) {
+        if active {
+            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+            self.sprite = sprite;
+        }
+        else{
+            let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png")?;
+            let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+            self.sprite = sprite;
+        }
     }
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
@@ -41,13 +53,13 @@ impl Key {
     }
 }
 
-impl GameObject for Key {
+impl GameObject for FuseBox {
 
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             event_mailbox.submit_event(
                     EventType::Loot { item: Item{
-                        item: Items::Key
+                        item: Items::FuseBox
                     }},
                     EventReceiver::Nearest {  
                         origin: self.transform.get_translation(),
@@ -82,20 +94,8 @@ impl GameObject for Key {
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
-                if self.free_for_grabs{
-                    println!("Free key grabbed");
-                    self.delete_me = true;
-                    true
-                }
-                else
-                {
-                    println!("Attempted grabbing dusty key");
-                    false
-                }
-            },
-            EventType::FreeFromDust => {
-                println!("Key became free from dust");
-                self.free_for_grabs = true;
+                self.active = true;
+                self.toggle_texture();
                 true
             },
             _ => {
@@ -105,7 +105,7 @@ impl GameObject for Key {
     }
 }
 
-impl PhysicalObject for Key {
+impl PhysicalObject for FuseBox {
     fn get_transform(&self) -> &Transform {
         &self.transform
     }

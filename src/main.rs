@@ -119,14 +119,14 @@ impl GameInterface for GoogleHomeopathicMedicine {
         }
 
         let dust = mid_level.take_tile_with_id(22);
-        
-        let key = mid_level.take_tile_with_id(21);
-        for (_, position) in key.iter() {
-            let mut key = key::Key::new(ctx)?;
-            key.get_transform_mut().set_translation(*position);
-        }
 
         for (_, position) in dust.iter() {
+
+
+            let mut key = key::Key::new(ctx)?;
+            key.get_transform_mut().set_translation(*position);
+            scene.add_object(key);
+
             let mut dust = dust::Dust::new(ctx)?;
             dust.get_transform_mut().set_translation(*position);
             scene.add_object(dust);
@@ -220,8 +220,8 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 scene: scene,
                 player_id: player_id,
                 zoom_controller: SliderController::new(
-                    Keycode::Plus,
                     Keycode::Minus,
+                    Keycode::Plus,
                     (0.5, 2.0)
                 ),
                 camera_velocity: Vec2::new(),
@@ -248,6 +248,10 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         self.scene.update(ctx, Some(&self.mid_level), dt);
         self.dimmer.update(dt);
+
+        if ctx.is_done(0) {
+            ctx.replace_sound(AudioLibrary::Music, 0, -1);
+        }
 
         Ok(true)
     }

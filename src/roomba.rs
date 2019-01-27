@@ -111,10 +111,11 @@ impl GameObject for Roomba {
             }
         }
         if self.suck {
+            println!("Roomba attempting to suck");
             let origin = self.transform.get_translation();
             event_mailbox.submit_event(
                 EventType::Suck,
-                EventReceiver::Nearest { origin, max_distance: Some(120.0) }
+                EventReceiver::Nearby { origin, max_distance: Some(120.0) }
             );
             self.suck = false;
         }

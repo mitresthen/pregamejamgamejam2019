@@ -63,8 +63,12 @@ impl SoundInstance {
         self.paused = !self.paused;
     }
 
+    pub fn is_playing(&self) -> bool {
+        !(self.is_done || self.paused)
+    }
+
     pub fn request_samples(&mut self, amount : usize) -> Option<Vec<f32>> {
-        if self.is_done || self.paused {
+        if !self.is_playing() {
             return None;
         }
         let mut return_vec = Vec::new();
@@ -157,6 +161,11 @@ impl AudioMixer {
     pub fn is_done(&self, id: usize) -> bool {
         let vector = self.playing.lock().unwrap();
         vector[id].is_done
+    }
+
+    pub fn is_playing(&self, id: usize) -> bool {
+        let vector = self.playing.lock().unwrap();
+        vector[id].is_playing()
     }
 
     pub fn reset(&mut self) {
@@ -277,6 +286,12 @@ impl AudioEngine {
         return self.loop_sound(key, 0);
     }
 
+    pub fn prepare_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
+        let id = self.play_sound(key)?;
+        self.pause(id);
+        Ok(id)
+    }
+
     pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<usize, Error> {
         let pcm_mono_float = self._sound_map.get(&self.get_hash(key)).unwrap().to_vec();
         let id = self.loop_sound_data(pcm_mono_float, repeats);
@@ -364,6 +379,10 @@ impl AudioEngine {
 
     pub fn is_done(&self, id: usize) -> bool {
         self.mixer.is_done(id)
+    }
+
+    pub fn is_playing(&self, id: usize) -> bool {
+        self.mixer.is_playing(id)
     }
 
     pub fn reset(&mut self) -> Result<(), Error> {
