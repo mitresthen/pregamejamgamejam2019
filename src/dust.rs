@@ -1,9 +1,6 @@
 use engine::prelude::*;
 
 use std::f32;
-use rand::Rng;
-use rand;
-
 
 pub struct Dust {
     sprite: AnimatedSprite,
@@ -17,7 +14,7 @@ impl Dust {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/image/item_Dust.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+        let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut dust =
             Dust {
@@ -38,7 +35,7 @@ impl Dust {
 
 impl GameObject for Dust {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             
             event_mailbox.submit_event(
@@ -74,7 +71,7 @@ impl GameObject for Dust {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Suck => {
                 self.delete_me = true;

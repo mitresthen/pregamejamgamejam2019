@@ -1,7 +1,7 @@
 use engine::prelude::*;
 
 use std::collections::HashSet;
-use engine::game_object::{Item, Items};
+use engine::game_object::{Item};
 
 use audio_library::AudioLibrary;
 
@@ -27,10 +27,10 @@ impl Player {
         //let texture = tr.load("assets/image/red_rider.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
-        let mut walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
+        let walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
 
         let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(120 * 1, 240 * 4))?;
-        let mut idle_sprite = AnimatedSprite::new(Extent::new(120, 240), idle_texture)?;
+        let idle_sprite = AnimatedSprite::new(Extent::new(120, 240), idle_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
         sprite.add(idle_sprite);

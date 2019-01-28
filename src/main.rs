@@ -3,9 +3,7 @@ extern crate sdl2;
 extern crate rand;
 
 use engine::prelude::*;
-use sdl2::render::BlendMode;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 mod player;
 mod roomba;
@@ -31,7 +29,6 @@ struct GoogleHomeopathicMedicine {
     player_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
-    camera_velocity: Vec2,
     title_screen: SplashScreen,
     main_menu_screen: MenuScreen,
     pause_screen: MenuScreen,
@@ -47,19 +44,23 @@ impl GoogleHomeopathicMedicine {
 
         let level = Level::load_from_file(ctx, levels[level_index as usize]);
 
-        let mut low_level = level.ground;
+        let low_level = level.ground;
         let mut mid_level = level.objects;
 
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
-
-        let mut alex = alex::Alex::new(ctx)?;
-        alex.get_transform_mut().set_translation(Vec2::from_coords(8.5 * 120.0, 1.5 * 120.0));
-
-
+        
         let mut scene = Scene::new();
+
+        let alex_in_level = mid_level.take_tile_with_id(*level.special_blocks.get("alex").unwrap());
+        for (_, position) in alex_in_level.iter() {
+            let mut alex = alex::Alex::new(ctx)?;
+            println!("creating alexa at position {:#?}", position);
+            alex.get_transform_mut().set_translation(*position);
+            scene.add_object(alex);
+        }
+
         let player_id = scene.add_object(player);
-        scene.add_object(alex);
 
         let roombas_in_level = mid_level.take_tile_with_id(*level.special_blocks.get("roomba").unwrap());
 
@@ -196,9 +197,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let mut main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
-        let mut start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
-        let mut exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
+        let main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
+        let start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
+        let exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
 
         let main_menu_choices =
             [
@@ -238,9 +239,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
                 camera_pos: Vec2::new(),
             };
 
-        let mut pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
-        let mut continue_sprite = StaticSprite::new(128, 64, tr.load("assets/image/continue_button.png")?)?;
-        let mut return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/image/return_to_menu_button.png")?)?;
+        let pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
+        let continue_sprite = StaticSprite::new(128, 64, tr.load("assets/image/continue_button.png")?)?;
+        let return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/image/return_to_menu_button.png")?)?;
 
         let pause_menu_choices =
             [
@@ -280,7 +281,6 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     Keycode::Plus,
                     (0.5, 2.0)
                 ),
-                camera_velocity: Vec2::new(),
                 title_screen: title_screen,
                 main_menu_screen: main_menu_screen,
                 pause_screen: pause_screen,
@@ -304,7 +304,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
                     self.change_level(ctx, next_level);
                 }
             },
-            TransitionLogic::FadingInLevel { target_level: next_level } => {
+            TransitionLogic::FadingInLevel { target_level: _next_level } => {
                 self.dimmer.set_target(1.0);
 
                 if self.dimmer.get_value() == 1.0 {
@@ -362,7 +362,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
         Ok(true)
     }
 
-    fn draw_main_menu(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
+    fn draw_main_menu(&mut self, ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
         ctx.draw(&self.main_menu_screen);
 
         Ok(true)
@@ -420,7 +420,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, button: MouseButton)
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, _button: MouseButton)
         -> Result<bool, Error>
     {
         if ctx.state.is_on(TITLE_STATE)

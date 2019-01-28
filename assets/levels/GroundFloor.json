@@ -58,7 +58,8 @@
         "roomba" : 19,
         "dust" : 21,
         "door" : 17,
-        "fusebox": 29
+        "fusebox": 29,
+        "alex" : 3
     }
 }
 

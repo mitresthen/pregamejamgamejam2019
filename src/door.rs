@@ -61,12 +61,12 @@ impl PhysicalObject for Door {
     }
 
     fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let size = self.sprite.calculate_size();
+        let size = self.sprite.calculate_size() * 0.5;
 
         let bounding_box =
             BoundingBox::new(
-                120.0,
-                120.0,
+                size.x,
+                size.y,
                 self.transform.get_translation()
             );
 
@@ -75,7 +75,7 @@ impl PhysicalObject for Door {
 }
 
 impl GameObject for Door {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, _dt: f32) -> bool {
         match self.state {
             DoorState::Open => {
                 event_mailbox.submit_event(
@@ -111,7 +111,7 @@ impl GameObject for Door {
     fn render(&self, ctx: &mut DrawContext) {
         self.sprite.draw(ctx);
 
-        match (self.state) {
+        match self.state {
             DoorState::ClosedAndLocked |
             DoorState::RequestingKey(_) => {
                 self.lock_sprite.draw(ctx);
@@ -125,7 +125,7 @@ impl GameObject for Door {
     fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> { Some(self) }
 
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
-        match (event) {
+        match event {
             EventType::Interact => {
                 if let DoorState::ClosedAndLocked = self.state {
                     self.state = DoorState::RequestingKey(sender.unwrap());

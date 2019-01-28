@@ -1,8 +1,6 @@
 use engine::prelude::*;
 
 use std::f32;
-use rand::Rng;
-use rand;
 
 use engine::game_object::Item;
 use engine::game_object::Items;
@@ -21,7 +19,7 @@ impl Key {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/image/item_Key.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+        let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut key =
             Key {
@@ -43,7 +41,7 @@ impl Key {
 
 impl GameObject for Key {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             event_mailbox.submit_event(
                     EventType::Loot { item: Item{
@@ -79,7 +77,7 @@ impl GameObject for Key {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, event: EventType, _: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
                 if self.free_for_grabs{

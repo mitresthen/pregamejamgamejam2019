@@ -1,11 +1,7 @@
 use engine::prelude::*;
 
 use std::f32;
-use rand::Rng;
-use rand;
 
-use engine::game_object::Item;
-use engine::game_object::Items;
 use AudioLibrary;
 
 
@@ -13,14 +9,13 @@ pub struct FuseBox {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
-    delete_me: bool,
     active: bool,
     audio_channel: usize,
 }
 
 impl FuseBox {
     pub fn new(ctx: &mut Engine) -> Result<FuseBox, Error> {
-        let mut sprite;
+        let sprite;
         {
             let tr = ctx.get_texture_registry();
             let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
@@ -33,7 +28,6 @@ impl FuseBox {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                delete_me: false,
                 active: true,
                 audio_channel: channel,
             };
@@ -49,12 +43,12 @@ impl FuseBox {
 
         if self.active {
             let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png");
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on.unwrap());
+            let sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on.unwrap());
             self.sprite = sprite.unwrap();
         }
         else{
             let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png");
-            let mut sprite = AnimatedSprite::new(Extent::new(120, 360), texture_off.unwrap());
+            let sprite = AnimatedSprite::new(Extent::new(120, 360), texture_off.unwrap());
             self.sprite = sprite.unwrap();
         }
     }
@@ -66,7 +60,7 @@ impl FuseBox {
 
 impl GameObject for FuseBox {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if !self.active {
             self.toggle_texture(ctx);
             ctx.play(self.audio_channel);
@@ -93,7 +87,7 @@ impl GameObject for FuseBox {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
                 println!("Someone tried to switch off the fuse");

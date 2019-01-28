@@ -30,7 +30,7 @@ impl Roomba {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/image/Electronics_Roomba.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+        let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
         let mut roomba =
             Roomba {
@@ -42,7 +42,7 @@ impl Roomba {
                 suck: false
             };
 
-        let vel = (Vec2::random()*250.0);
+        let vel = Vec2::random()*250.0;
         roomba.velocity = vel;
 
 
@@ -53,10 +53,6 @@ impl Roomba {
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
         &mut self.transform
-    }
-
-    pub fn new_random_direction(&mut self) {
-        self.velocity = Vec2::random();
     }
 }
 
@@ -101,7 +97,7 @@ impl GameObject for Roomba {
                 ctx.play_sound(AudioLibrary::HooverStart);
             }
 
-            let distance = (target - self.transform.get_translation());
+            let distance = target - self.transform.get_translation();
             if distance.len() < 60.0 {
                 self.mode = RoombaState::Searching;
             } else {
@@ -147,7 +143,7 @@ impl GameObject for Roomba {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Collide { force } => {
                 let mut rng = rand::thread_rng();

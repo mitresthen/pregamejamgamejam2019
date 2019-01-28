@@ -3,8 +3,6 @@ use engine::prelude::*;
 use audio_library::AudioLibrary;
 
 use std::f32;
-use rand::Rng;
-use rand;
 
 
 pub struct Alex {
@@ -20,7 +18,7 @@ impl Alex {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/image/Alexa_version1.png")?;
 
-        let mut sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
+        let sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
 
         let mut alex =
             Alex {
@@ -42,18 +40,21 @@ impl Alex {
 
 impl GameObject for Alex {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut EventMailbox, dt: f32) -> bool {
         if self.prompted_for_response {
             let id = ctx.replace_sound(AudioLibrary::AccidentSong, self.sound_channel, 0).unwrap();
             ctx.play(id);
             self.prompted_for_response = false;
         }
+        let mut sprite_transform = self.transform.clone();
+        sprite_transform.translate(Vec2::from_coords(0.0, -60.0));
+        self.sprite.set_transform(&sprite_transform);
 
         true
     }
 
     fn render(&self, ctx: &mut DrawContext) {
-
+        self.sprite.draw(ctx)
     }
 
     fn get_physical_object(&self) -> Option<&PhysicalObject> {
@@ -64,7 +65,7 @@ impl GameObject for Alex {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
                 self.prompted_for_response = true;
@@ -95,10 +96,13 @@ impl PhysicalObject for Alex {
     }
 
     fn get_bounding_box(&self) -> Option<BoundingBox> {
+
+        let size = self.sprite.calculate_size() * 0.5;
+
         let bounding_box =
             BoundingBox::new(
-                120.0,
-                120.0,
+                size.x,
+                size.y,
                 self.transform.get_translation()
             );
 
