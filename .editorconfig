@@ -1,0 +1,31 @@
+#############################
+# Code Formatting Shortcut  #
+#############################
+
+# * VSCode on Windows - Shift + Alt + F
+# * VSCode on MacOS   - Shift + Option + F
+# * VSCode on Ubuntu  - Ctrl + Shift + I
+
+#############################
+# Core EditorConfig Options #
+#############################
+
+root = true
+
+# All files
+[*]
+charset                  = utf-8
+indent_style             = space
+trim_trailing_whitespace = true
+insert_final_newline     = true
+# (Please don't specify an indent_size here; that has too many unintended consequences.)
+
+[*.rs]
+end_of_line = lf
+indent_size = 4
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.yml]
+indent_size = 2
