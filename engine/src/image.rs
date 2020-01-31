@@ -7,7 +7,7 @@ use Error;
 
 
 pub trait PixelType : Sized + PartialEq + Eq + Hash {
-    fn from_bytes(it: &mut Iterator<Item=u8>)
+    fn from_bytes(it: &mut dyn Iterator<Item=u8>)
         -> Result<Option<Self>, Error>;
 
     fn channel_count() -> usize;
@@ -22,7 +22,7 @@ pub struct RGBA {
 }
 
 impl PixelType for RGBA {
-    fn from_bytes(it: &mut Iterator<Item=u8>)
+    fn from_bytes(it: &mut dyn Iterator<Item=u8>)
         -> Result<Option<Self>, Error>
     {
         if let Some(r) = it.next() {

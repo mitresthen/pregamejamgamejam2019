@@ -58,7 +58,7 @@ impl Roomba {
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
         if self.mode == RoombaState::Searching {
             event_mailbox.submit_event(
@@ -135,11 +135,11 @@ impl GameObject for Roomba {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

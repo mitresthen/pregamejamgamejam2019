@@ -3,6 +3,7 @@ pub use GameInterface;
 pub use Error;
 pub use Keycode;
 pub use MouseButton;
+pub use GameState;
 pub use static_sprite::StaticSprite;
 pub use animated_sprite::{Animatable, AnimatedSprite, AggregatedAnimatedSprite, SpriteTrait};
 pub use movable_object::MovableObject;
@@ -11,9 +12,6 @@ pub use bounding_box::BoundingBox;
 pub use vector::Vec2;
 pub use extent::Extent;
 pub use offset::Offset;
-pub use splash_screen::SplashScreen;
-pub use menu_screen::*;
-pub use game_state::*;
 pub use texture_registry::Texture;
 
 pub use grid::Grid;

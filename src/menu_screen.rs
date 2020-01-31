@@ -1,7 +1,14 @@
-use drawable::{DrawContext, Drawable};
-use game_state::GameState;
-use static_sprite::StaticSprite;
-use vector::Vec2;
+use engine::drawable::{DrawContext, Drawable};
+use engine::static_sprite::StaticSprite;
+use engine::vector::Vec2;
+
+
+#[derive(Copy, Clone)]
+pub enum GameState {
+    Gameplay,
+    Mainmenu,
+    Exit
+}
 
 #[derive(Clone)]
 pub struct MenuChoice {

@@ -72,7 +72,7 @@ impl Player {
 
 impl GameObject for Player {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let target_velocity =
             self.controller.poll(ctx) * 400.0;
 
@@ -155,11 +155,11 @@ impl GameObject for Player {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

@@ -52,7 +52,6 @@ impl Dimmer {
         let screen_bounds = ctx.get_screen_bounds();
 
         let width = screen_bounds.max.x as u32;
-        let height = screen_bounds.max.y as u32;
 
         let w = self.texture.extent().width;
         let offset = ((self.value * w as f32) as i32).min(w).max(0);

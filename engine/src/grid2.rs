@@ -115,8 +115,6 @@ impl Grid2 {
         let mut it = self.buffer.iter_mut();
         for y in 0..self.height {
             for x in 0..self.width {
-                let index = ((y * self.width) + x) as usize;
-
                 let tile_index = it.next().unwrap();
 
                 if *tile_index == id {
@@ -140,7 +138,7 @@ impl Grid2 {
         for y in 0..self.height {
             if let Some(scene) = interleaved_scene {
                 let row_rect = self.get_row_rect(y);
-                let mut objects : Vec<(&Box<GameObject>, f32)> = scene.get_objects_in_rect(row_rect).into_iter().map(
+                let mut objects : Vec<(&Box<dyn GameObject>, f32)> = scene.get_objects_in_rect(row_rect).into_iter().map(
                     |o| {
                         let y = o.get_physical_object().unwrap().get_transform().get_translation().y;
                         (o, y)

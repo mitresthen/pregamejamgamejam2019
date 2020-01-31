@@ -10,7 +10,7 @@ use Engine;
 pub type SceneObjectId = i32;
 
 pub struct Scene {
-    objects: BTreeMap<SceneObjectId, Box<GameObject>>,
+    objects: BTreeMap<SceneObjectId, Box<dyn GameObject>>,
     current_id: SceneObjectId,
     event_queue: EventQueue,
     pending_raycasts: Vec<(Vec2, Vec2, SceneObjectId)>
@@ -32,11 +32,11 @@ impl Scene {
         }
     }
 
-    pub fn get(&self, id: SceneObjectId) -> Option<&Box<GameObject>> {
+    pub fn get(&self, id: SceneObjectId) -> Option<&Box<dyn GameObject>> {
         self.objects.get(&id)
     }
 
-    pub fn get_mut(&mut self, id: SceneObjectId) -> Option<&mut Box<GameObject>> {
+    pub fn get_mut(&mut self, id: SceneObjectId) -> Option<&mut Box<dyn GameObject>> {
         self.objects.get_mut(&id)
     }
 
@@ -49,7 +49,7 @@ impl Scene {
     ) {
         use std::f32;
 
-        let mut objects_with_distance : Vec<(f32, &mut Box<GameObject>)> =
+        let mut objects_with_distance : Vec<(f32, &mut Box<dyn GameObject>)> =
             self.objects.iter_mut().map(
                 |(_id, ob)| {
                     let distance = 
@@ -64,7 +64,7 @@ impl Scene {
                 }
             ).collect();
 
-        objects_with_distance.sort_by(|(dA, _oA), (dB, _oB)| dA.partial_cmp(dB).unwrap());
+        objects_with_distance.sort_by(|(d_a, _o_a), (d_b, _o_b)| d_a.partial_cmp(d_b).unwrap());
 
         let mut it = objects_with_distance.iter_mut();
 
@@ -90,7 +90,7 @@ impl Scene {
     ) {
         use std::f32;
 
-        let mut objects_with_distance : Vec<(f32, &mut Box<GameObject>)> =
+        let mut objects_with_distance : Vec<(f32, &mut Box<dyn GameObject>)> =
             self.objects.iter_mut().map(
                 |(_id, ob)| {
                     let distance = 
@@ -105,7 +105,7 @@ impl Scene {
                 }
             ).collect();
 
-        objects_with_distance.sort_by(|(dA, _oA), (dB, _oB)| dA.partial_cmp(dB).unwrap());
+        objects_with_distance.sort_by(|(d_a, _o_a), (d_b, _o_b)| d_a.partial_cmp(d_b).unwrap());
 
         let mut it = objects_with_distance.iter_mut();
 
@@ -125,7 +125,7 @@ impl Scene {
         }
     }
 
-    pub fn do_level_collision(&mut self, collider: &LevelCollider) {
+    pub fn do_level_collision(&mut self, collider: &dyn LevelCollider) {
         for (origin, target, object_id) in self.pending_raycasts.drain(..) {
             let mut points = Vec::new();
             points.push(target);
@@ -170,7 +170,7 @@ impl Scene {
     }
 
     pub fn handle_scene_event(&mut self, event_type: EventType, sender: Option<SceneObjectId>) {
-        match (event_type) {
+        match event_type {
             EventType::RayCast { origin, target } => {
                 if let Some(s) = sender {
                     self.pending_raycasts.push((origin, target, s));
@@ -185,7 +185,7 @@ impl Scene {
         }
     }
 
-    pub fn update(&mut self, engine: &mut Engine, collider: Option<&LevelCollider>, dt: f32) {
+    pub fn update(&mut self, engine: &mut Engine, collider: Option<&dyn LevelCollider>, dt: f32) {
         {
             let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2, bool)> = Vec::new();
 
@@ -232,7 +232,7 @@ impl Scene {
                     {
                         let physical_object_b = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                         let velocity_b = physical_object_b.get_velocity_mut();
-                        *velocity_b = axis * 220.0 + (perp * perp.dot_product(*velocity_b));;
+                        *velocity_b = axis * 220.0 + (perp * perp.dot_product(*velocity_b));
                     }
 
                 }
@@ -260,7 +260,7 @@ impl Scene {
 
 
         while let Some(event) = self.event_queue.poll() {
-            match (event.receiver) {
+            match event.receiver {
                 EventReceiver::Nearest { origin, max_distance } => {
                     self.dispatch_nearest_event(origin, max_distance, event.event_type, event.sender)
                 },
@@ -305,14 +305,14 @@ impl Scene {
         new_id
     }
 
-    pub fn remove_object(&mut self, objectId: SceneObjectId){
+    pub fn remove_object(&mut self, object_id: SceneObjectId){
         println!("Attempting to delete object");
-        if self.objects.contains_key(&objectId) {
-            self.objects.remove(&objectId);
+        if self.objects.contains_key(&object_id) {
+            self.objects.remove(&object_id);
         }
     }
 
-    pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<GameObject>> {
+    pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<dyn GameObject>> {
         let mut result = Vec::new();
         for (_id, object) in self.objects.iter() {
             if let Some(physical_object) = object.get_physical_object() {

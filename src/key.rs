@@ -41,7 +41,7 @@ impl Key {
 
 impl GameObject for Key {
 
-    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             event_mailbox.submit_event(
                     EventType::Loot { item: Item{
@@ -69,11 +69,11 @@ impl GameObject for Key {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 
