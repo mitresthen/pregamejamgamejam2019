@@ -12,7 +12,7 @@ pub struct Dust {
 impl Dust {
     pub fn new(ctx: &mut Engine) -> Result<Dust, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/item_Dust.png")?;
+        let texture = tr.load("assets/images/item_Dust.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 

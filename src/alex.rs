@@ -16,7 +16,7 @@ pub struct Alex {
 impl Alex {
     pub fn new(ctx: &mut Engine) -> Result<Alex, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/Alexa_version1.png")?;
+        let texture = tr.load("assets/images/Alexa_version1.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
 
