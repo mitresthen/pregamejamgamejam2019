@@ -2,7 +2,6 @@ use engine::static_sprite::StaticSprite;
 use engine::drawable::{DrawContext, Drawable};
 use engine::prelude::*;
 
-use crate::menu_screen::{MenuScreen, MenuChoice};
 use crate::main_menu::MainMenuState;
 
 #[derive(Clone)]
@@ -20,7 +19,7 @@ impl Drawable for SplashScreen {
 
 pub struct TitleScreenState {
     splash_screen: SplashScreen,
-    next_game_state: Option<Box<GameState>>,
+    next_game_state: Option<Box<dyn GameState>>,
 }
 
 impl TitleScreenState {
@@ -61,7 +60,7 @@ impl GameState for TitleScreenState {
         Ok(())
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, _button: MouseButton)
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, _click_x: i32, _click_y: i32, _button: MouseButton)
         -> Result<(), Error>
     {
         if self.next_game_state.is_some() {

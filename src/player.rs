@@ -81,7 +81,7 @@ impl GameObject for Player {
         }
 
         if self.nope {
-            ctx.play_sound(AudioLibrary::Nope);
+            ctx.play_sound(AudioLibrary::Nope).unwrap();
             self.nope = false;
         }
 

@@ -94,7 +94,7 @@ impl GameObject for Roomba {
             self.aggro += dt;
 
             if self.aggro > aggro_tolerance && self.aggro - dt <= aggro_tolerance {
-                ctx.play_sound(AudioLibrary::HooverStart);
+                ctx.play_sound(AudioLibrary::HooverStart).unwrap();
             }
 
             let distance = target - self.transform.get_translation();
@@ -120,7 +120,7 @@ impl GameObject for Roomba {
             self.aggro -= dt;
 
             if self.aggro < -aggro_tolerance && self.aggro + dt >= -aggro_tolerance {
-                ctx.play_sound(AudioLibrary::HooverStop);
+                ctx.play_sound(AudioLibrary::HooverStop).unwrap();
             }
         }
 

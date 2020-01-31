@@ -193,10 +193,10 @@ impl GameState for RunningGameState {
 
         if !self.intro_played {
             self.intro_played = true;
-            ctx.replace_sound(AudioLibrary::Intro, 0, 0);
+            ctx.replace_sound(AudioLibrary::Intro, 0, 0)?;
         }
         if ctx.is_done(0) {
-            ctx.replace_sound(AudioLibrary::Music, 0, -1);
+            ctx.replace_sound(AudioLibrary::Music, 0, -1)?;
         }
 
         Ok(self)
@@ -225,10 +225,10 @@ impl GameState for RunningGameState {
             self.go_to_pause = true;
         }
         if keycode == Keycode::S && !is_repeated {
-            ctx.play_sound(AudioLibrary::HeavySwitch);
+            ctx.play_sound(AudioLibrary::HeavySwitch)?;
         }
         if keycode == Keycode::T && !is_repeated {
-            ctx.play_sound(AudioLibrary::Toilet);
+            ctx.play_sound(AudioLibrary::Toilet)?;
         }
         if keycode == Keycode::M && !is_repeated {
             ctx.toggle_mute();
@@ -248,7 +248,7 @@ impl GameState for RunningGameState {
             self.transition_logic = TransitionLogic::FadingOutLevel { target_level: 1 };
         }
 
-        self.on_key_down(ctx, keycode, true);
+        self.on_key_down(ctx, keycode, true)?;
 
         Ok(())
     }
@@ -312,9 +312,9 @@ impl GameInterface for GoogleHomeopathicMedicine {
         sounds.insert(AudioLibrary::Defeat, "assets/sounds/defeat.wav");
         sounds.insert(AudioLibrary::Nope, "assets/sounds/nope.wav");
 
-        ctx.load_sounds(sounds);
+        ctx.load_sounds(sounds)?;
 
-        ctx.reset_sound();
+        ctx.reset_sound()?;
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 

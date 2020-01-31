@@ -43,8 +43,6 @@ impl PauseScreenState {
                 name: "Pause Menu".to_string(),
                 background: pause_menu_background,
                 options: pause_menu_choices,
-                current_zoom: 1.0,
-                camera_pos: Vec2::new(),
             };
 
 

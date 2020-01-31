@@ -83,7 +83,7 @@ impl GameObject for Door {
                     EventReceiver::Scene
                 );
 
-                ctx.play_sound(AudioLibrary::DoorOpen1);
+                ctx.play_sound(AudioLibrary::DoorOpen1).unwrap();
 
                 self.state = DoorState::Deleted;
             },
@@ -95,7 +95,7 @@ impl GameObject for Door {
                 self.state = DoorState::ClosedAndLocked
             },
             DoorState::Unlocking => {
-                ctx.play_sound(AudioLibrary::MetallicHit);
+                ctx.play_sound(AudioLibrary::MetallicHit).unwrap();
                 self.state = DoorState::ClosedAndUnlocked;
             }
             _ => { }
