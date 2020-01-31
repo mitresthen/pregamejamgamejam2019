@@ -69,7 +69,7 @@ impl RunningGameState {
 
         let levels = ["assets/levels/GroundFloor.json", "assets/levels/Basement.json"];
 
-        let level = Level::load_from_file(ctx, levels[level_index as usize]);
+        let level = Level::load_from_file(ctx, levels[level_index as usize], 120);
 
         let low_level = level.ground;
         let mut mid_level = level.objects;

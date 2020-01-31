@@ -27,8 +27,8 @@ impl TitleScreenState {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
-        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
+        let title_background = StaticSprite::new(1280, 720, tr.load("assets/images/title_background.png")?)?;
+        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/images/title.png")?)?;
 
         let title_screen =
             SplashScreen {

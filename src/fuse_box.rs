@@ -18,7 +18,7 @@ impl FuseBox {
         let sprite;
         {
             let tr = ctx.get_texture_registry();
-            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png")?;
+            let texture_on = tr.load("assets/images/wallTile_Blue_fuseBox_ON.png")?;
             sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on)?;
         }
         let channel = ctx.prepare_sound(AudioLibrary::Victory)?;
@@ -42,12 +42,12 @@ impl FuseBox {
         println!("Toggeling texture to {:#?}", self.active);
 
         if self.active {
-            let texture_on = tr.load("assets/image/wallTile_Blue_fuseBox_ON.png");
+            let texture_on = tr.load("assets/images/wallTile_Blue_fuseBox_ON.png");
             let sprite = AnimatedSprite::new(Extent::new(120, 360), texture_on.unwrap());
             self.sprite = sprite.unwrap();
         }
         else{
-            let texture_off = tr.load("assets/image/wallTile_Blue_fuseBox_OFF.png");
+            let texture_off = tr.load("assets/images/wallTile_Blue_fuseBox_OFF.png");
             let sprite = AnimatedSprite::new(Extent::new(120, 360), texture_off.unwrap());
             self.sprite = sprite.unwrap();
         }

@@ -17,7 +17,7 @@ pub struct Key {
 impl Key {
     pub fn new(ctx: &mut Engine) -> Result<Key, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/item_Key.png")?;
+        let texture = tr.load("assets/images/item_Key.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 

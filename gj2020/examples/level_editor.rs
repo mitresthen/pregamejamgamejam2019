@@ -24,11 +24,12 @@ impl LevelEditorState {
         use std::env;
         let args: Vec<String> = env::args().collect();
 
-        let level_filename = args.iter().nth(1).unwrap();
+        let level_filename = args.iter().nth(1)
+            .expect("First argument must be the filename of the level");
 
         let level_editor =
             LevelEditorState {
-                level: Level::load_from_file(ctx, &level_filename, 120),
+                level: Level::load_from_file(ctx, &level_filename, 240),
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -71,7 +72,9 @@ impl GameState for LevelEditorState {
                 let edit_layer : &mut Grid2 = self.get_edit_layer();
 
                 if let Some(painting_tile) = maybe_painting_tile {
-                    edit_layer.set_tile_at(drag_state.current, painting_tile).unwrap()
+                    if edit_layer.set_tile_at(drag_state.current, painting_tile).is_err() {
+                        println!("psst.. you are drawing outside the map");
+                    }
                 }
             }
         }
@@ -126,11 +129,19 @@ impl GameState for LevelEditorState {
 
                 if let Some(mut tile_id) = maybe_tile {
                     tile_id = (tile_id + step) % edit_layer.get_tile_type_count();
-                    edit_layer.set_tile_at(drag_state.current, tile_id).unwrap();
+                    if edit_layer.set_tile_at(drag_state.current, tile_id).is_err() {
+                        println!("psst.. you are drawing outside the map");
+                    }
                 }
             }
         }
         Ok(())
+    }
+}
+
+impl Drop for LevelEditorState {
+    fn drop(&mut self) {
+        self.level.save();
     }
 }
 
@@ -147,4 +158,5 @@ impl GameInterface for LevelEditor {
 fn main() {
     Engine::execute::<LevelEditor>(1280, 720).unwrap();
 }
+
 

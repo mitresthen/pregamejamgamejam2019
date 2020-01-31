@@ -14,9 +14,9 @@ impl MainMenuState {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
-        let start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
-        let exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
+        let main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/images/main_menu_background.png")?)?;
+        let start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/images/start_button.png")?)?;
+        let exit_sprite = StaticSprite::new(128, 64, tr.load("assets/images/exit_button.png")?)?;
 
         let main_menu_choices =
             [

@@ -28,7 +28,7 @@ pub struct Roomba {
 impl Roomba {
     pub fn new(ctx: &mut Engine) -> Result<Roomba, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/Electronics_Roomba.png")?;
+        let texture = tr.load("assets/images/Electronics_Roomba.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 

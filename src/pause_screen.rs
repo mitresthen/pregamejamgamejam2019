@@ -17,9 +17,9 @@ impl PauseScreenState {
         // Loading StaticSprites
         let tr = ctx.get_texture_registry();
 
-        let pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
-        let continue_sprite = StaticSprite::new(128, 64, tr.load("assets/image/continue_button.png")?)?;
-        let return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/image/return_to_menu_button.png")?)?;
+        let pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/images/pause_menu_background.png")?)?;
+        let continue_sprite = StaticSprite::new(128, 64, tr.load("assets/images/continue_button.png")?)?;
+        let return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/images/return_to_menu_button.png")?)?;
 
         let pause_menu_choices =
             [

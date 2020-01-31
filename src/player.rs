@@ -23,8 +23,7 @@ pub struct Player {
 impl Player {
     pub fn new(ctx: &mut Engine) -> Result<Player, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/mainChar-1x2.png")?;
-        //let texture = tr.load("assets/image/red_rider.png")?;
+        let texture = tr.load("assets/images/mainChar-1x2.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
