@@ -6,7 +6,7 @@ authors = ["Anders Rein <andersrein87@gmail.com>"]
 [target.'cfg(windows)'.dependencies]
 sdl2 = { version = "0.33.0", features = ["bundled"] }
 [target.'cfg(unix)'.dependencies]
-sdl2 = { version = "0.33.0" }
+sdl2 = { version = "0.31.0" }
 
 [dependencies]
 bincode = "1.2.1"
