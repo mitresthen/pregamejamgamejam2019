@@ -23,9 +23,9 @@ pub struct ObjectInstance {
 #[derive(Serialize, Deserialize)]
 pub struct ObjectType {
     file: String,
-    weight: u32,
+    density: u32,
     fixed: bool,
-    Layers: Vec2<u32>
+    Layers: Vec2<u32>,
 }
 
 pub struct Level2D {
