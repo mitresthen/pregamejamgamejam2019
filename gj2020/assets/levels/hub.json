@@ -15,12 +15,14 @@
             "box.png",
             "action_babylon.png",
             "action_noah.png",
-            "action_snek.png"
+            "action_snek.png",
+            "action_space.png"
         ]
     },
     "special_blocks" : {
         "babylon" : 2,
         "noah" : 3,
-        "snek" : 4
+        "snek" : 4,
+        "space": 5
     }
 }

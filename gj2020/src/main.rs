@@ -22,6 +22,10 @@ pub mod noah_state;
 pub mod snek;
 pub mod snek_state;
 
+// Space modules
+pub mod space_state;
+pub mod celestial_body;
+
 struct GodSend { }
 
 impl GameInterface for GodSend {
