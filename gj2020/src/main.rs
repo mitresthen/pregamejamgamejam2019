@@ -19,6 +19,7 @@ pub mod babylon_state;
 pub mod noah_state;
 
 // Snek modules
+pub mod snek;
 pub mod snek_state;
 
 struct GodSend { }
@@ -36,6 +37,7 @@ impl GameInterface for GodSend {
         sounds.insert(AudioLibrary::Hell, "assets/music/hell.wav");
         sounds.insert(AudioLibrary::Babylon, "assets/music/thetowerofbabylon.wav");
         sounds.insert(AudioLibrary::Space, "assets/music/toomuchspacetoolittlelove.wav");
+        sounds.insert(AudioLibrary::Noah, "assets/music/noah.wav");
         ctx.load_sounds(sounds)?;
 
         ctx.reset_sound()?;
