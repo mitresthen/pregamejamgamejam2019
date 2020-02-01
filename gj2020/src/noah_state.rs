@@ -1,4 +1,5 @@
 use engine::prelude::*;
+use audio_library::AudioLibrary;
 
 pub struct NoahState { }
 
@@ -11,6 +12,8 @@ impl NoahState {
         let state =
             NoahState {
             };
+
+        ctx.replace_sound(AudioLibrary::Space, 0, -1)?;
 
         Ok(state)
     }

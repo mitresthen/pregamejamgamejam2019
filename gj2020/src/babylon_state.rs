@@ -1,4 +1,5 @@
 use engine::prelude::*;
+use audio_library::AudioLibrary;
 
 pub struct BabylonState {
     scene: Scene,
@@ -14,9 +15,10 @@ impl BabylonState {
 
         let tr = ctx.get_texture_registry();
         let box_texture = tr.load("assets/images/box.png")?;
-        
+
         scene.add_force(force);
 
+        ctx.replace_sound(AudioLibrary::Babylon, 0, -1)?;
         let state =
             BabylonState {
                 scene,

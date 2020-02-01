@@ -7,6 +7,7 @@ use crate::minigame::{
 };
 use crate::babylon_state::BabylonState;
 use crate::noah_state::NoahState;
+use audio_library::AudioLibrary;
 
 pub struct HubState {
     level: Level,
@@ -63,6 +64,8 @@ impl HubState {
                 babylon_trigger,
                 noah_trigger
             };
+
+        ctx.loop_sound(AudioLibrary::HubWorld, -1)?;
 
         Ok(hub_state)
     }
