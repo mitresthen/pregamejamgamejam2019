@@ -49,7 +49,7 @@ impl GameState for SnekState {
 
         ctx.set_camera_position(snek_position);
         // ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
-        ctx.set_camera_zoom(1.0);
+        ctx.set_camera_zoom(2.0);
 
         ctx.draw(&self.level.ground);
         ctx.draw(&self.level.objects.interleave_scene(&self.scene));
