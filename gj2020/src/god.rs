@@ -14,13 +14,13 @@ pub struct God {
 impl God {
     pub fn new(ctx: &mut Engine) -> Result<God, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/temp_player.png")?;
+        let texture = tr.load("assets/images/God/god.png")?;
 
-        let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
-        let walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
+        let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
+        let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
 
-        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(120 * 1, 240 * 4))?;
-        let idle_sprite = AnimatedSprite::new(Extent::new(120, 240), idle_texture)?;
+        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240 * 1, 480 * 4))?;
+        let idle_sprite = AnimatedSprite::new(Extent::new(240, 480), idle_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
         sprite.add(idle_sprite);
@@ -134,7 +134,7 @@ impl PhysicalObject for God {
     fn get_bounding_box(&self) -> Option<BoundingBox> {
         let bounding_box =
             BoundingBox::new(
-                self.collision_size,
+                self.collision_size*2.5,
                 self.collision_size,
                 self.transform.get_translation()
             );
