@@ -20,6 +20,16 @@ impl SquareShape {
             ]
         }
     }
+
+    pub fn transform(&mut self, transform: &Transform) {
+        for p in self.points.iter_mut() {
+            *p = transform.transform_point(*p);
+        }
+
+        for a in self.axes.iter_mut() {
+            *a = transform.transform_vector(*a);
+        }
+    }
 }
 
 impl CollisionShape for SquareShape {

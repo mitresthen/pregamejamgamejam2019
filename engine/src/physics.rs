@@ -24,6 +24,7 @@ struct CollisionPair{
     a: usize,
     b: usize,
     axis: Vec2,
+    resistance: f32,
     depth: f32,
     point: Vec2,
 }
@@ -99,14 +100,26 @@ impl PhysicsSet {
 
                         let manifold = manifold_a.clip(manifold_b, result.axis);
 
+                        let perp = result.axis.perpendicular();
+
                         for i in 0..manifold.point_count {
+                            let r_a = perp.dot_product(a.center - manifold.points[i]);
+                            let r_b = perp.dot_product(b.center - manifold.points[i]);
+
+                            let resistance =
+                                a.inv_mass +
+                                b.inv_mass +
+                                (r_a * r_a * a.inv_mass * a.inv_intertia) +
+                                (r_b * r_b * b.inv_mass * b.inv_intertia);
+
                             let collision_pair =
                                 CollisionPair {
                                     a: ai,
                                     b: bi,
                                     axis: result.axis,
                                     depth: result.depth,
-                                    point: manifold.points[i]
+                                    point: manifold.points[i],
+                                    resistance,
                                 };
 
                             self.collision_pairs.push(collision_pair);
@@ -122,6 +135,8 @@ impl PhysicsSet {
             let a = &self.bodies[cp.a];
             let b = &self.bodies[cp.b];
 
+
+
             let ma = a.inv_mass;
             let mb = b.inv_mass;
 
@@ -130,10 +145,12 @@ impl PhysicsSet {
 
             let delta_v = v_a - v_b;
 
-            let f = delta_v / (a.inv_mass + b.inv_mass);
+            if delta_v < 0.0 {
+                let f = delta_v / cp.resistance;
 
-            self.bodies[cp.a].velocity -= cp.axis * f * ma;
-            self.bodies[cp.b].velocity += cp.axis * f * mb;
+                self.bodies[cp.a].velocity -= cp.axis * f * ma;
+                self.bodies[cp.b].velocity += cp.axis * f * mb;
+            }
         }
     }
 

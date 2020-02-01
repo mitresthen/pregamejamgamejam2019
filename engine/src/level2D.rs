@@ -24,7 +24,7 @@ pub struct LevelInstance {
 pub struct ObjectInstance {
     pub object_id: u32,
     pub position: Vec2,
-    pub rotation: f64
+    pub rotation: f32
 }
 
 #[derive(Serialize, Deserialize)]
