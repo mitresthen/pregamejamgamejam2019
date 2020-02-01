@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use texture_registry::Texture;
 use serde_json;
+use drawable::{Drawable, DrawContext};
 
 use Engine;
 
@@ -10,6 +11,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use vector::Vec2;
 use Error;
+
+use transform::Transform;
 
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
@@ -36,6 +39,23 @@ pub struct Level2D {
     pub level_instance: LevelInstance,
     pub save_filename: String,
     pub object_textures: HashMap<String, Texture>,
+    pub layer_max: u32
+}
+
+impl Drawable for Level2D {
+    fn draw(&self, _ctx: &mut DrawContext) {
+        for i in 0..(self.layer_max+1) {
+            for object in self.level_instance.object_instances.iter() {
+                let object_type = &self.level_instance.object_types[object.object_id as usize];
+                if object_type.layers.contains(&i) {
+                    let mut transf: Transform = Transform::new();
+                    transf.set_rotation(object.rotation);
+                    transf.set_translation(object.position);
+                    _ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
+                }
+            }
+        }
+    }
 }
 
 impl Level2D {
@@ -58,7 +78,16 @@ impl Level2D {
 
         let mut object_textures: HashMap<String, Texture> = HashMap::new();
 
+        let mut layer_max: u32 = 0;
+
         for object in level_instance.object_types.iter() {
+            let curr_max = object.layers.iter().max();
+            match curr_max {
+                Some(i) => {
+                    layer_max = layer_max.max(*i);
+                },
+                _ => {},
+            };
             let mut object_filename = image_folder.clone();
             object_filename.push(object.file.clone());
             println!("Loading object texture: {:?}", object_filename);
@@ -67,11 +96,13 @@ impl Level2D {
     
             object_textures.insert(object.file.clone(), texture);
         }
+        println!("Layer max is {}", layer_max);
     
         Level2D {
             level_instance,
             save_filename,
-            object_textures
+            object_textures,
+            layer_max
         }
     }
 
