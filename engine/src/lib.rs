@@ -31,6 +31,7 @@ pub mod image;
 pub mod game_object;
 pub mod scene;
 pub mod linear_force;
+pub mod radial_force;
 
 pub mod rigid_body;
 pub mod physics;

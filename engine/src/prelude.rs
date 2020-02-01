@@ -53,5 +53,6 @@ pub use level2D::ObjectInstance;
 
 pub use rigid_body::RigidBody;
 pub use linear_force::LinearForce;
+pub use radial_force::RadialForce;
 pub use square_shape::SquareShape;
 pub use ray_shape::RayShape;
