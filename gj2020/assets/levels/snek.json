@@ -1,0 +1,22 @@
+{
+    "width" : 10,
+    "height" : 6,
+    "ground" : {
+        "file" : "snek-floor-layer.dat",
+        "tiles" : [
+            "black.png",
+            "red.png"
+        ]
+    },
+    "objects" : {
+        "file" : "snek-object-layer.dat",
+        "tiles" : [
+            "blank.png",
+            "box.png",
+            "action_snek.png"
+        ]
+    },
+    "special_blocks" : {
+        "hub" : 2
+    }
+}

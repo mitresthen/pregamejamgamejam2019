@@ -11,15 +11,16 @@
     "objects" : {
         "file" : "hub-object-layer.dat",
         "tiles" : [
-		"blank.png",
-		"box.png",
-        "action_babylon.png",
-        "action_noah.png"
-	]
+            "blank.png",
+            "box.png",
+            "action_babylon.png",
+            "action_noah.png",
+            "action_snek.png"
+        ]
     },
     "special_blocks" : {
         "babylon" : 2,
-        "noah" : 3
+        "noah" : 3,
+        "snek" : 4
     }
 }
-

@@ -7,6 +7,7 @@ use crate::minigame::{
 };
 use crate::babylon_state::BabylonState;
 use crate::noah_state::NoahState;
+use crate::snek_state::SnekState;
 
 pub struct HubState {
     level: Level,
@@ -14,6 +15,7 @@ pub struct HubState {
     _god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
     noah_trigger: MinigameTrigger,
+    snek_trigger: MinigameTrigger
 }
 
 impl HubState {
@@ -48,6 +50,10 @@ impl HubState {
         let noah_trigger = noah_minigame.get_trigger();
         scene.add_object(noah_minigame);
 
+        let snek_minigame = HubState::create_minigame_for_block(ctx, "snek", &mut level);
+        let snek_trigger = snek_minigame.get_trigger();
+        scene.add_object(snek_minigame);
+
         let mut god = God::new(ctx)?;
 
         let tile_size = 240.0;
@@ -61,7 +67,8 @@ impl HubState {
                 _god_id: god_id,
                 scene,
                 babylon_trigger,
-                noah_trigger
+                noah_trigger,
+                snek_trigger
             };
 
         Ok(hub_state)
@@ -86,13 +93,19 @@ impl GameState for HubState {
             return Ok(transition_state);
         }
 
+        if self.snek_trigger.is_triggered() {
+            println!("Time to test some people!");
+            let snek_state = Box::new(SnekState::new(ctx)?);
+            let transition_state = Box::new(TransitionState::new(self, snek_state));
+            return Ok(transition_state);
+        }
 
         Ok(self)
     }
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
         ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
         ctx.set_camera_zoom(4.0);
-                                                  
+
         ctx.draw(&self.level.ground);
         ctx.draw(&self.level.objects.interleave_scene(&self.scene));
 
