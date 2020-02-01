@@ -59,7 +59,7 @@ impl Dimmer {
         let src = Rect::new(offset, 0, 1, 1);
         let dst = Rect::new(0, 0, width, width);
 
-        ctx.get_draw_context().copy_ex(&self.texture, src, dst);
+        ctx.get_draw_context().copy_ex(&self.texture, src, dst, 0.0);
 
     }
 }
