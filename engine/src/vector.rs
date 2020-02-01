@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{Add, Sub, Mul};
+use std::ops::{Add, Sub, Mul, AddAssign, SubAssign};
 
 use rand::Rng;
 use rand;
@@ -38,7 +38,11 @@ impl Vec2 {
     }
 
     pub fn len(&self) -> f32 {
-        ((self.x * self.x) + (self.y * self.y)).sqrt()
+        self.len_sq().sqrt()
+    }
+
+    pub fn len_sq(&self) -> f32 {
+        (self.x * self.x) + (self.y * self.y)
     }
 
     pub fn shifted(&self, x: f32, y: f32) -> Vec2 {
@@ -100,6 +104,20 @@ impl Add for Vec2 {
             x: self.x + other.x,
             y: self.y + other.y
         }
+    }
+}
+
+impl AddAssign for Vec2 {
+    fn add_assign(&mut self, other: Vec2) {
+        self.x += other.x;
+        self.y += other.y;
+    }
+}
+
+impl SubAssign for Vec2 {
+    fn sub_assign(&mut self, other: Vec2) {
+        self.x -= other.x;
+        self.y -= other.y;
     }
 }
 

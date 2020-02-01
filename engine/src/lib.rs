@@ -33,6 +33,7 @@ pub mod scene;
 pub mod linear_force;
 
 pub mod rigid_body;
+pub mod physics;
 
 pub mod transition_state;
 

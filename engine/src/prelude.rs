@@ -29,6 +29,7 @@ pub use transform::Transform;
 pub use game_object::{
     CollisionShape,
     PhysicalObject,
+    Rotatable,
     GameObject,
     EventType,
     EventReceiver,

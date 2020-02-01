@@ -14,6 +14,7 @@ use drawable::DrawContext;
 use vector::Vec2;
 use rect::Rect2D;
 use Engine;
+use physics::PhysicsSet;
 
 pub type SceneObjectId = i32;
 
@@ -213,104 +214,56 @@ impl Scene {
     }
 
     pub fn update(&mut self, engine: &mut Engine, collider: Option<&dyn LevelCollider>, dt: f32) {
-        {
-            let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2, bool)> = Vec::new();
+        for (_, o) in self.objects.iter_mut( ) {
+            if let Some(po) = o.get_physical_object_mut() {
+                for f in self.forces.iter() {
+                    let position = po.get_transform().get_translation();
+                    let inv_mass = po.get_inv_mass();
+                    let force = f.calculate_force_on_object(position, inv_mass);
 
-            for (_, o) in self.objects.iter_mut( ) {
-                if let Some(po) = o.get_physical_object_mut() {
-                    for f in self.forces.iter() {
-                        let position = po.get_transform().get_translation();
-                        let inv_mass = po.get_inv_mass();
-                        let force = f.calculate_force_on_object(position, inv_mass);
+                    let acceleration = force * inv_mass;
 
-                        let acceleration = force * inv_mass;
-
-                        *po.get_velocity_mut() = *po.get_velocity() + acceleration * dt;
-                    }
+                    *po.get_velocity_mut() = *po.get_velocity() + acceleration * dt;
                 }
-            }
-
-            {
-                let mut it = self.objects.iter();
-
-                while let Some((id_a, object_a)) = it.next() {
-                    let mut jt = it.clone();
-
-                    while let Some((id_b, object_b)) = jt.next() {
-
-                        if let Some(physical_object_a) = object_a.get_physical_object() {
-                            if let Some(physical_object_b) = object_b.get_physical_object() {
-                                if let Some(bounding_box_a) = physical_object_a.get_bounding_box() {
-                                    if let Some(bounding_box_b) = physical_object_b.get_bounding_box() {
-                                        if let Some(result) = bounding_box_a.sat_collide(bounding_box_b.as_ref()) {
-                                            let should_block =
-                                                physical_object_a.should_block() &&
-                                                physical_object_b.should_block();
-
-                                            collision_pairs.push((*id_a, *id_b, result.axis, should_block));
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-
-            for (ob_a, ob_b, axis, should_block) in collision_pairs.drain(..) {
-
-                if should_block
-                {
-                    let physical_object_a = self.objects.get(&ob_a).unwrap().get_physical_object().unwrap();
-                    let physical_object_b = self.objects.get(&ob_b).unwrap().get_physical_object().unwrap();
-
-                    let velocity_a = physical_object_a.get_velocity();
-                    let velocity_b = physical_object_b.get_velocity();
-
-                    let velo_axis_a = axis.dot_product(*velocity_a);
-                    let velo_axis_b = axis.dot_product(*velocity_b);
-
-                    let inv_mass_a = physical_object_a.get_inv_mass();
-                    let inv_mass_b = physical_object_b.get_inv_mass();
-
-                    let diff = velo_axis_a - velo_axis_b;
-
-                    if (inv_mass_a > 0.0 || inv_mass_b > 0.0) && diff < 0.0 {
-                        // dv = (F/ma) + (F/mb)
-                        // dv = F * ((1 / ma) + (1 / mb))
-                        // F = dv / ((1 / ma) + (1 / mb))
-
-                        let f = diff / (inv_mass_a + inv_mass_b);
-
-                        let delta_v_a = -f * inv_mass_a;
-                        let delta_v_b = f * inv_mass_b;
-
-                        {
-                            let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
-                            let velocity_a = physical_object_a.get_velocity_mut();
-                            *velocity_a = *velocity_a + (axis * delta_v_a);
-                        }
-
-                        {
-                            let physical_object_b = self.objects.get_mut(&ob_b).unwrap().get_physical_object_mut().unwrap();
-                            let velocity_b = physical_object_b.get_velocity_mut();
-                            *velocity_b = *velocity_b + (axis * delta_v_b);
-                        }
-                    }
-                }
-
-                self.event_queue.submit_event(
-                    EventType::Collide { force: axis },
-                    EventReceiver::Addressed { object_id: ob_a }
-                );
-
-                self.event_queue.submit_event(
-                    EventType::Collide { force: axis },
-                    EventReceiver::Addressed { object_id: ob_b }
-                );
             }
         }
+
+        let mut physics_set = PhysicsSet::new();
+
+        let mut body_ids = Vec::new();
+        for o in self.objects.iter().map(|(_, o)| o) {
+            if let Some(po) = o.get_physical_object() {
+                body_ids.push(physics_set.add_physics_object(po));
+            }
+        }
+
+        physics_set.find_collision_pairs();
+        for _ in 0..100 {
+            physics_set.iterate();
+        }
+
+        for (o, b) in self.objects.iter_mut().map(|(_, o)| o).zip(body_ids.into_iter()) {
+            if let Some(po) = o.get_physical_object_mut() {
+                if let Some(id) = b {
+                    let v = physics_set.get_velocity(id);
+                    *po.get_velocity_mut() = v;
+                }
+            }
+        }
+
+        /*
+        {
+            //TODO: Find a way to do this through the physics thing
+            self.event_queue.submit_event(
+                EventType::Collide { force: axis },
+                EventReceiver::Addressed { object_id: ob_a }
+            );
+
+            self.event_queue.submit_event(
+                EventType::Collide { force: axis },
+                EventReceiver::Addressed { object_id: ob_b }
+            );
+        }*/
 
         if let Some(level_collider) = collider {
             self.do_level_collision(level_collider);
