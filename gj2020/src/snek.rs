@@ -10,6 +10,7 @@ pub struct Snek {
     direction: i32,
     collision_size: Vec2,
     just_colided: i32,
+    just_jumped: i32,
     left_jumps: i32,
 }
 
@@ -43,6 +44,7 @@ impl Snek {
                 collision_size: Vec2::from_coords(200.0, 200.0),
                 direction: 0,
                 just_colided: 0,
+                just_jumped: 0,
                 left_jumps: 2,
             };
 
@@ -56,6 +58,10 @@ impl Snek {
 
 impl GameObject for Snek {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        if self.just_jumped != 0
+        {
+            self.just_jumped -= 1;
+        }
         let controller_input = self.controller.poll(ctx);
         let y_val = controller_input.y;
 
@@ -65,15 +71,16 @@ impl GameObject for Snek {
         self.velocity.approach(controller_input * 400.0, 400.0 * dt);
         self.velocity.y = preserved_y;
 
-        self.velocity = self.velocity + (gravity_force * (200.0 * dt));
-        if self.velocity.y >= 0.0 && y_val < -0.5
+        self.velocity = self.velocity + (gravity_force * (400.0 * dt));
+        if self.velocity.y >= 0.5 && y_val < 0.0
         {
             if self.just_colided > 0
             {
                 self.just_colided -= 1;
-            } else if self.left_jumps > 0 {
+            } else if self.left_jumps > 0 && self.just_jumped == 0 {
                 self.left_jumps -= 1;
-                self.velocity.y = y_val * 400.0;
+                self.just_jumped += 1;
+                self.velocity.y = y_val * 500.0;
             }
         }
 
@@ -141,6 +148,7 @@ impl GameObject for Snek {
                 self.velocity.x = self.velocity.x + force.x * 150.0;
                 self.velocity.y = if self.velocity.y <= 0.0
                 {
+                    self.just_colided = 0;
                     self.left_jumps = 2;
                     0.0
                 } else {
