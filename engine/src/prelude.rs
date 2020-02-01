@@ -29,8 +29,18 @@ pub use image::{Image, RGBA};
 pub use transform::Transform;
 
 pub use game_object::{PhysicalObject, GameObject, EventType, EventReceiver, GameEvent, EventMailbox};
-pub use scene::{SceneObjectId, Scene};
+pub use scene::{
+    SceneForceId,
+    Force,
+    SceneObjectId,
+    Scene
+};
+
 
 pub use dimmer::Dimmer;
 
 pub use level::Level;
+
+
+pub use rigid_body::RigidBody;
+pub use linear_force::LinearForce;
