@@ -22,6 +22,9 @@ pub mod noah_state;
 pub mod snek;
 pub mod snek_state;
 
+// Hell modules
+pub mod hell_state;
+
 struct GodSend { }
 
 impl GameInterface for GodSend {

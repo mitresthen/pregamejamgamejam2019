@@ -8,6 +8,7 @@ use crate::minigame::{
 use crate::babylon_state::BabylonState;
 use crate::noah_state::NoahState;
 use crate::snek_state::SnekState;
+use crate::hell_state::HellState;
 
 use audio_library::AudioLibrary;
 
@@ -17,7 +18,8 @@ pub struct HubState {
     _god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
     noah_trigger: MinigameTrigger,
-    snek_trigger: MinigameTrigger
+    snek_trigger: MinigameTrigger,
+    hell_trigger: MinigameTrigger,
 }
 
 impl HubState {
@@ -56,6 +58,10 @@ impl HubState {
         let snek_trigger = snek_minigame.get_trigger();
         scene.add_object(snek_minigame);
 
+        let hell_minigame = HubState::create_minigame_for_block(ctx, "hell", &mut level);
+        let hell_trigger = hell_minigame.get_trigger();
+        scene.add_object(hell_minigame);
+
         let mut god = God::new(ctx)?;
 
         let tile_size = 240.0;
@@ -70,7 +76,8 @@ impl HubState {
                 scene,
                 babylon_trigger,
                 noah_trigger,
-                snek_trigger
+                snek_trigger,
+                hell_trigger,
             };
 
         ctx.loop_sound(AudioLibrary::HubWorld, -1)?;
@@ -101,6 +108,13 @@ impl GameState for HubState {
             println!("Time to test some people!");
             let snek_state = Box::new(SnekState::new(ctx)?);
             let transition_state = Box::new(TransitionState::new(self, snek_state));
+            return Ok(transition_state);
+        }
+
+        if self.hell_trigger.is_triggered() {
+            println!("Time to test some people!");
+            let hell_state = Box::new(HellState::new(ctx)?);
+            let transition_state = Box::new(TransitionState::new(self, hell_state));
             return Ok(transition_state);
         }
 
