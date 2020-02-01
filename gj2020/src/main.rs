@@ -18,6 +18,9 @@ pub mod babylon_state;
 // Noah modules
 pub mod noah_state;
 
+// Snek modules
+pub mod snek_state;
+
 struct GodSend { }
 
 impl GameInterface for GodSend {

@@ -13,7 +13,7 @@ use std::fs::File;
 use walkdir::{WalkDir, DirEntry};
 
 fn main() {
-    if !Path::new("./target/release/game").exists() {
+    if Path::new("./target/release/game").exists() {
         std::fs::remove_dir_all("./target/release/game");
     }
     std::fs::create_dir_all("./target/release/game");
