@@ -1,4 +1,5 @@
 use engine::prelude::*;
+use audio_library::AudioLibrary;
 
 //const GRAV_CONST : f64 = 6.67408e-11;
 const GRAV_CONST : f64 = 1.0e2;
@@ -19,6 +20,7 @@ pub struct CelestialBody {
 
 impl CelestialBody {
 	pub fn new(ctx: &mut Engine, sprite: StaticSprite, mass: f64, scale: f32, position: Vec2) -> Result<CelestialBody, Error> {
+		ctx.replace_sound(AudioLibrary::Space, 0, -1)?;
 		let body = CelestialBody {
 			position: position,
 			velocity: Vec2::new(),
