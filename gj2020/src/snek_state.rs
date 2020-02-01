@@ -10,7 +10,7 @@ pub struct SnekState {
 
 impl SnekState {
     pub fn new(ctx: &mut Engine) -> Result<SnekState, Error> {
-        let mut level = Level::load_from_file(ctx, "assets/levels/snek.json", 120);
+        let level = Level::load_from_file(ctx, "assets/levels/snek.json", 120);
 
         let mut scene = Scene::new();
 
@@ -39,7 +39,7 @@ impl GameState for SnekState {
         Ok(self)
     }
 
-    fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {
+    fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
         let snek_position = self.scene.get(self.snek_id)
             .unwrap()
             .get_physical_object()
@@ -49,7 +49,7 @@ impl GameState for SnekState {
 
         ctx.set_camera_position(snek_position);
         // ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
-        ctx.set_camera_zoom(4.0);
+        ctx.set_camera_zoom(1.0);
 
         ctx.draw(&self.level.ground);
         ctx.draw(&self.level.objects.interleave_scene(&self.scene));
