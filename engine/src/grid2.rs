@@ -2,15 +2,23 @@ use texture_registry::Texture;
 use drawable::{Drawable, DrawContext};
 use transform::Transform;
 use vector::Vec2;
-use bounding_box::BoundingBox;
-use scene::{Scene, LevelCollider};
-use game_object::GameObject;
+use scene::{
+    Scene,
+    LevelCollider,
+};
+use game_object::{
+    SATResult,
+    GameObject,
+    CollisionShape
+};
 use rect::Rect2D;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
 use Error;
 use super::bincode;
+
+use crate::square_shape::SquareShape;
 
 pub type TileIndex = u32;
 
@@ -229,19 +237,18 @@ impl Grid2 {
 }
 
 impl LevelCollider for Grid2 {
-    fn get_collision_vector(&self, bounding_box: BoundingBox)
+    fn get_collision_vector(&self, shape: &dyn CollisionShape)
         -> Option<Vec2>
     {
-        let upper_left = bounding_box.get_upper_left();
-        let lower_right = bounding_box.get_lower_right();
+        let aabb = shape.get_aabb();
 
-        let start_x = ((upper_left.x / self.tile_size as f32).floor() as i32).max(0);
-        let start_y = ((upper_left.y / self.tile_size as f32).floor() as i32).max(0);
+        let start_x = ((aabb.min.x / self.tile_size as f32).floor() as i32).max(0);
+        let start_y = ((aabb.min.y / self.tile_size as f32).floor() as i32).max(0);
 
-        let end_x = ((lower_right.x / self.tile_size as f32).ceil() as i32).min(self.width);
-        let end_y = ((lower_right.y / self.tile_size as f32).ceil() as i32).min(self.height);
+        let end_x = ((aabb.max.x / self.tile_size as f32).ceil() as i32).min(self.width);
+        let end_y = ((aabb.max.y / self.tile_size as f32).ceil() as i32).min(self.height);
 
-        let mut best_axis = None;
+        let mut best_axis : Option<SATResult> = None;
 
         let empty : TileIndex = 0;
 
@@ -255,73 +262,19 @@ impl LevelCollider for Grid2 {
                     continue;
                 }
 
-                let tile_bb =
-                    BoundingBox::new(
-                        self.tile_size as f32,
-                        self.tile_size as f32,
-                        Vec2::from_coords(
-                            x as f32 + 0.5,
-                            y as f32 + 0.5
-                        ) * self.tile_size as f32
-                    );
+                let tile_size = self.tile_size as f32;
+                let tile_center = Vec2::from_coords(x as f32 + 0.5, y as f32 + 0.5) * tile_size;
+                let tile_rect = Rect2D::centered_square(tile_size) + tile_center;
+                let tile_shape = SquareShape::from_aabb(tile_rect);
 
-                if let Some(result) = bounding_box.sat_overlap(tile_bb) {
-                    best_axis = Some(best_axis.map(|x: (Vec2, f32)| if x.1 > result.1 { x } else { result }).unwrap_or(result));
+                if let Some(result) = shape.sat_collide(&tile_shape) {
+                    best_axis = Some(best_axis.map(|x| if x.depth > result.depth { x } else { result }).unwrap_or(result));
                 }
             }
         }
 
-        best_axis.map(|x| x.0)
+        best_axis.map(|x| x.axis)
     }
-
-    fn get_collision_vector_points(&self, points : Vec<Vec2>)
-        -> Option<Vec2>
-    {
-        let mut rect = Rect2D::empty();
-
-        for p in points.iter() {
-            rect.expand(*p);
-        }
-
-        let start_x = ((rect.min.x / self.tile_size as f32).floor() as i32).max(0);
-        let start_y = ((rect.min.y / self.tile_size as f32).floor() as i32).max(0);
-
-        let end_x = ((rect.max.x / self.tile_size as f32).ceil() as i32).min(self.width);
-        let end_y = ((rect.max.y / self.tile_size as f32).ceil() as i32).min(self.height);
-
-
-        let mut best_axis = None;
-
-        for y in start_y..end_y {
-            for x in start_x..end_x {
-                let index = (y * self.width) + x;
-
-                let tile_id = self.buffer.iter().nth(index as usize).unwrap();
-
-                if *tile_id == 0 {
-                    continue;
-                }
-
-                let tile_bb =
-                    BoundingBox::new(
-                        self.tile_size as f32,
-                        self.tile_size as f32,
-                        Vec2::from_coords(
-                            x as f32 + 0.5,
-                            y as f32 + 0.5
-                        ) * self.tile_size as f32
-                    );
-
-                if let Some(result) = tile_bb.sat_overlap_points(&points) {
-                    best_axis = Some(best_axis.map(|x: (Vec2, f32)| if x.1 > result.1 { x } else { result }).unwrap_or(result));
-                }
-            }
-        }
-
-
-        best_axis.map(|x| x.0)
-    }
-
 }
 
 impl Drawable for Grid2 {

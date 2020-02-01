@@ -11,7 +11,7 @@ use crate::noah_state::NoahState;
 pub struct HubState {
     level: Level,
     scene: Scene,
-    god_id: SceneObjectId,
+    _god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
     noah_trigger: MinigameTrigger,
 }
@@ -58,7 +58,7 @@ impl HubState {
         let hub_state =
             HubState {
                 level,
-                god_id,
+                _god_id: god_id,
                 scene,
                 babylon_trigger,
                 noah_trigger
@@ -89,7 +89,7 @@ impl GameState for HubState {
 
         Ok(self)
     }
-    fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {
+    fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
         ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
         ctx.set_camera_zoom(4.0);
                                                   

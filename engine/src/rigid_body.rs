@@ -4,16 +4,27 @@ pub struct RigidBody {
     texture: Texture,
     transform: Transform,
     velocity: Vec2,
-    inv_mass: f32
+    inv_mass: f32,
+    bounding_box: Rect2D
 }
 
 impl RigidBody {
     pub fn new(texture: Texture) -> RigidBody {
+        let sx = texture.extent().width as f32 * 0.5;
+        let sy = texture.extent().height as f32 * 0.5;
+
+        let bounding_box =
+            Rect2D {
+                min: Vec2::from_coords(-sx, -sy),
+                max: Vec2::from_coords(sx, sy)
+            };
+
         RigidBody {
             texture,
             transform: Transform::new(),
             inv_mass: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
+            bounding_box,
         }
     }
 
@@ -35,7 +46,11 @@ impl PhysicalObject for RigidBody {
 
     fn get_velocity_mut(&mut self) -> &mut Vec2 { &mut self.velocity }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> { None }
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+        let collision_shape = SquareShape::from_aabb(self.bounding_box + self.transform.get_translation());
+
+        Some(Box::new(collision_shape))
+    }
 
     fn should_block(&self) -> bool { false }
 
@@ -43,7 +58,7 @@ impl PhysicalObject for RigidBody {
 }
 
 impl GameObject for RigidBody {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         true
     }
 

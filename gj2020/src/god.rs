@@ -131,14 +131,10 @@ impl PhysicalObject for God {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let bounding_box =
-            BoundingBox::new(
-                self.collision_size,
-                self.collision_size,
-                self.transform.get_translation()
-            );
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+        let rect = Rect2D::centered_square(self.collision_size);
+        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
 
-        Some(bounding_box)
+        Some(Box::new(square))
     }
 }

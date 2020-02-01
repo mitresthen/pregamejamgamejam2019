@@ -46,7 +46,7 @@ pub struct Minigame {
 }
 
 impl Minigame {
-    pub fn new(ctx: &mut Engine, texture: Texture, position: Vec2) -> Minigame {
+    pub fn new(_ctx: &mut Engine, texture: Texture, position: Vec2) -> Minigame {
         let mut transform = Transform::new();
         transform.set_translation(position);
 
@@ -107,15 +107,11 @@ impl PhysicalObject for Minigame {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let bounding_box =
-            BoundingBox::new(
-                240.0,
-                240.0,
-                self.transform.get_translation()
-            );
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+        let rect = Rect2D::centered_square(240.0) + self.transform.get_translation();
+        let shape = SquareShape::from_aabb(rect);
 
-        Some(bounding_box)
+        Some(Box::new(shape))
     }
 
     fn get_inv_mass(&self) -> f32 { 0.0 }

@@ -19,16 +19,13 @@ pub mod audio_engine;
 pub mod drawable;
 pub mod static_sprite;
 pub mod animated_sprite;
-pub mod movable_object;
 pub mod texture_registry;
-pub mod bounding_box;
 pub mod timer;
 pub mod vector;
 pub mod rect;
 pub mod offset;
 pub mod extent;
 pub mod transform;
-pub mod grid;
 pub mod grid2;
 pub mod image;
 pub mod game_object;
@@ -43,13 +40,13 @@ pub mod axis_controller;
 pub mod slider_controller;
 pub mod trigger;
 
-pub mod sat_collider;
-
 pub mod level;
 
 pub mod prelude;
 
 pub mod dimmer;
+pub mod square_shape;
+pub mod ray_shape;
 
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
