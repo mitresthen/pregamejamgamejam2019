@@ -101,15 +101,18 @@ impl GameState for LevelEditorState {
             self.scale = (self.scale + 0.1).min(2.0);
         }
 
-        let keycode_num: u32 = (keycode as u32)-48;
-
-        if (keycode_num >= 0 && keycode_num <= 9) {
-            if(self.layers_to_draw.contains(&keycode_num)) {
-                self.layers_to_draw.retain(|&x| x != keycode_num);
-            } else{
-                self.layers_to_draw.push(keycode_num);
+        let keycode_num_signed: i32 = (keycode as i32)-48;
+        if(keycode_num_signed >= 0) {
+            let keycode_num: u32 = (keycode as u32)-48;
+            
+            if (keycode_num >= 0 && keycode_num <= 9) {
+                if(self.layers_to_draw.contains(&keycode_num)) {
+                    self.layers_to_draw.retain(|&x| x != keycode_num);
+                } else{
+                    self.layers_to_draw.push(keycode_num);
+                }
+                self.level.set_layers_to_draw(self.layers_to_draw.clone());
             }
-            self.level.set_layers_to_draw(self.layers_to_draw.clone());
         }
 
         Ok(())
