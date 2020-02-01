@@ -3,11 +3,14 @@ use engine::prelude::*;
 
 pub struct Snek {
     controller: AxisController,
+    interact_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     direction: i32,
     collision_size: Vec2,
+    just_colided: i32,
+    left_jumps: i32,
 }
 
 impl Snek {
@@ -33,11 +36,14 @@ impl Snek {
                     Keycode::Left,
                     Keycode::Right
                 ),
+                interact_trigger: Trigger::new(Keycode::Space),
                 sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 collision_size: Vec2::from_coords(200.0, 200.0),
                 direction: 0,
+                just_colided: 0,
+                left_jumps: 2,
             };
 
         Ok(snek)
@@ -49,7 +55,7 @@ impl Snek {
 }
 
 impl GameObject for Snek {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let controller_input = self.controller.poll(ctx);
         let y_val = controller_input.y;
 
@@ -60,9 +66,15 @@ impl GameObject for Snek {
         self.velocity.y = preserved_y;
 
         self.velocity = self.velocity + (gravity_force * (200.0 * dt));
-        if self.velocity.y >= 0.01 && y_val < -0.5
+        if self.velocity.y >= 0.0 && y_val < -0.5
         {
-            self.velocity.y = y_val * 400.0
+            if self.just_colided > 0
+            {
+                self.just_colided -= 1;
+            } else if self.left_jumps > 0 {
+                self.left_jumps -= 1;
+                self.velocity.y = y_val * 400.0;
+            }
         }
 
         let is_walking =
@@ -95,6 +107,18 @@ impl GameObject for Snek {
         self.sprite.set_transform(&sprite_transform);
         self.sprite.step_time(dt * self.velocity.len() * 0.02);
 
+        if self.interact_trigger.poll(ctx) {
+
+            println!("Submitting interact event");
+            event_mailbox.submit_event(
+                EventType::Interact,
+                EventReceiver::Nearby {
+                    origin: self.transform.get_translation(),
+                    max_distance: Some(360.0)
+                }
+            );
+        }
+
         true
     }
 
@@ -108,6 +132,26 @@ impl GameObject for Snek {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
+    }
+
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        match event {
+            EventType::Collide { force } => {
+                self.just_colided = 32;
+                self.velocity.x = self.velocity.x + force.x * 150.0;
+                self.velocity.y = if self.velocity.y <= 0.0
+                {
+                    self.left_jumps = 2;
+                    0.0
+                } else {
+                    self.velocity.y
+                };
+                true
+            }
+            _ => {
+                false
+            }
+        }
     }
 }
 

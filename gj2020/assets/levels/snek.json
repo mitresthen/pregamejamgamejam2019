@@ -14,10 +14,11 @@
         "tiles" : [
             "blank.png",
             "box.png",
-            "action_snek.png"
+            "blank.png",
+            "AppleTree\\apple_tree.png"
         ]
     },
     "special_blocks" : {
-        "hub" : 2
+        "appletree" : 2
     }
 }
