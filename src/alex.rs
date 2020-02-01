@@ -16,7 +16,7 @@ pub struct Alex {
 impl Alex {
     pub fn new(ctx: &mut Engine) -> Result<Alex, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/Alexa_version1.png")?;
+        let texture = tr.load("assets/images/Alexa_version1.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
 
@@ -40,7 +40,7 @@ impl Alex {
 
 impl GameObject for Alex {
 
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         if self.prompted_for_response {
             let id = ctx.replace_sound(AudioLibrary::AccidentSong, self.sound_channel, 0).unwrap();
             ctx.play(id);
@@ -57,11 +57,11 @@ impl GameObject for Alex {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

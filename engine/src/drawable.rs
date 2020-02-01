@@ -1,12 +1,14 @@
 use sdl2::render::Canvas;
 use sdl2::video::Window;
 use sdl2::rect::Rect;
+use sdl2::render::BlendMode;
 
 use transform::Transform;
 use texture_registry::{Texture, TextureRegistry};
 use vector::Vec2;
 use extent::Extent;
 use rect::Rect2D;
+use crate::Color;
 
 pub enum Origin {
     TopLeft,
@@ -73,6 +75,21 @@ impl<'t> DrawContext<'t> {
 
     pub fn draw(&mut self, texture: &Texture, transform: &Transform) {
         self.draw2(texture, transform, Origin::Center);
+    }
+
+    pub fn draw_rect(&mut self, dst: Rect2D, color: Color) {
+        self.canvas.set_blend_mode(BlendMode::Blend);
+        let rect =
+            Rect::new(
+                dst.min.x as i32,
+                dst.min.y as i32,
+                dst.max.x as u32,
+                dst.max.y as u32
+            );
+
+        self.canvas.set_draw_color(color);
+        self.canvas.fill_rect(rect).unwrap();
+        self.canvas.set_blend_mode(BlendMode::None);
     }
 
     pub fn draw2(&mut self, texture: &Texture, transform: &Transform, origin: Origin) {

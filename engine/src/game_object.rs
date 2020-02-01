@@ -123,16 +123,18 @@ pub trait PhysicalObject {
     fn get_bounding_box(&self) -> Option<BoundingBox>;
 
     fn should_block(&self) -> bool { true }
+
+    fn get_inv_mass(&self) -> f32 { 1.0 }
 }
 
 pub trait GameObject: 'static {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool;
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool;
 
     fn render(&self, ctx: &mut DrawContext);
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> { None }
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { None }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> { None }
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { None }
 
-    fn on_event(&mut self, _event: EventType, sender: Option<SceneObjectId>) -> bool { false }
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool { false }
 }

@@ -122,7 +122,7 @@ pub trait Aggregatable : Animatable + SpriteTrait { }
 impl Aggregatable for AnimatedSprite { }
 
 pub struct AggregatedAnimatedSprite {
-    sprites: Vec<Box<Aggregatable>>,
+    sprites: Vec<Box<dyn Aggregatable>>,
     sprite_index: i32,
     mode: i32,
 }

@@ -55,7 +55,6 @@ pub fn sat_overlap(figure_a: &Vec<Vec2> , figure_b: &Vec<Vec2>) -> Option<(Vec2,
     let mut all_axes: Vec<Vec2> = Vec::new();
     all_axes.extend(&figure_a_edges);
     all_axes.extend(&figure_b_edges);
-    use std::f32;
     let mut min_overlap = f32::MAX;
     let mut axis_of_overlap = None;
     for axis in all_axes {

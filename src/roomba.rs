@@ -28,7 +28,7 @@ pub struct Roomba {
 impl Roomba {
     pub fn new(ctx: &mut Engine) -> Result<Roomba, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/Electronics_Roomba.png")?;
+        let texture = tr.load("assets/images/Electronics_Roomba.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
@@ -58,7 +58,7 @@ impl Roomba {
 
 impl GameObject for Roomba {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
         if self.mode == RoombaState::Searching {
             event_mailbox.submit_event(
@@ -94,7 +94,7 @@ impl GameObject for Roomba {
             self.aggro += dt;
 
             if self.aggro > aggro_tolerance && self.aggro - dt <= aggro_tolerance {
-                ctx.play_sound(AudioLibrary::HooverStart);
+                ctx.play_sound(AudioLibrary::HooverStart).unwrap();
             }
 
             let distance = target - self.transform.get_translation();
@@ -120,7 +120,7 @@ impl GameObject for Roomba {
             self.aggro -= dt;
 
             if self.aggro < -aggro_tolerance && self.aggro + dt >= -aggro_tolerance {
-                ctx.play_sound(AudioLibrary::HooverStop);
+                ctx.play_sound(AudioLibrary::HooverStop).unwrap();
             }
         }
 
@@ -135,11 +135,11 @@ impl GameObject for Roomba {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

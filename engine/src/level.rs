@@ -39,7 +39,8 @@ fn load_layer(
     ctx: &mut Engine,
     levels_folder: &PathBuf,
     image_folder: &PathBuf,
-    layer_info: &LayerInfo
+    layer_info: &LayerInfo,
+    grid_size: u32,
 ) -> (Grid2, String) {
     let mut filename = levels_folder.clone();
     filename.push(&layer_info.file);
@@ -49,7 +50,7 @@ fn load_layer(
             loaded_ground
         } else {
             println!("Unable to open {}, creating new level", filename.to_str().unwrap());
-            Grid2::new(32, 18, 120)
+            Grid2::new(32, 18, grid_size)
         };
 
     for tile in layer_info.tiles.iter() {
@@ -66,7 +67,11 @@ fn load_layer(
 }
 
 impl Level {
-    pub fn load_from_file(ctx: &mut Engine, filename: &str) -> Level {
+    pub fn load_from_file(
+        ctx: &mut Engine,
+        filename: &str,
+        grid_size: u32,
+    ) -> Level {
         let mut file = File::open(&filename).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
@@ -78,13 +83,13 @@ impl Level {
 
         let mut image_folder = level_folder.clone();
         image_folder.pop();
-        image_folder.push("image");
+        image_folder.push("images");
 
 
         let (ground, ground_filename) =
-            load_layer(ctx, &level_folder, &image_folder, &level_info.ground);
+            load_layer(ctx, &level_folder, &image_folder, &level_info.ground, grid_size);
         let (objects, objects_filename) =
-            load_layer(ctx, &level_folder, &image_folder, &level_info.objects);
+            load_layer(ctx, &level_folder, &image_folder, &level_info.objects, grid_size);
 
 
         Level {

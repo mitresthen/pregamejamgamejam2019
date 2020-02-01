@@ -23,8 +23,7 @@ pub struct Player {
 impl Player {
     pub fn new(ctx: &mut Engine) -> Result<Player, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/mainChar-1x2.png")?;
-        //let texture = tr.load("assets/image/red_rider.png")?;
+        let texture = tr.load("assets/images/mainChar-1x2.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
@@ -72,7 +71,7 @@ impl Player {
 
 impl GameObject for Player {
 
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let target_velocity =
             self.controller.poll(ctx) * 400.0;
 
@@ -81,7 +80,7 @@ impl GameObject for Player {
         }
 
         if self.nope {
-            ctx.play_sound(AudioLibrary::Nope);
+            ctx.play_sound(AudioLibrary::Nope).unwrap();
             self.nope = false;
         }
 
@@ -155,11 +154,11 @@ impl GameObject for Player {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

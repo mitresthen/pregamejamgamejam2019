@@ -25,7 +25,7 @@ impl Door {
     pub fn new(ctx: &mut Engine, texture: Texture) -> Door {
         let lock_texture =
             {
-                ctx.get_texture_registry().load("assets/image/item_keyhole.png").unwrap()
+                ctx.get_texture_registry().load("assets/images/item_keyhole.png").unwrap()
             };
 
         Door {
@@ -75,7 +75,7 @@ impl PhysicalObject for Door {
 }
 
 impl GameObject for Door {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut EventMailbox, _dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         match self.state {
             DoorState::Open => {
                 event_mailbox.submit_event(
@@ -83,7 +83,7 @@ impl GameObject for Door {
                     EventReceiver::Scene
                 );
 
-                ctx.play_sound(AudioLibrary::DoorOpen1);
+                ctx.play_sound(AudioLibrary::DoorOpen1).unwrap();
 
                 self.state = DoorState::Deleted;
             },
@@ -95,7 +95,7 @@ impl GameObject for Door {
                 self.state = DoorState::ClosedAndLocked
             },
             DoorState::Unlocking => {
-                ctx.play_sound(AudioLibrary::MetallicHit);
+                ctx.play_sound(AudioLibrary::MetallicHit).unwrap();
                 self.state = DoorState::ClosedAndUnlocked;
             }
             _ => { }
@@ -120,9 +120,9 @@ impl GameObject for Door {
         }
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> { Some(self) }
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { Some(self) }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> { Some(self) }
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { Some(self) }
 
     fn on_event(&mut self, event: EventType, sender: Option<SceneObjectId>) -> bool {
         match event {

@@ -12,7 +12,7 @@ pub struct Dust {
 impl Dust {
     pub fn new(ctx: &mut Engine) -> Result<Dust, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/image/item_Dust.png")?;
+        let texture = tr.load("assets/images/item_Dust.png")?;
 
         let sprite = AnimatedSprite::new(Extent::new(120, 120), texture)?;
 
@@ -35,7 +35,7 @@ impl Dust {
 
 impl GameObject for Dust {
 
-    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         if self.delete_me {
             
             event_mailbox.submit_event(
@@ -63,11 +63,11 @@ impl GameObject for Dust {
         self.sprite.draw(ctx)
     }
 
-    fn get_physical_object(&self) -> Option<&PhysicalObject> {
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> {
         Some(self)
     }
 
-    fn get_physical_object_mut(&mut self) -> Option<&mut PhysicalObject> {
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
 

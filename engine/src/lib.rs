@@ -2,8 +2,10 @@ extern crate sdl2;
 extern crate stb_image;
 extern crate rand;
 extern crate bincode;
+#[allow(unused_imports)]
 #[macro_use]
 extern crate serde_derive;
+#[allow(unused_imports)]
 #[macro_use]
 extern crate serde_json;
 extern crate serde;
@@ -29,11 +31,10 @@ pub mod transform;
 pub mod grid;
 pub mod grid2;
 pub mod image;
-pub mod splash_screen;
-pub mod menu_screen;
-pub mod game_state;
 pub mod game_object;
 pub mod scene;
+
+pub mod transition_state;
 
 pub mod axis_controller;
 pub mod slider_controller;
@@ -50,6 +51,7 @@ pub mod dimmer;
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 pub use sdl2::mouse::MouseButton;
+pub use sdl2::pixels::Color;
 
 use audio_engine::WavError;
 
@@ -65,8 +67,6 @@ pub enum Error {
     IncompletePixel,
     Unknown,
 }
-
-const CHANGE_TIME: f32 = 0.25;
 
 impl From<String> for Error {
     fn from(s: String) -> Error {
@@ -95,6 +95,23 @@ impl MouseDragState {
     }
 }
 
+pub trait GameInterface : Sized {
+    fn get_title() -> &'static str;
+
+    fn create_starting_state(ctx: &mut Engine) -> Result<Box<dyn GameState>, Error>;
+}
+
+pub trait GameState {
+    fn update(self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error>;
+    fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error>;
+
+    fn on_key_down(&mut self, _ctx: &mut Engine, _keycode: Keycode, _is_repeated: bool) -> Result<(), Error> { Ok(()) }
+    fn on_key_up(&mut self, _ctx: &mut Engine, _keycode: Keycode) -> Result<(), Error> { Ok(()) }
+
+    fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
+    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
+}
+
 pub struct Engine<'t> {
     pub canvas: &'t mut sdl2::render::Canvas<sdl2::video::Window>,
     width: u32,
@@ -103,33 +120,7 @@ pub struct Engine<'t> {
     audio_engine: audio_engine::AudioEngine,
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
-    pub state: game_state::GameState,
-    pub last_game_state_change : timer::Timer,
     drag_state: Option<MouseDragState>,
-}
-
-pub trait GameInterface : Sized {
-    fn get_title() -> &'static str;
-
-    fn get_title_screen(&self) -> Option<splash_screen::SplashScreen> { None }
-
-    fn initialize(ctx: &mut Engine) -> Result<Self, Error>;
-
-    // Update - broken down into 2 stages for game engine: update and draw
-    fn update_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_gameplay(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
-
-    // Optional part of update - drawing pause or main menu
-    fn draw_pause_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
-    fn draw_main_menu(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<bool, Error> { Ok(true) }
-
-    fn on_key_down(&mut self, _ctx: &mut Engine, _keycode: Keycode, _is_repeated: bool) -> Result<bool, Error> { Ok(true) }
-    fn on_key_up(&mut self, _ctx: &mut Engine, _keycode: Keycode) -> Result<bool, Error> { Ok(true) }
-
-    fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
-    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<bool, Error> { Ok(true) }
-
-    fn on_exit(&mut self) { }
 }
 
 impl<'t> Engine<'t> {
@@ -307,28 +298,6 @@ impl<'t> Engine<'t> {
 
     pub fn get_height(&self) -> u32 { self.height }
 
-    pub fn invert_paused_state(&mut self)
-    {
-        let mut relative_dt = self.last_game_state_change.get_time();
-        if self.state.gameplay_running
-        {
-            relative_dt = 100.0;
-        }
-        if relative_dt >= CHANGE_TIME
-        {
-            self.state.invert_paused_state();
-            self.last_game_state_change.reset();
-        }
-    }
-
-    // End showing the title screen - switch to Main Menu
-    pub fn end_title_screen(&mut self) {
-        if self.state.go_to(game_state::MAIN_MENU_STATE, self.last_game_state_change.get_time())
-        {
-            self.last_game_state_change.reset();
-        }
-    }
-
     pub fn execute<T: GameInterface>(width: u32, height: u32) -> Result<(), Error> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
@@ -344,13 +313,6 @@ impl<'t> Engine<'t> {
         let texture_creator = canvas.texture_creator();
         let texture_registry = texture_registry::TextureRegistry::new(&texture_creator);
 
-        let starting_state =
-            if std::env::var("QUICK_START").is_ok() {
-                game_state::GAMEPLAY_STATE
-            } else {
-                game_state::TITLE_STATE
-            };
-
         let mut engine =
             Engine {
                 canvas: &mut canvas,
@@ -360,13 +322,10 @@ impl<'t> Engine<'t> {
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
-                state: starting_state,
-                last_game_state_change: timer::Timer::new(),
                 drag_state: None,
             };
 
-        let mut game = <T as GameInterface>::initialize(&mut engine)?;
-
+        let mut current_game_state = <T as GameInterface>::create_starting_state(&mut engine)?;
 
         let mut timer = timer::Timer::new();
 
@@ -406,18 +365,14 @@ impl<'t> Engine<'t> {
                         }
                         engine.on_key_down(key);
 
-                        if !game.on_key_down(&mut engine, key, is_repeated)? {
-                            break 'main_loop;
-                        }
+                        current_game_state.on_key_down(&mut engine, key, is_repeated)?;
                     },
                     Event::KeyUp {
                         keycode: Some(key), ..
                     } => {
                         engine.on_key_up(key);
 
-                        if !game.on_key_up(&mut engine, key)? {
-                            break 'main_loop;
-                        }
+                        current_game_state.on_key_up(&mut engine, key)?;
                     },
                     Event::MouseMotion {
                         x: move_x,
@@ -434,9 +389,7 @@ impl<'t> Engine<'t> {
                     } => {
                         engine.on_mouse_button_down(click_x, click_y);
 
-                        if !game.on_mouse_button_down(&mut engine, click_x, click_y, button)? {
-                            break 'main_loop;
-                        }
+                        current_game_state.on_mouse_button_down(&mut engine, click_x, click_y, button)?;
                     },
                     Event::MouseButtonUp {
                         x: click_x,
@@ -444,9 +397,7 @@ impl<'t> Engine<'t> {
                         mouse_btn: button,
                         ..
                     } => {
-                        if !game.on_mouse_button_up(&mut engine, click_x, click_y, button)? {
-                            break 'main_loop;
-                        }
+                        current_game_state.on_mouse_button_up(&mut engine, click_x, click_y, button)?;
 
                         engine.on_mouse_button_up(click_x, click_y);
                     },
@@ -456,63 +407,16 @@ impl<'t> Engine<'t> {
 
             engine.canvas.clear();
 
-            if engine.state.is_on(game_state::TITLE_STATE)
-            {
-                let potential_title_screen = game.get_title_screen();
-                match potential_title_screen {
-                    // Title screen exists - show it.
-                    Some(ref title_screen) => engine.draw(title_screen),
-                    // No title screen defined - jump to next state.
-                    None               => {
-                        if engine.state.go_to(game_state::GAMEPLAY_STATE, engine.last_game_state_change.get_time())
-                        {
-                            engine.last_game_state_change.reset();
-                        }
-                    },
-                    // None               => engine.state.go_to(game_state::MAIN_MENU_STATE, engine.last_game_state_change.get_time()),
-                }
-            } else if engine.state.is_on(game_state::RESET_GAME) {
-                engine.camera = transform::Transform::new();
-                game = <T as GameInterface>::initialize(&mut engine)?;
-                if engine.state.go_to(game_state::MAIN_MENU_STATE, 60.0)
-                {
-                    engine.last_game_state_change.reset();
-                }
-            } else {
-                if engine.state.gameplay_running
-                {
-                    if !game.update_gameplay(&mut engine, dt)? {
-                        break 'main_loop;
-                    }
-                }
-                if engine.state.gameplay_displayed
-                {
-                    if !game.draw_gameplay(&mut engine, dt)? {
-                        break 'main_loop;
-                    }
-                }
-                if engine.state.presents_menu
-                {
-                    if engine.state.gameplay_displayed
-                    {
-                        if !game.draw_pause_menu(&mut engine, dt)? {
-                            break 'main_loop;
-                        }
-                    } else {
-                        if !game.draw_main_menu(&mut engine, dt)? {
-                            break 'main_loop;
-                        }
-                    }
-                }
-            }
+
+            current_game_state = current_game_state.update(&mut engine, dt)?;
+
+            current_game_state.draw(&mut engine, dt)?;
 
             engine.canvas.present();
 
             // Limit framerate to 100 fps
             // std::thread::sleep(Duration::from_millis(10));
         }
-
-        game.on_exit();
 
         Ok(())
     }

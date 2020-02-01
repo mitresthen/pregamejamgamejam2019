@@ -1,0 +1,23 @@
+{
+    "width" : 30,
+    "height" : 20,
+    "ground" : {
+        "file" : "hub-floor-layer.dat",
+        "tiles" : [
+            "black.png",
+            "red.png"
+        ]
+    },
+    "objects" : {
+        "file" : "hub-object-layer.dat",
+        "tiles" : [
+		"blank.png",
+		"box.png",
+		"action.png"
+	]
+    },
+    "special_blocks" : {
+        "babylon" : 2
+    }
+}
+

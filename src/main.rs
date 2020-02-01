@@ -13,6 +13,11 @@ mod key;
 mod dust;
 mod door;
 mod fuse_box;
+mod menu_screen;
+
+mod main_menu;
+mod title_screen;
+mod pause_screen;
 
 use audio_library::AudioLibrary;
 
@@ -23,26 +28,48 @@ enum TransitionLogic {
 
 }
 
-struct GoogleHomeopathicMedicine {
+pub struct RunningGameState {
     low_level: Grid2,
     mid_level: Grid2,
     player_id: SceneObjectId,
     scene: Scene,
     zoom_controller: SliderController,
-    title_screen: SplashScreen,
-    main_menu_screen: MenuScreen,
-    pause_screen: MenuScreen,
     dimmer: Dimmer,
     transition_logic: TransitionLogic,
     intro_played: bool,
+    go_to_pause: bool
 }
 
-impl GoogleHomeopathicMedicine {
+impl RunningGameState {
+    fn new(ctx: &mut Engine) -> Result<Self, Error> {
+        let dimmer = { Dimmer::new(ctx).with_initial_value(0.0).with_target_value(1.0) };
+        let (low_level, mid_level, scene, player_id) = { Self::load_level(ctx, 0)? };
+
+        let game =
+            RunningGameState {
+                low_level: low_level,
+                mid_level: mid_level,
+                scene: scene,
+                player_id: player_id,
+                zoom_controller: SliderController::new(
+                    Keycode::Minus,
+                    Keycode::Plus,
+                    (0.5, 2.0)
+                ),
+                dimmer: dimmer,
+                transition_logic: TransitionLogic::ActiveLevel,
+                intro_played: false,
+                go_to_pause: false,
+            };
+
+        Ok(game)
+    }
+
     fn load_level(ctx: &mut Engine, level_index: i32) -> Result<(Grid2, Grid2, Scene, SceneObjectId), Error> {
 
         let levels = ["assets/levels/GroundFloor.json", "assets/levels/Basement.json"];
 
-        let level = Level::load_from_file(ctx, levels[level_index as usize]);
+        let level = Level::load_from_file(ctx, levels[level_index as usize], 120);
 
         let low_level = level.ground;
         let mut mid_level = level.objects;
@@ -124,18 +151,117 @@ impl GoogleHomeopathicMedicine {
     }
 }
 
+impl GameState for RunningGameState {
+    fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
+        if self.go_to_pause {
+            self.go_to_pause = false;
+
+            return Ok(Box::new(pause_screen::PauseScreenState::new(ctx, self)?));
+        }
+
+        match self.transition_logic {
+            TransitionLogic::FadingOutLevel { target_level: next_level } => {
+                self.dimmer.set_target(0.0);
+
+                if self.dimmer.get_value() == 0.0 {
+                    self.transition_logic = TransitionLogic::FadingInLevel { target_level: next_level };
+
+                    self.change_level(ctx, next_level);
+                }
+            },
+            TransitionLogic::FadingInLevel { target_level: _next_level } => {
+                self.dimmer.set_target(1.0);
+
+                if self.dimmer.get_value() == 1.0 {
+                    self.transition_logic = TransitionLogic::ActiveLevel;
+                }
+            },
+            TransitionLogic::ActiveLevel => { }
+        };
+
+        let player_position = self.scene.get(self.player_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        ctx.set_camera_position(player_position);
+
+        self.scene.update(ctx, Some(&self.mid_level), dt);
+        self.dimmer.update(dt);
+
+        if !self.intro_played {
+            self.intro_played = true;
+            ctx.replace_sound(AudioLibrary::Intro, 0, 0)?;
+        }
+        if ctx.is_done(0) {
+            ctx.replace_sound(AudioLibrary::Music, 0, -1)?;
+        }
+
+        Ok(self)
+    }
+
+    fn draw(&mut self, ctx: &mut Engine, dt: f32)
+        -> Result<(), Error>
+    {
+        let zoom = self.zoom_controller.poll(&ctx, dt);
+        ctx.set_camera_zoom(zoom);
+
+        ctx.draw(&self.low_level);
+        ctx.draw(&self.mid_level.interleave_scene(&self.scene));
+
+        let mut transform = Transform::new();
+        transform.set_translation(Vec2::from_coords(0.0, 0.0));
+
+        // let fps = (1.0 / dt) as i32;
+        self.dimmer.draw(ctx);
+
+        Ok(())
+    }
+
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<(), Error> {
+        if keycode == Keycode::P && !is_repeated {
+            self.go_to_pause = true;
+        }
+        if keycode == Keycode::S && !is_repeated {
+            ctx.play_sound(AudioLibrary::HeavySwitch)?;
+        }
+        if keycode == Keycode::T && !is_repeated {
+            ctx.play_sound(AudioLibrary::Toilet)?;
+        }
+        if keycode == Keycode::M && !is_repeated {
+            ctx.toggle_mute();
+        }
+        if keycode == Keycode::I && !is_repeated {
+            ctx.increase_volume();
+        }
+        if keycode == Keycode::D && !is_repeated {
+            ctx.decrease_volume();
+        }
+
+        Ok(())
+    }
+
+    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<(), Error> {
+        if keycode == Keycode::M {
+            self.transition_logic = TransitionLogic::FadingOutLevel { target_level: 1 };
+        }
+
+        self.on_key_down(ctx, keycode, true)?;
+
+        Ok(())
+    }
+}
+
+struct GoogleHomeopathicMedicine { }
+
 impl GameInterface for GoogleHomeopathicMedicine {
     fn get_title() -> &'static str {
         "Google Homopathic Medicine"
     }
 
-    fn get_title_screen(&self) -> Option<SplashScreen> {
-        Some(self.title_screen.clone())
-    }
-
-
-    fn initialize(ctx: &mut Engine) -> Result<Self, Error> {
-        let dimmer = { Dimmer::new(ctx).with_initial_value(0.0).with_target_value(1.0) };
+    fn create_starting_state(ctx: &mut Engine) -> Result<Box<dyn GameState>, Error> {
         let mut sounds = HashMap::new();
         sounds.insert(AudioLibrary::Music, "assets/music/home_automation.wav");
         sounds.insert(AudioLibrary::AccidentSong, "assets/music/would_you_like_to_hear_a_song.wav");
@@ -186,285 +312,13 @@ impl GameInterface for GoogleHomeopathicMedicine {
         sounds.insert(AudioLibrary::Defeat, "assets/sounds/defeat.wav");
         sounds.insert(AudioLibrary::Nope, "assets/sounds/nope.wav");
 
-        ctx.load_sounds(sounds);
+        ctx.load_sounds(sounds)?;
 
-        ctx.reset_sound();
+        ctx.reset_sound()?;
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-        let (low_level, mid_level, scene, player_id) = { Self::load_level(ctx, 0)? };
-
-        // Loading StaticSprites
-        let tr = ctx.get_texture_registry();
-
-        let main_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/main_menu_background.png")?)?;
-        let start_game_sprite = StaticSprite::new(128, 64, tr.load("assets/image/start_button.png")?)?;
-        let exit_sprite = StaticSprite::new(128, 64, tr.load("assets/image/exit_button.png")?)?;
-
-        let main_menu_choices =
-            [
-                MenuChoice
-                {
-                    name: "Start Adventure".to_string(),
-                    target_game_state: GAMEPLAY_STATE,
-                    sprite: start_game_sprite,
-                },
-                MenuChoice
-                {
-                    name: "Quit Game".to_string(),
-                    target_game_state: EXIT_STATE,
-                    sprite: exit_sprite,
-                },
-            ].to_vec();
-
-
-        let title_background = StaticSprite::new(1280, 720, tr.load("assets/image/title_background.png")?)?;
-        let title_sprite = StaticSprite::new(128, 128, tr.load("assets/image/title.png")?)?;
-
-        let title_screen =
-            SplashScreen {
-                background: title_background,
-                foreground: title_sprite,
-            };
-
-
-
-        let main_menu_screen =
-            MenuScreen
-            {
-                name: "Main Menu".to_string(),
-                background: main_menu_background,
-                options: main_menu_choices,
-                current_zoom: 1.0,
-                camera_pos: Vec2::new(),
-            };
-
-        let pause_menu_background = StaticSprite::new(1280, 720, tr.load("assets/image/pause_menu_background.png")?)?;
-        let continue_sprite = StaticSprite::new(128, 64, tr.load("assets/image/continue_button.png")?)?;
-        let return_to_menu_sprite = StaticSprite::new(128, 64, tr.load("assets/image/return_to_menu_button.png")?)?;
-
-        let pause_menu_choices =
-            [
-                MenuChoice
-                {
-                    name: "Continue Adventure".to_string(),
-                    target_game_state: GAMEPLAY_STATE,
-                    sprite: continue_sprite,
-                },
-                MenuChoice
-                {
-                    name: "Return to Main Menu".to_string(),
-                    target_game_state: RESET_GAME,
-                    sprite: return_to_menu_sprite,
-                },
-            ].to_vec();
-
-        let pause_screen =
-            MenuScreen
-            {
-                name: "Pause Menu".to_string(),
-                background: pause_menu_background,
-                options: pause_menu_choices,
-                current_zoom: 1.0,
-                camera_pos: Vec2::new(),
-            };
-
-
-        let game =
-            GoogleHomeopathicMedicine {
-                low_level: low_level,
-                mid_level: mid_level,
-                scene: scene,
-                player_id: player_id,
-                zoom_controller: SliderController::new(
-                    Keycode::Minus,
-                    Keycode::Plus,
-                    (0.5, 2.0)
-                ),
-                title_screen: title_screen,
-                main_menu_screen: main_menu_screen,
-                pause_screen: pause_screen,
-                dimmer: dimmer,
-                transition_logic: TransitionLogic::ActiveLevel,
-                intro_played: false,
-            };
-
-        Ok(game)
-    }
-
-    fn update_gameplay(&mut self, ctx: &mut Engine, dt: f32) -> Result<bool, Error> {
-
-        match self.transition_logic {
-            TransitionLogic::FadingOutLevel { target_level: next_level } => {
-                self.dimmer.set_target(0.0);
-
-                if self.dimmer.get_value() == 0.0 {
-                    self.transition_logic = TransitionLogic::FadingInLevel { target_level: next_level };
-
-                    self.change_level(ctx, next_level);
-                }
-            },
-            TransitionLogic::FadingInLevel { target_level: _next_level } => {
-                self.dimmer.set_target(1.0);
-
-                if self.dimmer.get_value() == 1.0 {
-                    self.transition_logic = TransitionLogic::ActiveLevel;
-                }
-            },
-            TransitionLogic::ActiveLevel => { }
-        };
-
-        let player_position = self.scene.get(self.player_id)
-            .unwrap()
-            .get_physical_object()
-            .unwrap()
-            .get_transform()
-            .get_translation();
-
-        ctx.set_camera_position(player_position);
-        &self.main_menu_screen.set_camera_pos(player_position);
-        &self.pause_screen.set_camera_pos(player_position);
-
-        self.scene.update(ctx, Some(&self.mid_level), dt);
-        self.dimmer.update(dt);
-
-        if !self.intro_played {
-            self.intro_played = true;
-            ctx.replace_sound(AudioLibrary::Intro, 0, 0);
-        }
-        if ctx.is_done(0) {
-            ctx.replace_sound(AudioLibrary::Music, 0, -1);
-        }
-
-        Ok(true)
-    }
-
-    fn draw_gameplay(&mut self, ctx: &mut Engine, dt: f32)
-        -> Result<bool, Error>
-    {
-        let zoom = self.zoom_controller.poll(&ctx, dt);
-        ctx.set_camera_zoom(zoom);
-        &self.main_menu_screen.set_scale(zoom);
-        &self.pause_screen.set_scale(zoom);
-
-        ctx.draw(&self.low_level);
-        ctx.draw(&self.mid_level.interleave_scene(&self.scene));
-
-        let mut transform = Transform::new();
-        transform.set_translation(Vec2::from_coords(0.0, 0.0));
-
-        // Scene is now rendered as a part of the interleaved grid
-        //self.scene.render(ctx);
-
-        // let fps = (1.0 / dt) as i32;
-        self.dimmer.draw(ctx);
-
-        Ok(true)
-    }
-
-    fn draw_main_menu(&mut self, ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
-        ctx.draw(&self.main_menu_screen);
-
-        Ok(true)
-    }
-
-    fn draw_pause_menu(&mut self, ctx: &mut Engine, _dt: f32) -> Result<bool, Error> {
-        ctx.draw(&self.pause_screen);
-
-        Ok(true)
-    }
-
-    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, is_repeated: bool) -> Result<bool, Error> {
-        if ctx.state.gameplay_displayed
-        {
-            if keycode == Keycode::P && !is_repeated {
-                ctx.invert_paused_state();
-                return Ok(true);
-            }
-            if keycode == Keycode::S && !is_repeated {
-                ctx.play_sound(AudioLibrary::HeavySwitch);
-                return Ok(true);
-            }
-            if keycode == Keycode::T && !is_repeated {
-                ctx.play_sound(AudioLibrary::Toilet);
-                return Ok(true);
-            }
-            if keycode == Keycode::M && !is_repeated {
-                ctx.toggle_mute();
-                return Ok(true);
-            }
-            if keycode == Keycode::I && !is_repeated {
-                ctx.increase_volume();
-                return Ok(true);
-            }
-            if keycode == Keycode::D && !is_repeated {
-                ctx.decrease_volume();
-                return Ok(true);
-            }
-        }
-        if ctx.state.is_on(TITLE_STATE)
-        {
-            ctx.end_title_screen();
-            return Ok(true);
-        }
-
-        Ok(true)
-    }
-
-    fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<bool, Error> {
-        if keycode == Keycode::M {
-            self.transition_logic = TransitionLogic::FadingOutLevel { target_level: 1 };
-        }
-
-        self.on_key_down(ctx, keycode, true)
-
-    }
-
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, click_x: i32, click_y: i32, _button: MouseButton)
-        -> Result<bool, Error>
-    {
-        if ctx.state.is_on(TITLE_STATE)
-        {
-            ctx.end_title_screen();
-            return Ok(true);
-        }
-        if ctx.state.presents_menu
-        {
-            // Click as "visible" in regards to camera.
-            let mut cbc = Vec2 {
-                x: click_x as f32,
-                y: click_y as f32
-            };
-            let mut screen_transform = Transform::new();
-            screen_transform.translate(ctx.get_screen_bounds().max * 0.5);
-            cbc = screen_transform.transform_point_inv(cbc);
-            cbc = ctx.get_camera().transform_point(cbc);
-            let current_screen = if ctx.state.gameplay_displayed
-            {
-                self.pause_screen.clone()
-            } else {
-                self.main_menu_screen.clone()
-            };
-
-            match current_screen.get_target_from_pos(cbc)
-            {
-                Some(game_state) => {
-                    let dt = ctx.last_game_state_change.get_time();
-                    let gs_clone = game_state.clone();
-                    if ctx.state.go_to(game_state, dt)
-                    {
-                        ctx.last_game_state_change.reset();
-                        if gs_clone.is_on(EXIT_STATE) {
-                            return Ok(false);
-                        }
-                    }
-                    return Ok(true)
-                },
-                None => return Ok(true),
-            }
-        }
-
-        Ok(true)
+        return Ok(Box::new(title_screen::TitleScreenState::new(ctx)?));
     }
 }
 

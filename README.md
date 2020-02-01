@@ -16,6 +16,11 @@ To build the release version - you'll need a `cargo-script` package installed:
 
 `cargo script final` or `cargo script final --clear-cache`
 
-### Windows
+## Map Editor
 
-To build this game on Windows - you will need a preinstalled CMake and Visual Studio Build Tools.
+To run Map Editor for your level (e.g. `Basement.json`), while at `.\engine` run:
+
+`cargo run --example level_editor ..\assets\levels\Basement.json`
+
+For other levels change the filename to what you desire.
+

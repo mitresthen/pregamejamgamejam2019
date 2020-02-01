@@ -1,0 +1,31 @@
+{
+    "level_instance": {
+        "object_type": [
+            {
+                "file": "cake.png",
+                "density": 1,
+                "fixed": false,
+                "Layers": [
+                    1
+                ]
+            },
+            {
+                "file": "item_Key.png",
+                "density": 1,
+                "fixed": false,
+                "Layers": [
+                    1
+                ]
+            }
+        ],
+        "object_instance": [
+            {
+                "object_id": 0,
+                "position": {
+                    "x": 5,
+                    "y": 5
+                }
+            }
+        ]
+    }
+}
