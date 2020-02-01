@@ -13,7 +13,7 @@ impl NoahState {
             NoahState {
             };
 
-        _ctx.replace_sound(AudioLibrary::Space, 0, -1)?;
+        _ctx.replace_sound(AudioLibrary::Noah, 0, -1)?;
 
         Ok(state)
     }
