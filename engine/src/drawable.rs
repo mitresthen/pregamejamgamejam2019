@@ -66,7 +66,7 @@ impl<'t> DrawContext<'t> {
             self.texture_registry.get_internal_texture(&texture),
             Some(src),
             Some(dst),
-            rotation,
+            -rotation,
             None,
             false,
             false
@@ -110,6 +110,10 @@ impl<'t> DrawContext<'t> {
         let mut top_left = origin.tl() * texture_size;
         let mut bottom_right = origin.br() * texture_size;
 
+        let mut transform = transform.clone();
+        let angle = transform.get_rotation() * 180.0 / std::f32::consts::PI;
+        transform.set_rotation(0.0);
+
         top_left = transform.transform_point(top_left);
         bottom_right = transform.transform_point(bottom_right);
 
@@ -139,8 +143,6 @@ impl<'t> DrawContext<'t> {
                 extent.height as u32
             );
 
-        let rotation = transform.get_rotation()*(180.0/3.14);
-
-        self.copy_ex(texture, src, dst, rotation);
+        self.copy_ex(texture, src, dst, angle as f64);
     }
 }

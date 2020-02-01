@@ -39,7 +39,7 @@ impl RigidBody {
     }
 
     pub fn set_rotation(&mut self, rotation: f32) {
-        self.transform.set_rotation(rotation as f64);
+        self.transform.set_rotation(rotation);
     }
 }
 
@@ -53,7 +53,9 @@ impl PhysicalObject for RigidBody {
     fn get_velocity_mut(&mut self) -> &mut Vec2 { &mut self.velocity }
 
     fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let collision_shape = SquareShape::from_aabb(self.bounding_box + self.transform.get_translation());
+        let mut collision_shape = SquareShape::from_aabb(self.bounding_box);
+
+        collision_shape.transform(&self.transform);
 
         Some(Box::new(collision_shape))
     }
@@ -72,7 +74,7 @@ impl Rotatable for RigidBody {
 
     fn get_rotation_mut(&mut self) -> &mut f32 { &mut self.rotation }
 
-    fn get_inv_intertia(&self) -> f32 { 1.0 }
+    fn get_inv_intertia(&self) -> f32 { 0.0 }
 }
 
 
