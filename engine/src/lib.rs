@@ -33,6 +33,9 @@ pub mod grid2;
 pub mod image;
 pub mod game_object;
 pub mod scene;
+pub mod linear_force;
+
+pub mod rigid_body;
 
 pub mod transition_state;
 

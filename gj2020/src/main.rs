@@ -17,13 +17,17 @@ struct GodSend { }
 
 impl GameInterface for GodSend {
     fn get_title() -> &'static str {
-        "God sent"
+        "Godsent"
     }
 
     fn create_starting_state(ctx: &mut Engine)
         -> Result<Box<dyn GameState>, Error>
     {
-        Ok(Box::new(hub_state::HubState::new(ctx)?))
+        if std::env::var("BABYLON").is_ok() {
+            Ok(Box::new(babylon_state::BabylonState::new(ctx)?))
+        } else {
+            Ok(Box::new(hub_state::HubState::new(ctx)?))
+        }
     }
 }
 

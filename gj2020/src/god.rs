@@ -54,7 +54,6 @@ impl GameObject for God {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let target_velocity = self.controller.poll(ctx) * 400.0;
         self.velocity.approach(target_velocity, 400.0 * dt);
-        self.transform.translate(self.velocity * dt);
 
         let is_walking =
             if target_velocity.len() > 0.1 {

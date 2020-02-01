@@ -9,11 +9,21 @@ use Engine;
 
 pub type SceneObjectId = i32;
 
+#[derive(Clone, Copy)]
+pub struct SceneForceId {
+    id: usize,
+}
+
+pub trait Force {
+    fn calculate_force_on_object(&self, position: Vec2, inv_mass: f32) -> Vec2;
+}
+
 pub struct Scene {
     objects: BTreeMap<SceneObjectId, Box<dyn GameObject>>,
     current_id: SceneObjectId,
     event_queue: EventQueue,
-    pending_raycasts: Vec<(Vec2, Vec2, SceneObjectId)>
+    pending_raycasts: Vec<(Vec2, Vec2, SceneObjectId)>,
+    forces: Vec<Box<dyn Force>>,
 }
 
 pub trait LevelCollider {
@@ -28,8 +38,21 @@ impl Scene {
             objects: BTreeMap::new(),
             current_id: 0,
             event_queue: EventQueue::new(),
-            pending_raycasts: Vec::new()
+            pending_raycasts: Vec::new(),
+            forces: Vec::new(),
         }
+    }
+
+    pub fn add_force<T: Force + 'static>(&mut self, force: T) -> SceneForceId {
+        let id = SceneForceId { id: self.forces.len() };
+
+        self.forces.push(Box::new(force));
+
+        return id;
+    }
+
+    pub fn remove_force(&mut self, id: SceneForceId) {
+        self.forces.remove(id.id);
     }
 
     pub fn get(&self, id: SceneObjectId) -> Option<&Box<dyn GameObject>> {
@@ -189,6 +212,20 @@ impl Scene {
         {
             let mut collision_pairs : Vec<(SceneObjectId, SceneObjectId, Vec2, bool)> = Vec::new();
 
+            for (_, o) in self.objects.iter_mut( ) {
+                if let Some(po) = o.get_physical_object_mut() {
+                    for f in self.forces.iter() {
+                        let position = po.get_transform().get_translation();
+                        let inv_mass = po.get_inv_mass();
+                        let force = f.calculate_force_on_object(position, inv_mass);
+
+                        let acceleration = force * inv_mass;
+
+                        *po.get_velocity_mut() = *po.get_velocity() + acceleration * dt;
+                    }
+                }
+            }
+
             {
                 let mut it = self.objects.iter();
 
@@ -278,11 +315,16 @@ impl Scene {
             self.do_level_collision(level_collider);
         }
 
-
         for (id, object) in self.objects.iter_mut() {
             object.update(engine, &mut self.event_queue.bind_to_sender(*id), dt);
         }
 
+        for (_, o) in self.objects.iter_mut( ) {
+            if let Some(po) = o.get_physical_object_mut() {
+                let translate = *po.get_velocity() * dt;
+                po.get_transform_mut().translate(translate);
+            }
+        }
 
         while let Some(event) = self.event_queue.poll() {
             match event.receiver {
