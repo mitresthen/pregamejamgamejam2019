@@ -25,6 +25,10 @@ pub mod snek_state;
 // Hell modules
 pub mod hell_state;
 
+// Space modules
+pub mod space_state;
+pub mod celestial_body;
+
 struct GodSend { }
 
 impl GameInterface for GodSend {
