@@ -4,8 +4,9 @@ pub struct RigidBody {
     texture: Texture,
     transform: Transform,
     velocity: Vec2,
-    rotation: f32,
     inv_mass: f32,
+    inv_inertia: f32,
+    spin: f32,
     bounding_box: Rect2D
 }
 
@@ -24,8 +25,9 @@ impl RigidBody {
             texture,
             transform: Transform::new(),
             inv_mass: 0.0,
+            inv_inertia: 0.0,
+            spin: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
-            rotation: 0.0,
             bounding_box,
         }
     }
@@ -34,12 +36,28 @@ impl RigidBody {
         self.inv_mass = 1.0 / mass;
     }
 
+    pub fn set_inertia(&mut self, inertia: f32) {
+        self.inv_inertia = 1.0 / inertia;
+    }
+
     pub fn set_position(&mut self, position: Vec2) {
         self.transform.set_translation(position);
     }
 
-    pub fn set_rotation(&mut self, rotation: f32) {
-        self.transform.set_rotation(rotation);
+    pub fn set_velocity(&mut self, velocity: Vec2) {
+        self.velocity = velocity;
+    }
+
+    pub fn set_scale(&mut self, scale: f32) {
+        self.transform.set_scale(scale);
+    }
+
+    pub fn set_angle(&mut self, angle: f32) {
+        self.transform.set_angle(angle);
+    }
+
+    pub fn set_spin(&mut self, spin: f32) {
+        self.spin = spin;
     }
 }
 
@@ -70,11 +88,11 @@ impl PhysicalObject for RigidBody {
 }
 
 impl Rotatable for RigidBody {
-    fn get_rotation(&self) -> f32 { self.rotation }
+    fn get_spin(&self) -> f32 { self.spin }
 
-    fn get_rotation_mut(&mut self) -> &mut f32 { &mut self.rotation }
+    fn get_spin_mut(&mut self) -> &mut f32 { &mut self.spin }
 
-    fn get_inv_intertia(&self) -> f32 { 0.0 }
+    fn get_inv_inertia(&self) -> f32 { self.inv_inertia }
 }
 
 

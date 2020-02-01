@@ -27,7 +27,7 @@ impl SquareShape {
         }
 
         for a in self.axes.iter_mut() {
-            *a = transform.transform_vector(*a);
+            *a = transform.transform_vector(*a).normalize();
         }
     }
 }

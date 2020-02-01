@@ -8,6 +8,7 @@ use texture_registry::{Texture, TextureRegistry};
 use vector::Vec2;
 use extent::Extent;
 use rect::Rect2D;
+use sdl2::rect::Point;
 use crate::Color;
 
 pub enum Origin {
@@ -61,6 +62,7 @@ impl<'t> DrawContext<'t> {
         }
     }
 
+
     pub fn copy_ex(&mut self, texture: &Texture, src: Rect, dst: Rect, rotation: f64) {
         self.canvas.copy_ex(
             self.texture_registry.get_internal_texture(&texture),
@@ -92,6 +94,28 @@ impl<'t> DrawContext<'t> {
         self.canvas.set_blend_mode(BlendMode::None);
     }
 
+    pub fn draw_point(&mut self, point: Vec2, color: Color) {
+
+        let mut screen_transform = Transform::new();
+        screen_transform.translate(self.screen_bounds.max * 0.5);
+
+        let point = self.camera.transform_point_inv(point);
+        let point = screen_transform.transform_point(point);
+
+        let point = Point::new(point.x as i32, point.y as i32);
+
+        self.canvas.set_draw_color(color);
+        let rect =
+            Rect::new(
+                point.x - 5,
+                point.y - 5,
+                10,
+                10,
+            );
+
+        self.canvas.fill_rect(rect).unwrap();
+    }
+
     pub fn draw2(&mut self, texture: &Texture, transform: &Transform, origin: Origin) {
         let src =
             Rect::new(
@@ -111,8 +135,8 @@ impl<'t> DrawContext<'t> {
         let mut bottom_right = origin.br() * texture_size;
 
         let mut transform = transform.clone();
-        let angle = transform.get_rotation() * 180.0 / std::f32::consts::PI;
-        transform.set_rotation(0.0);
+        let angle = transform.get_angle() * 180.0 / std::f32::consts::PI;
+        transform.set_angle(0.0);
 
         top_left = transform.transform_point(top_left);
         bottom_right = transform.transform_point(bottom_right);

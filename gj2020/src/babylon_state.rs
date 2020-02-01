@@ -23,7 +23,8 @@ impl BabylonState {
 
         let ground_texture = tr.load("assets/images/ground.png")?;
         let mut ground = RigidBody::new(ground_texture);
-        ground.set_position(Vec2::from_coords(800.0, 800.0));
+        ground.set_position(Vec2::from_coords(0.0, 1800.0));
+        ground.set_scale(8.0);
         scene.add_object(ground);
 
         ctx.replace_sound(AudioLibrary::Babylon, 0, -1)?;
@@ -46,7 +47,8 @@ impl GameState for BabylonState {
     }
 
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
-        ctx.set_camera_zoom(4.0);
+        ctx.set_camera_position(Vec2::from_coords(0.0, 0.0));
+        ctx.set_camera_zoom(8.0);
         self.scene.render(ctx);
 
         Ok(())
@@ -62,7 +64,9 @@ impl GameState for BabylonState {
         let mut rigid_body = RigidBody::new(self.box_texture.clone());
         rigid_body.set_position(world_pos);
         rigid_body.set_mass(1.0);
-        rigid_body.set_rotation(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
+        rigid_body.set_angle(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
+        rigid_body.set_inertia(10000.0);
+        rigid_body.set_spin(1.0);
 
         self.scene.add_object(rigid_body);
 
