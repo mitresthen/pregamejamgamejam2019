@@ -48,6 +48,10 @@ impl God {
     pub fn set_position(&mut self, position: Vec2) {
         self.transform.set_translation(position);
     }
+
+    pub fn set_scale(&mut self, scale: f32) {
+        self.transform.set_scale(scale);
+    }
 }
 
 impl GameObject for God {
@@ -130,6 +134,8 @@ impl PhysicalObject for God {
     fn get_velocity_mut(&mut self) -> &mut Vec2 {
         &mut self.velocity
     }
+
+    fn get_inv_mass(&self) -> f32 { 1.0 }
 
     fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
         let rect = Rect2D::centered_rectangle(self.collision_size);

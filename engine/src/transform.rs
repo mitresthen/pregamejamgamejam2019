@@ -2,9 +2,9 @@ use vector::Vec2;
 
 #[derive(Clone, Debug)]
 pub struct Transform {
-    translation: Vec2,
-    scale: f32,
-    angle: f32
+    pub translation: Vec2,
+    pub scale: f32,
+    pub angle: f32
 }
 
 impl Transform {
