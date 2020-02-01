@@ -1,3 +1,4 @@
+#![allow(warnings)]
 extern crate fs_extra;
 
 fn main() {
