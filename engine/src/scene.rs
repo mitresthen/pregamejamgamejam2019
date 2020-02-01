@@ -262,8 +262,6 @@ impl Scene {
 
                 if should_block
                 {
-                    let perp = axis.perpendicular();
-
                     let physical_object_a = self.objects.get(&ob_a).unwrap().get_physical_object().unwrap();
                     let physical_object_b = self.objects.get(&ob_b).unwrap().get_physical_object().unwrap();
 
@@ -279,26 +277,25 @@ impl Scene {
                     let diff = velo_axis_a - velo_axis_b;
 
                     if (inv_mass_a > 0.0 || inv_mass_b > 0.0) && diff < 0.0 {
-                        // (ma * va) + (mb * vb) = (ma * v) + (mb * v)
-                        // (ma * va) + (mb * vb) = v * (ma + mb)
-                        // (ma * va) + (mb * vb) = v * (ma + mb) | / (ma * mb)
-                        // ((1/mb) * va) + ((1/ma) * vb) = v * ((1 / mb) + (1 / ma))
-                        //
-                        let v = ((inv_mass_b * velo_axis_a) + (inv_mass_a * velo_axis_b)) / (inv_mass_b + inv_mass_a);
+                        // dv = (F/ma) + (F/mb)
+                        // dv = F * ((1 / ma) + (1 / mb))
+                        // F = dv / ((1 / ma) + (1 / mb))
 
-                        let delta_v_a = v - velo_axis_a;
-                        let delta_v_b = v - velo_axis_b;
+                        let f = diff / (inv_mass_a + inv_mass_b);
+
+                        let delta_v_a = -f * inv_mass_a;
+                        let delta_v_b = f * inv_mass_b;
 
                         {
                             let physical_object_a = self.objects.get_mut(&ob_a).unwrap().get_physical_object_mut().unwrap();
                             let velocity_a = physical_object_a.get_velocity_mut();
-                            *velocity_a = (axis * delta_v_a) + (perp * perp.dot_product(*velocity_a));
+                            *velocity_a = *velocity_a + (axis * delta_v_a);
                         }
 
                         {
                             let physical_object_b = self.objects.get_mut(&ob_b).unwrap().get_physical_object_mut().unwrap();
                             let velocity_b = physical_object_b.get_velocity_mut();
-                            *velocity_b = (axis * delta_v_b) + (perp * perp.dot_product(*velocity_b));
+                            *velocity_b = *velocity_b + (axis * delta_v_b);
                         }
                     }
                 }

@@ -17,6 +17,11 @@ impl BabylonState {
         
         scene.add_force(force);
 
+        let ground_texture = tr.load("assets/images/ground.png")?;
+        let mut ground = RigidBody::new(ground_texture);
+        ground.set_position(Vec2::from_coords(800.0, 800.0));
+        scene.add_object(ground);
+
         let state =
             BabylonState {
                 scene,

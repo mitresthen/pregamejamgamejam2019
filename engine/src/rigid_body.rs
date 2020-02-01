@@ -52,7 +52,7 @@ impl PhysicalObject for RigidBody {
         Some(Box::new(collision_shape))
     }
 
-    fn should_block(&self) -> bool { false }
+    fn should_block(&self) -> bool { true }
 
     fn get_inv_mass(&self) -> f32 { self.inv_mass }
 }
