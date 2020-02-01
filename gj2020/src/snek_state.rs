@@ -1,10 +1,10 @@
 use engine::prelude::*;
 
-use crate::god::God;
+use crate::snek::Snek;
 
 pub struct SnekState {
     level: Level,
-    god_id: SceneObjectId,
+    snek_id: SceneObjectId,
     scene: Scene
 }
 
@@ -14,17 +14,17 @@ impl SnekState {
 
         let mut scene = Scene::new();
 
-        let mut god = God::new(ctx)?;
+        let mut snek = Snek::new(ctx)?;
 
         let tile_size = 240.0;
-        god.set_position(Vec2::from_coords(1.5, 1.5) * tile_size);
+        snek.set_position(Vec2::from_coords(1.5, 1.5) * tile_size);
 
-        let god_id = scene.add_object(god);
+        let snek_id = scene.add_object(snek);
 
         let snek_state =
             SnekState {
                 level,
-                god_id,
+                snek_id,
                 scene
             };
 
@@ -40,7 +40,15 @@ impl GameState for SnekState {
     }
 
     fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {
-        ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
+        let snek_position = self.scene.get(self.snek_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        ctx.set_camera_position(snek_position);
+        // ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
         ctx.set_camera_zoom(4.0);
 
         ctx.draw(&self.level.ground);

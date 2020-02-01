@@ -19,6 +19,7 @@ pub mod babylon_state;
 pub mod noah_state;
 
 // Snek modules
+pub mod snek;
 pub mod snek_state;
 
 struct GodSend { }

@@ -5,7 +5,8 @@
         "file" : "snek-floor-layer.dat",
         "tiles" : [
             "black.png",
-            "red.png"
+            "red.png",
+            "floor.png"
         ]
     },
     "objects" : {
