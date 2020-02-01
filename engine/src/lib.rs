@@ -41,6 +41,8 @@ pub mod slider_controller;
 pub mod trigger;
 
 pub mod level;
+#[allow(non_snake_case)]
+pub mod level2D;
 
 pub mod prelude;
 

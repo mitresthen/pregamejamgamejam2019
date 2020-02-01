@@ -9,6 +9,8 @@ use crate::babylon_state::BabylonState;
 use crate::noah_state::NoahState;
 use crate::snek_state::SnekState;
 
+use audio_library::AudioLibrary;
+
 pub struct HubState {
     level: Level,
     scene: Scene,
@@ -70,6 +72,8 @@ impl HubState {
                 noah_trigger,
                 snek_trigger
             };
+
+        ctx.loop_sound(AudioLibrary::HubWorld, -1)?;
 
         Ok(hub_state)
     }

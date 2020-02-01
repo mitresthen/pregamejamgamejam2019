@@ -3,12 +3,11 @@ extern crate engine;
 use engine::prelude::*;
 
 pub struct LevelEditorState {
-    level: Level,
     controller: AxisController,
     zoom: SliderController,
     camera_velocity: Vec2,
     object_index: u32,
-    level_2d: Level2D
+    level: Level2D
 }
 
 impl LevelEditorState {
@@ -22,7 +21,7 @@ impl LevelEditorState {
 
         let level_editor =
             LevelEditorState {
-                level: Level::load_from_file(ctx, &level_filename, 240),
+                level: Level2D::load_from_file(ctx, &level_filename),
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -36,6 +35,7 @@ impl LevelEditorState {
                 ),
                 camera_velocity: Vec2::new(),
                 object_index: 0,
+
             };
 
         Ok(level_editor)
@@ -45,17 +45,17 @@ impl LevelEditorState {
 
 
 impl GameState for LevelEditorState {
-    fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error>
+    fn update(mut self: Box<Self>, _ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error>
     {
-        self.camera_velocity = self.controller.poll(ctx) * 800.0;
-        ctx.move_camera(self.camera_velocity * dt);
-        let zoom = self.zoom.poll(ctx, dt);
-        ctx.set_camera_zoom(zoom);
+        self.camera_velocity = self.controller.poll(_ctx) * 800.0;
+        _ctx.move_camera(self.camera_velocity * dt);
+        let zoom = self.zoom.poll(_ctx, dt);
+        _ctx.set_camera_zoom(zoom);
 
         Ok(self)
     }
 
-    fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error>
+    fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error>
     {
 
 
@@ -73,12 +73,12 @@ impl GameState for LevelEditorState {
         Ok(())
     }
 
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, _button: MouseButton) -> Result<(), Error>
+    fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
     {
         Ok(())
     }
 
-    fn on_mouse_button_up(&mut self, ctx: &mut Engine, _x: i32, _y: i32, button: MouseButton) -> Result<(), Error>
+    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
     {
         Ok(())
     }
