@@ -1,5 +1,5 @@
 // cargo-deps: fs_extra = "1.1.0", walkdir = "2.3.1", zip = "0.5.4"
-
+#![allow(warnings)]
 extern crate fs_extra;
 extern crate walkdir;
 extern crate zip;

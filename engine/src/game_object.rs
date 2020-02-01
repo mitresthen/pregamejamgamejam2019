@@ -1,9 +1,9 @@
-use bounding_box::BoundingBox;
 use drawable::DrawContext;
 use transform::Transform;
 use vector::Vec2;
 use scene::SceneObjectId;
 use Engine;
+use rect::Rect2D;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum Items {
@@ -110,6 +110,96 @@ impl<'t> EventMailbox for SenderBoundEventQueue<'t> {
     }
 }
 
+#[derive(Copy, Clone)]
+pub struct SATResult {
+    pub axis: Vec2,
+    pub depth: f32
+}
+
+#[derive(Debug)]
+pub struct Range {
+    start: f32,
+    end: f32
+}
+
+impl Range {
+    pub fn inf_negative() -> Range {
+        Range {
+            start: std::f32::MAX,
+            end: -std::f32::MAX
+        }
+    }
+
+    pub fn expand(&mut self, p: f32) {
+        self.start = self.start.min(p);
+        self.end = self.end.max(p);
+    }
+
+    pub fn start(&self) -> f32 { self.start }
+    pub fn end(&self) -> f32 { self.end }
+    pub fn center(&self) -> f32 { (self.start + self.end) / 2.0 }
+
+    pub fn overlap(&self, other: &Range) -> f32 {
+        self.end.min(other.end) - self.start.max(other.start)
+    }
+}
+
+pub trait CollisionShape {
+    fn get_points(&self) -> &[Vec2];
+
+    fn get_axes(&self) -> &[Vec2];
+
+    fn get_aabb(&self) -> Rect2D {
+        let mut aabb = Rect2D {
+            min: Vec2::from_coords(std::f32::MAX, std::f32::MAX),
+            max: Vec2::from_coords(-std::f32::MAX, -std::f32::MAX),
+        };
+
+        for p in self.get_points() {
+            aabb.min.x = aabb.min.x.min(p.x);
+            aabb.min.y = aabb.min.y.min(p.y);
+            aabb.max.x = aabb.max.x.max(p.x);
+            aabb.max.y = aabb.max.y.max(p.y);
+        }
+
+        aabb
+    }
+
+    fn sat_collide(&self, other: &dyn CollisionShape) -> Option<SATResult> {
+        let mut result =
+            SATResult {
+                axis: Vec2::new(),
+                depth: std::f32::MAX,
+            };
+
+        for axis in self.get_axes().iter().chain(other.get_axes()) {
+            let mut r1 = Range::inf_negative();
+            let mut r2 = Range::inf_negative();
+
+            for p in self.get_points() {
+                r1.expand(p.dot_product(*axis));
+            }
+
+            for p in other.get_points() {
+                r2.expand(p.dot_product(*axis));
+            }
+
+            let overlap = r1.overlap(&r2);
+
+            let factor = if r1.center() < r2.center() { -1.0 } else { 1.0 };
+            if overlap < result.depth {
+                result.depth = overlap;
+                result.axis = *axis * factor;
+            }
+        }
+
+        if result.depth > 0.0 {
+            Some(result)
+        } else {
+            None
+        }
+    }
+}
 
 pub trait PhysicalObject {
     fn get_transform(&self) -> &Transform;
@@ -120,7 +210,7 @@ pub trait PhysicalObject {
 
     fn get_velocity_mut(&mut self) -> &mut Vec2;
 
-    fn get_bounding_box(&self) -> Option<BoundingBox>;
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>>;
 
     fn should_block(&self) -> bool { true }
 

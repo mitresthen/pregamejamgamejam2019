@@ -111,7 +111,6 @@ impl GameObject for Player {
         }
 
         self.velocity.approach(target_velocity, 400.0 * dt);
-        self.transform.translate(self.velocity * dt);
 
         let mut is_walking = false;
         if target_velocity.len() > 0.1 {
@@ -213,15 +212,9 @@ impl PhysicalObject for Player {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let bounding_box =
-            BoundingBox::new(
-                self.collision_size,
-                self.collision_size,
-                self.transform.get_translation()
-            );
-
-        Some(bounding_box)
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+        let size = self.collision_size;
+        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size) + self.transform.get_translation())))
     }
 }
 

@@ -1,3 +1,4 @@
+#![allow(warnings)]
 extern crate fs_extra;
 
 fn main() {
@@ -8,11 +9,11 @@ fn main() {
     // options.mirror_copy = true; // To mirror copy the whole structure of the source directory
 
     if !Path::new("./target/debug/assets").exists() {
-        std::fs::create_dir_all("./target/debug");
+        if std::fs::create_dir_all("./target/debug").is_ok() { };
         dir::copy("./assets", "./target/debug", &options).unwrap();
     }
     if !Path::new("./target/release/assets").exists() {
-        std::fs::create_dir_all("./target/release");
+        if std::fs::create_dir_all("./target/release").is_ok() { };
         dir::copy("./assets", "./target/release", &options).unwrap();
     }
 }

@@ -1,7 +1,15 @@
 use std::collections::BTreeMap;
 
-use game_object::{GameObject, EventQueue, EventReceiver, EventType, EventMailbox};
-use bounding_box::BoundingBox;
+use game_object::{
+    GameObject,
+    EventQueue,
+    EventReceiver,
+    EventType,
+    EventMailbox,
+    CollisionShape
+};
+
+use ray_shape::RayShape;
 use drawable::DrawContext;
 use vector::Vec2;
 use rect::Rect2D;
@@ -27,9 +35,7 @@ pub struct Scene {
 }
 
 pub trait LevelCollider {
-    fn get_collision_vector(&self, bounding_box: BoundingBox) -> Option<Vec2>;
-
-    fn get_collision_vector_points(&self, points : Vec<Vec2>) -> Option<Vec2>;
+    fn get_collision_vector(&self, collision_shape: &dyn CollisionShape) -> Option<Vec2>;
 }
 
 impl Scene {
@@ -150,14 +156,12 @@ impl Scene {
 
     pub fn do_level_collision(&mut self, collider: &dyn LevelCollider) {
         for (origin, target, object_id) in self.pending_raycasts.drain(..) {
-            let mut points = Vec::new();
-            points.push(target);
-            points.push(origin);
 
             println!("Raycast {:?} -> {:?}", origin, target);
 
+            let ray = RayShape::new(target, origin);
             if target.valid() && origin.valid() {
-                let success : bool = collider.get_collision_vector_points(points).is_none();
+                let success : bool = collider.get_collision_vector(&ray).is_none();
 
                 self.event_queue.submit_event(
                     EventType::RayCastReply { success, target },
@@ -176,7 +180,7 @@ impl Scene {
             let mut maybe_axis = None;
             if let Some(physical_object) = object.get_physical_object_mut() {
                 if let Some(bounding_box) = physical_object.get_bounding_box() {
-                    if let Some(axis) = collider.get_collision_vector(bounding_box) {
+                    if let Some(axis) = collider.get_collision_vector(bounding_box.as_ref()) {
                         let velocity = physical_object.get_velocity_mut();
                         let perp = axis.perpendicular();
 
@@ -238,12 +242,12 @@ impl Scene {
                             if let Some(physical_object_b) = object_b.get_physical_object() {
                                 if let Some(bounding_box_a) = physical_object_a.get_bounding_box() {
                                     if let Some(bounding_box_b) = physical_object_b.get_bounding_box() {
-                                        if let Some((axis, _)) = bounding_box_a.sat_overlap(bounding_box_b) {
+                                        if let Some(result) = bounding_box_a.sat_collide(bounding_box_b.as_ref()) {
                                             let should_block =
                                                 physical_object_a.should_block() &&
                                                 physical_object_b.should_block();
 
-                                            collision_pairs.push((*id_a, *id_b, axis, should_block));
+                                            collision_pairs.push((*id_a, *id_b, result.axis, should_block));
                                         }
                                     }
                                 }

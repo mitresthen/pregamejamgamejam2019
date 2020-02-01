@@ -60,18 +60,12 @@ impl PhysicalObject for Door {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> {
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
         let size = self.sprite.calculate_size() * 0.5;
-
-        let bounding_box =
-            BoundingBox::new(
-                size.x,
-                size.y,
-                self.transform.get_translation()
-            );
-
-        Some(bounding_box)
+        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
     }
+
+    fn get_inv_mass(&self) -> f32 { 0.0 }
 }
 
 impl GameObject for Door {

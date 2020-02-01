@@ -8,7 +8,7 @@ pub struct God {
     transform: Transform,
     velocity: Vec2,
     direction: i32,
-    collision_size: f32,
+    collision_size: Vec2,
 }
 
 impl God {
@@ -38,7 +38,7 @@ impl God {
                 sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                collision_size: 80.0,
+                collision_size: Vec2::from_coords(200.0, 80.0),
                 direction: 0,
             };
 
@@ -72,7 +72,7 @@ impl GameObject for God {
        let mode = self.direction + if is_walking { 4 } else { 0 }; 
 
         let mut sprite_transform = self.transform.clone();
-        let collision_height = self.collision_size;
+        let collision_height = self.collision_size.y;
         let sprite_size = self.sprite.calculate_size();
 
         sprite_transform.translate(
@@ -131,14 +131,10 @@ impl PhysicalObject for God {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<BoundingBox> {
-        let bounding_box =
-            BoundingBox::new(
-                self.collision_size*2.5,
-                self.collision_size,
-                self.transform.get_translation()
-            );
+    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+        let rect = Rect2D::centered_rectangle(self.collision_size);
+        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
 
-        Some(bounding_box)
+        Some(Box::new(square))
     }
 }

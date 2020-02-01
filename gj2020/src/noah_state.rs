@@ -1,10 +1,11 @@
 use engine::prelude::*;
+use audio_library::AudioLibrary;
 
 pub struct NoahState { }
 
 impl NoahState {
-    pub fn new(ctx: &mut Engine) -> Result<Self, Error> {
-        let mut scene = Scene::new();
+    pub fn new(_ctx: &mut Engine) -> Result<Self, Error> {
+        let mut _scene = Scene::new();
         println!("Congratulations you are in the ark");
 
 
@@ -12,14 +13,14 @@ impl NoahState {
             NoahState {
             };
 
+        ctx.replace_sound(AudioLibrary::Space, 0, -1)?;
+
         Ok(state)
     }
 }
 
 impl GameState for NoahState {
-
-    fn update(mut self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
-
+    fn update(self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
         Ok(self)
     }
 

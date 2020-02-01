@@ -14,7 +14,7 @@ impl LinearForce {
 }
 
 impl Force for LinearForce {
-    fn calculate_force_on_object(&self, position: Vec2, inv_mass: f32) -> Vec2{
+    fn calculate_force_on_object(&self, _position: Vec2, inv_mass: f32) -> Vec2{
         if inv_mass > 0.0 {
             self.direction * (1.0 / inv_mass)
         } else {

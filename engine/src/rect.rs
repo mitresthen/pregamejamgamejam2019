@@ -1,5 +1,6 @@
 use vector::Vec2;
 
+#[derive(Clone, Copy)]
 pub struct Rect2D {
     pub min: Vec2,
     pub max: Vec2
@@ -8,6 +9,20 @@ pub struct Rect2D {
 impl Rect2D {
     pub fn new(min: Vec2, max: Vec2) -> Rect2D {
         Rect2D { min, max }
+    }
+
+    pub fn centered_square(size: f32) -> Rect2D {
+        Rect2D {
+            min: Vec2::from_coords(-size, -size) * 0.5,
+            max: Vec2::from_coords(size, size) * 0.5,
+        }
+    }
+
+    pub fn centered_rectangle(size: Vec2) -> Rect2D {
+        Rect2D {
+            min: Vec2::from_coords(-size.x, -size.y) * 0.5,
+            max: Vec2::from_coords(size.x, size.y) * 0.5,
+        }
     }
 
     pub fn empty() -> Rect2D {
@@ -54,5 +69,15 @@ impl Rect2D {
         v.y > self.min.y &&
         v.x < self.max.x &&
         v.y < self.max.y
+    }
+}
+
+impl std::ops::Add<Vec2> for Rect2D {
+    type Output = Rect2D;
+    fn add(self, other: Vec2) -> Rect2D {
+        Rect2D {
+            min: self.min + other,
+            max: self.max + other,
+        }
     }
 }
