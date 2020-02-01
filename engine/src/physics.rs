@@ -20,6 +20,7 @@ pub struct BodyId {
     id: usize
 }
 
+#[derive(Clone)]
 struct CollisionPair{
     a: usize,
     b: usize,
@@ -31,25 +32,61 @@ struct CollisionPair{
     r_b: f32,
     depth: f32,
     point: Vec2,
+    force_limit: Option<(usize, f32)>,
+    unidirectional: bool,
+    f_sum: f32,
+}
+
+impl CollisionPair {
+    fn calculate(ai: usize, bi: usize, a: &Body, b: &Body, point: Vec2, axis: Vec2, depth: f32) -> Self {
+        let perp = axis.perpendicular();
+
+        let r_a = perp.dot_product(a.center - point);
+        let r_b = perp.dot_product(b.center - point);
+
+        let torque_a = r_a * a.inv_mass * a.inv_inertia;
+        let torque_b = r_b * b.inv_mass * b.inv_inertia;
+
+        let resistance = a.inv_mass + b.inv_mass + (torque_a * r_a) + (torque_b * r_b);
+
+        CollisionPair {
+            a: ai,
+            b: bi,
+            axis: axis,
+            depth: depth,
+            point,
+            torque_a,
+            torque_b,
+            r_a,
+            r_b,
+            resistance,
+            force_limit: None,
+            unidirectional: false,
+            f_sum: 0.0,
+        }
+    }
 }
 
 
 pub struct PhysicsSet {
     bodies: Vec<Body>,
     collision_pairs: Vec<CollisionPair>,
+    force_sums: Vec<f32>,
 }
 
 impl PhysicsSet {
     pub fn new() -> PhysicsSet {
         PhysicsSet {
             bodies: Vec::new(),
-            collision_pairs: Vec::new()
+            collision_pairs: Vec::new(),
+            force_sums: Vec::new(),
         }
     }
 
     pub fn clear(&mut self) {
         self.bodies.clear();
         self.collision_pairs.clear();
+        self.force_sums.clear();
     }
 
     pub fn add_physics_object(&mut self, physics_object: &dyn PhysicalObject) -> Option<BodyId> {
@@ -104,41 +141,30 @@ impl PhysicsSet {
 
                         let manifold = manifold_a.clip(manifold_b, result.axis);
 
-                        let perp = result.axis.perpendicular();
-
                         for i in 0..manifold.point_count {
-                            let r_a = perp.dot_product(a.center - manifold.points[i]);
-                            let r_b = perp.dot_product(b.center - manifold.points[i]);
+                            let normal_cp = CollisionPair::calculate(ai, bi, a, b, manifold.points[i], result.axis, result.depth);
+                            let normal_id = self.collision_pairs.len();
+                            self.collision_pairs.push(normal_cp);
+                            self.force_sums.push(0.0);
 
-                            let torque_a = r_a * a.inv_mass * a.inv_inertia;
-                            let torque_b = r_b * b.inv_mass * b.inv_inertia;
-
-                            let resistance = a.inv_mass + b.inv_mass + (torque_a * r_a) + (torque_b * r_b);
-
-                            let collision_pair =
-                                CollisionPair {
-                                    a: ai,
-                                    b: bi,
-                                    axis: result.axis,
-                                    depth: result.depth,
-                                    point: manifold.points[i],
-                                    torque_a,
-                                    torque_b,
-                                    r_a,
-                                    r_b,
-                                    resistance,
-                                };
-
-                            self.collision_pairs.push(collision_pair);
+                            let mut friction_cp = CollisionPair::calculate(ai, bi, a, b, manifold.points[i], result.axis.perpendicular(), 0.0);
+                            friction_cp.unidirectional = true;
+                            friction_cp.force_limit = Some((normal_id, 0.1));
+                            self.collision_pairs.push(friction_cp);
+                            self.force_sums.push(0.0);
                         }
                     }
                 }
             }
         }
+
+
     }
 
     pub fn iterate(&mut self) {
-        for cp in self.collision_pairs.iter() {
+        for i in 0..self.collision_pairs.len() {
+            let cp = &self.collision_pairs[i];
+
             let a = &self.bodies[cp.a];
             let b = &self.bodies[cp.b];
 
@@ -148,16 +174,35 @@ impl PhysicsSet {
             let v_a = a.velocity.dot_product(cp.axis) - (a.spin * cp.r_a);
             let v_b = b.velocity.dot_product(cp.axis) - (b.spin * cp.r_b);
 
-            let delta_v = v_a - v_b;
+            let delta_v = v_b - v_a;
 
-            if delta_v < 0.0 {
-                let f = delta_v / cp.resistance;
+            if delta_v > 0.0 || cp.unidirectional {
+                let mut f = delta_v / cp.resistance;
 
-                self.bodies[cp.a].velocity -= cp.axis * f * ma;
-                self.bodies[cp.b].velocity += cp.axis * f * mb;
+                if let Some((ref_id, factor)) = cp.force_limit {
+                    let limit = (self.force_sums[ref_id] * factor).abs();
+                    let total = self.force_sums[i] + f;
 
-                self.bodies[cp.a].spin += cp.torque_a * f;
-                self.bodies[cp.b].spin -= cp.torque_b * f;
+                    let adjust =
+                        if total > limit {
+                            total - limit
+                        } else if total < -limit {
+                            total + limit
+                        } else {
+                            0.0
+                        };
+
+                    f -= adjust; 
+                }
+
+                self.force_sums[i] += f;
+
+
+                self.bodies[cp.a].velocity += cp.axis * f * ma;
+                self.bodies[cp.b].velocity -= cp.axis * f * mb;
+
+                self.bodies[cp.a].spin -= cp.torque_a * f;
+                self.bodies[cp.b].spin += cp.torque_b * f;
             }
         }
     }

@@ -48,6 +48,10 @@ impl RigidBody {
         self.velocity = velocity;
     }
 
+    pub fn set_scale(&mut self, scale: f32) {
+        self.transform.set_scale(scale);
+    }
+
     pub fn set_angle(&mut self, angle: f32) {
         self.transform.set_angle(angle);
     }

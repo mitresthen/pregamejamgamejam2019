@@ -246,7 +246,7 @@ impl Scene {
 
         self.collision_points = physics_set.get_collision_points();
 
-        for _ in 0..4 {
+        for _ in 0..50 {
             physics_set.iterate();
         }
 
@@ -337,6 +337,8 @@ impl Scene {
             object.render(&mut ctx);
         }
 
+        /*
+        // Enable this to debug physics collision points
         {
             let mut draw_context = engine.get_draw_context();
 
@@ -344,7 +346,7 @@ impl Scene {
                 draw_context.draw_point(*cp, Color::RGB(255, 0, 0));
             }
         }
-
+        */
     }
 
     pub fn add_object<T: GameObject>(&mut self, object: T) -> SceneObjectId {
