@@ -123,6 +123,8 @@ pub trait PhysicalObject {
     fn get_bounding_box(&self) -> Option<BoundingBox>;
 
     fn should_block(&self) -> bool { true }
+
+    fn get_inv_mass(&self) -> f32 { 1.0 }
 }
 
 pub trait GameObject: 'static {

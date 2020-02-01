@@ -34,6 +34,8 @@ pub mod image;
 pub mod game_object;
 pub mod scene;
 
+pub mod transition_state;
+
 pub mod axis_controller;
 pub mod slider_controller;
 pub mod trigger;
@@ -49,6 +51,7 @@ pub mod dimmer;
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
 pub use sdl2::mouse::MouseButton;
+pub use sdl2::pixels::Color;
 
 use audio_engine::WavError;
 

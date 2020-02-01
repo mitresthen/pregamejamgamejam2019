@@ -2,7 +2,13 @@ extern crate engine;
 
 use engine::prelude::*;
 
+// Hub modules
 pub mod hub_state;
+pub mod god;
+pub mod minigame;
+
+// Babylon modules
+pub mod babylon_state;
 
 struct GodSend { }
 

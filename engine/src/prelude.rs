@@ -14,6 +14,9 @@ pub use extent::Extent;
 pub use offset::Offset;
 pub use texture_registry::Texture;
 
+pub use transition_state::TransitionState;
+pub use Color;
+
 pub use grid::Grid;
 pub use grid2::Grid2;
 

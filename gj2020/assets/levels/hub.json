@@ -12,9 +12,12 @@
         "file" : "hub-object-layer.dat",
         "tiles" : [
 		"blank.png",
-		"box.png"
+		"box.png",
+		"action.png"
 	]
     },
-    "special_blocks" : { }
+    "special_blocks" : {
+        "babylon" : 2
+    }
 }
 
