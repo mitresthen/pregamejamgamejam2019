@@ -78,9 +78,18 @@ impl GameState for LevelEditorState {
             println!("Current object id: {}", self.object_index);
         }
 
-        if keycode == Keycode::R {
+        if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
+            self.rotation = (self.rotation - 0.1);
+            if(self.rotation < 0.0) {
+                self.rotation = (2.0*3.14);
+            }
+        } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
+            self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
+        }else if keycode == Keycode::R {
             self.rotation = (self.rotation + 0.1) % (2.0*3.14);
         }
+
+        
 
         Ok(())
     }
