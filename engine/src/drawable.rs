@@ -61,12 +61,12 @@ impl<'t> DrawContext<'t> {
         }
     }
 
-    pub fn copy_ex(&mut self, texture: &Texture, src: Rect, dst: Rect) {
+    pub fn copy_ex(&mut self, texture: &Texture, src: Rect, dst: Rect, rotation: f64) {
         self.canvas.copy_ex(
             self.texture_registry.get_internal_texture(&texture),
             Some(src),
             Some(dst),
-            0.0,
+            rotation,
             None,
             false,
             false
@@ -139,6 +139,8 @@ impl<'t> DrawContext<'t> {
                 extent.height as u32
             );
 
-        self.copy_ex(texture, src, dst);
+        let rotation = transform.get_rotation()*(180.0/3.14);
+
+        self.copy_ex(texture, src, dst, rotation);
     }
 }
