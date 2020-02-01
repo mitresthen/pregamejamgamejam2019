@@ -49,10 +49,7 @@ impl Snek {
 }
 
 impl GameObject for Snek {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        // let target_velocity = self.controller.poll(ctx) * 400.0;
-        // let target_velocity = self.controller.poll(ctx) * 1200.0;
-        // self.velocity.approach(target_velocity, 400.0 * dt);
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let controller_input = self.controller.poll(ctx);
         let y_val = controller_input.y;
 
