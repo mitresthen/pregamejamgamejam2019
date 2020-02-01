@@ -6,37 +6,47 @@ use crate::minigame::{
     MinigameTrigger
 };
 use crate::babylon_state::BabylonState;
+use crate::noah_state::NoahState;
 
 pub struct HubState {
     level: Level,
     scene: Scene,
     god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
+    noah_trigger: MinigameTrigger,
 }
 
 impl HubState {
-    pub fn new(ctx: &mut Engine) -> Result<HubState, Error> {
-        let mut level = Level::load_from_file(ctx, "assets/levels/hub.json", 120);
 
-        let mut scene = Scene::new();
-
-        let babylon_tile_id = level.special_blocks.remove("babylon").unwrap();
-        let (babylon_texture, babylon_position) = level.objects.take_tile_with_id(babylon_tile_id)
+    pub fn create_minigame_for_block(ctx: &mut Engine, block_name: &str, level: &mut Level) -> Minigame {
+        let tile_id = level.special_blocks.remove(block_name).unwrap();
+        let (texture, position) = level.objects.take_tile_with_id(tile_id)
             .into_iter()
             .next()
             .unwrap();
 
 
-        let babylon_minigame =
+        let minigame =
             Minigame::new(
                 ctx,
-                babylon_texture,
-                babylon_position,
+                texture,
+                position,
             );
+        minigame
+    }
 
+    pub fn new(ctx: &mut Engine) -> Result<HubState, Error> {
+        let mut level = Level::load_from_file(ctx, "assets/levels/hub.json", 120);
+
+        let mut scene = Scene::new();
+
+        let babylon_minigame = HubState::create_minigame_for_block(ctx, "babylon", &mut level);
         let babylon_trigger = babylon_minigame.get_trigger();
-
         scene.add_object(babylon_minigame);
+
+        let noah_minigame = HubState::create_minigame_for_block(ctx, "noah", &mut level);
+        let noah_trigger = noah_minigame.get_trigger();
+        scene.add_object(noah_minigame);
 
         let mut god = God::new(ctx)?;
 
@@ -50,7 +60,8 @@ impl HubState {
                 level,
                 god_id,
                 scene,
-                babylon_trigger
+                babylon_trigger,
+                noah_trigger
             };
 
         Ok(hub_state)
@@ -67,6 +78,14 @@ impl GameState for HubState {
             let transition_state = Box::new(TransitionState::new(self, babylon_state));
             return Ok(transition_state);
         }
+
+        if self.noah_trigger.is_triggered() {
+            println!("Going to noah ");
+            let noah_state = Box::new(NoahState::new(ctx)?);
+            let transition_state = Box::new(TransitionState::new(self, noah_state));
+            return Ok(transition_state);
+        }
+
 
         Ok(self)
     }

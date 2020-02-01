@@ -1,4 +1,4 @@
-# Bergen Game Jam - Rust Game Engine
+# Bergen Game Jam 2020
 
 ## Map Editor
 
@@ -18,7 +18,7 @@ or
 
 `cargo run`
 
-### Building release version for Bergen Game Jam 2019
+### Building release version
 
 To build the release version - you'll need a `cargo-script` package installed:
 
@@ -26,4 +26,4 @@ To build the release version - you'll need a `cargo-script` package installed:
 
 `cargo build --release`
 
-`cargo script final` or `cargo script final --clear-cache`
+`cargo script ..\final` or `cargo script ..\final --clear-cache`
