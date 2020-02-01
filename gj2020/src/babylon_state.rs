@@ -1,3 +1,6 @@
+extern crate rand;
+use self::rand::Rng;
+
 use engine::prelude::*;
 use audio_library::AudioLibrary;
 
@@ -54,9 +57,12 @@ impl GameState for BabylonState {
     {
         let world_pos = ctx.screen_to_world(x,y);
 
+        let mut rng = rand::thread_rng();
+
         let mut rigid_body = RigidBody::new(self.box_texture.clone());
         rigid_body.set_position(world_pos);
         rigid_body.set_mass(1.0);
+        rigid_body.set_rotation(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
 
         self.scene.add_object(rigid_body);
 

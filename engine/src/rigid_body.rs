@@ -4,6 +4,7 @@ pub struct RigidBody {
     texture: Texture,
     transform: Transform,
     velocity: Vec2,
+    rotation: f32,
     inv_mass: f32,
     bounding_box: Rect2D
 }
@@ -24,6 +25,7 @@ impl RigidBody {
             transform: Transform::new(),
             inv_mass: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
+            rotation: 0.0,
             bounding_box,
         }
     }
@@ -34,6 +36,10 @@ impl RigidBody {
 
     pub fn set_position(&mut self, position: Vec2) {
         self.transform.set_translation(position);
+    }
+
+    pub fn set_rotation(&mut self, rotation: f32) {
+        self.transform.set_rotation(rotation as f64);
     }
 }
 
@@ -55,7 +61,20 @@ impl PhysicalObject for RigidBody {
     fn should_block(&self) -> bool { true }
 
     fn get_inv_mass(&self) -> f32 { self.inv_mass }
+
+    fn get_rotatable(&self) -> Option<&dyn Rotatable> { Some(self) }
+
+    fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { Some(self) }
 }
+
+impl Rotatable for RigidBody {
+    fn get_rotation(&self) -> f32 { self.rotation }
+
+    fn get_rotation_mut(&mut self) -> &mut f32 { &mut self.rotation }
+
+    fn get_inv_intertia(&self) -> f32 { 1.0 }
+}
+
 
 impl GameObject for RigidBody {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {

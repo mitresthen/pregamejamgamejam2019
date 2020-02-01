@@ -138,9 +138,88 @@ impl Range {
     pub fn start(&self) -> f32 { self.start }
     pub fn end(&self) -> f32 { self.end }
     pub fn center(&self) -> f32 { (self.start + self.end) / 2.0 }
+    pub fn size(&self) -> f32 { self.end - self.start }
 
-    pub fn overlap(&self, other: &Range) -> f32 {
-        self.end.min(other.end) - self.start.max(other.start)
+    pub fn overlap(&self, other: &Range) -> Range {
+        Range {
+            start: self.start.max(other.start),
+            end: self.end.min(other.end),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Manifold {
+    pub point_count: usize,
+    pub points: [Vec2; 2]
+}
+
+impl Manifold {
+    pub fn from_points(mut v: Vec<Vec2>) -> Manifold {
+
+        if v.len() == 0 {
+            panic!("Cannot create manifold from zero points!");
+        }
+
+        let skip = if v.len() > 2 { v.len() - 2 } else { 0 };
+
+        let mut points = [ Vec2::new(), Vec2::new() ];
+
+        let mut point_count = 0;
+        for (i, p) in v.into_iter().skip(skip).enumerate() {
+            points[i] = p;
+            point_count += 1;
+        }
+
+        Manifold { points, point_count }
+    }
+
+    pub fn clip(self, other: Manifold, axis: Vec2) -> Manifold {
+        let perp = axis.perpendicular();
+
+        println!("Clipping manifold");
+        println!("  a: {:?}", self);
+        println!("  b: {:?}", other);
+        println!("  axis: {:?}", axis);
+
+
+        let mut range_a = Range::inf_negative();
+        let mut range_b = Range::inf_negative();
+
+        let mut depth_range = Range::inf_negative();
+
+        for i in 0..self.point_count {
+            range_a.expand(self.points[i].dot_product(perp));
+            depth_range.expand(self.points[i].dot_product(axis));
+        }
+
+        for i in 0..self.point_count {
+            range_b.expand(other.points[i].dot_product(perp));
+            depth_range.expand(other.points[i].dot_product(axis));
+        }
+
+        let depth = depth_range.center();
+        let width = range_a.overlap(&range_b);
+
+        let manifold = 
+            if width.size() <= 0.0 {
+                Manifold {
+                    point_count: 1,
+                    points: [(perp * width.center()) + (axis * depth), Vec2::new()]
+                }
+            } else {
+                Manifold {
+                    point_count: 2,
+                    points: [
+                        (perp * width.start()) + (axis * depth),
+                        (perp * width.end()) + (axis * depth),
+                    ]
+                }
+            };
+
+        println!("  result: {:?}", manifold);
+
+        manifold
     }
 }
 
@@ -165,6 +244,28 @@ pub trait CollisionShape {
         aabb
     }
 
+    fn build_manifold(&self, axis: Vec2) -> Manifold {
+        let mut points = Vec::new();
+
+        let mut maximum = -std::f32::MAX;
+        for p in self.get_points() {
+            let d = axis.dot_product(*p);
+            maximum = maximum.max(d);
+            points.push((d, p));
+        }
+
+        points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
+
+        let epsilon = 1.0e-5;
+
+        let points : Vec<Vec2> = points.into_iter()
+            .filter(|(d, p)| *d >= maximum - epsilon)
+            .map(|(_, p)| *p)
+            .collect();
+
+        Manifold::from_points(points)
+    }
+
     fn sat_collide(&self, other: &dyn CollisionShape) -> Option<SATResult> {
         let mut result =
             SATResult {
@@ -184,7 +285,7 @@ pub trait CollisionShape {
                 r2.expand(p.dot_product(*axis));
             }
 
-            let overlap = r1.overlap(&r2);
+            let overlap = r1.overlap(&r2).size();
 
             let factor = if r1.center() < r2.center() { -1.0 } else { 1.0 };
             if overlap < result.depth {
@@ -215,6 +316,18 @@ pub trait PhysicalObject {
     fn should_block(&self) -> bool { true }
 
     fn get_inv_mass(&self) -> f32 { 1.0 }
+
+    fn get_rotatable(&self) -> Option<&dyn Rotatable> { None }
+
+    fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { None }
+}
+
+pub trait Rotatable {
+    fn get_rotation(&self) -> f32;
+
+    fn get_rotation_mut(&mut self) -> &mut f32;
+
+    fn get_inv_intertia(&self) -> f32;
 }
 
 pub trait GameObject: 'static {

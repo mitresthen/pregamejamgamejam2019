@@ -7,10 +7,12 @@ use crate::game_object::{
 
 struct Body {
     velocity: Vec2,
+    rotation: f32,
     shape: Box<dyn CollisionShape>,
     center: Vec2,
     radius: f32,
     inv_mass: f32,
+    inv_intertia: f32,
 }
 
 #[derive(Copy, Clone)]
@@ -22,7 +24,8 @@ struct CollisionPair{
     a: usize,
     b: usize,
     axis: Vec2,
-    depth: f32
+    depth: f32,
+    point: Vec2,
 }
 
 
@@ -57,6 +60,7 @@ impl PhysicsSet {
                 radius = radius.max((*p - center).len());
             }
 
+
             let body =
                 Body {
                     velocity: *physics_object.get_velocity(),
@@ -64,6 +68,8 @@ impl PhysicsSet {
                     center,
                     radius,
                     inv_mass: physics_object.get_inv_mass(),
+                    inv_intertia: physics_object.get_rotatable().map(|r| r.get_inv_intertia()).unwrap_or(0.0),
+                    rotation: physics_object.get_rotatable().map(|r| r.get_rotation()).unwrap_or(0.0),
                 };
 
             self.bodies.push(body);
@@ -77,6 +83,9 @@ impl PhysicsSet {
     pub fn find_collision_pairs(&mut self) {
         for (ai, a) in self.bodies.iter().enumerate() {
             for (bi, b) in self.bodies.iter().enumerate() {
+                if ai == bi {
+                    continue
+                }
                 if a.inv_mass == 0.0 && b.inv_mass == 0.0 {
                     continue
                 }
@@ -84,15 +93,24 @@ impl PhysicsSet {
                 let radi_sum = a.radius + b.radius;
                 if distance < (radi_sum * radi_sum) {
                     if let Some(result) = a.shape.sat_collide(b.shape.as_ref()) {
-                        let collision_pair =
-                            CollisionPair {
-                                a: ai,
-                                b: bi,
-                                axis: result.axis,
-                                depth: result.depth
-                            };
 
-                        self.collision_pairs.push(collision_pair);
+                        let manifold_a = a.shape.build_manifold(result.axis);
+                        let manifold_b = b.shape.build_manifold(result.axis * -1.0);
+
+                        let manifold = manifold_a.clip(manifold_b, result.axis);
+
+                        for i in 0..manifold.point_count {
+                            let collision_pair =
+                                CollisionPair {
+                                    a: ai,
+                                    b: bi,
+                                    axis: result.axis,
+                                    depth: result.depth,
+                                    point: manifold.points[i]
+                                };
+
+                            self.collision_pairs.push(collision_pair);
+                        }
                     }
                 }
             }
@@ -122,4 +140,5 @@ impl PhysicsSet {
     pub fn get_velocity(&self, id: BodyId) -> Vec2 {
         self.bodies.get(id.id).unwrap().velocity        
     }
+
 }
