@@ -11,10 +11,11 @@ use std::path::Path;
 
 use std::fs::File;
 use walkdir::{WalkDir, DirEntry};
-use zip::write::FileOptions;
-use zip::result::ZipError;
 
 fn main() {
+    if !Path::new("./target/release/game").exists() {
+        std::fs::remove_dir_all("./target/release/game");
+    }
     std::fs::create_dir_all("./target/release/game");
 
     let options = fs_extra::dir::CopyOptions::new(); //Initialize default values for CopyOptions
@@ -22,7 +23,8 @@ fn main() {
     fs_extra::dir::copy("./target/release/assets", "./target/release/game", &options);
 
     let options = fs_extra::file::CopyOptions::new(); //Initialize default values for CopyOptions
-    fs_extra::file::copy("./target/release/gamejam.exe", "./target/release/game/gamejam.exe", &options);
+    let exe_name = find_exe_name(Path::new("./target/release")).unwrap();
+    fs_extra::file::copy("./target/release/".to_string() + &exe_name, "./target/release/game/".to_string() + &exe_name, &options);
     fs_extra::file::copy("./target/release/sdl2.dll", "./target/release/game/sdl2.dll", &options);
 
     let src_dir = "./target/release/game";
@@ -34,6 +36,25 @@ fn main() {
             Err(e) => println!("Error: {:?}", e),
         }
     }
+}
+
+fn find_exe_name(dir: &Path) -> Result<String, std::io::Error> {
+    if dir.is_dir() {
+        for entry in std::fs::read_dir(dir)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_dir() {
+                continue;
+            } else {
+                let file_name = entry.file_name().into_string().unwrap();
+                if file_name.ends_with(".exe")
+                {
+                    return Ok(file_name);
+                }
+            }
+        }
+    }
+    return Err(std::io::Error::from(std::io::ErrorKind::NotFound));
 }
 
 const METHOD_STORED : Option<zip::CompressionMethod> = Some(zip::CompressionMethod::Stored);
