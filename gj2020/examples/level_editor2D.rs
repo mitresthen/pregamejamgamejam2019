@@ -8,7 +8,8 @@ pub struct LevelEditorState {
     camera_velocity: Vec2,
     object_index: usize,
     level: Level2D,
-    rotation: f32
+    rotation: f32,
+    layers_to_draw: Vec<u32>
 }
 
 impl LevelEditorState {
@@ -20,9 +21,12 @@ impl LevelEditorState {
         let level_filename = args.iter().nth(1)
             .expect("First argument must be the filename of the level");
 
+        let loaded_level =Level2D::load_from_file(ctx, &level_filename);
+        let layers_to_draw = loaded_level.layers_to_draw.clone();
+
         let level_editor =
             LevelEditorState {
-                level: Level2D::load_from_file(ctx, &level_filename),
+                level: loaded_level,
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -36,7 +40,8 @@ impl LevelEditorState {
                 ),
                 camera_velocity: Vec2::new(),
                 object_index: 0,
-                rotation: 0.0
+                rotation: 0.0,
+                layers_to_draw
 
             };
 
@@ -89,7 +94,16 @@ impl GameState for LevelEditorState {
             self.rotation = (self.rotation + 0.1) % (2.0*3.14);
         }
 
-        
+        let keycode_num: u32 = (keycode as u32)-48;
+
+        if (keycode_num >= 0 && keycode_num <= 9) {
+            if(self.layers_to_draw.contains(&keycode_num)) {
+                self.layers_to_draw.retain(|&x| x != keycode_num);
+            } else{
+                self.layers_to_draw.push(keycode_num);
+            }
+            self.level.set_layers_to_draw(self.layers_to_draw.clone());
+        }
 
         Ok(())
     }

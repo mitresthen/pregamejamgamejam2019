@@ -39,7 +39,8 @@ pub struct Level2D {
     pub level_instance: LevelInstance,
     pub save_filename: String,
     pub object_textures: HashMap<String, Texture>,
-    pub layer_max: u32
+    pub layer_max: u32,
+    pub layers_to_draw: Vec<u32>
 }
 
 impl Drawable for Level2D {
@@ -47,7 +48,7 @@ impl Drawable for Level2D {
         for i in 0..(self.layer_max+1) {
             for object in self.level_instance.object_instances.iter() {
                 let object_type = &self.level_instance.object_types[object.object_id as usize];
-                if object_type.layers.contains(&i) {
+                if object_type.layers.contains(&i) && self.layers_to_draw.contains(&i) {
                     let mut transf: Transform = Transform::new();
                     transf.set_rotation(object.rotation);
                     transf.set_translation(object.position);
@@ -97,13 +98,22 @@ impl Level2D {
             object_textures.insert(object.file.clone(), texture);
         }
         println!("Layer max is {}", layer_max);
+        let mut layers_to_draw: Vec<u32> = Vec::new();
+        for i in 0..(layer_max+1) {
+            layers_to_draw.push(i);
+        }
     
         Level2D {
             level_instance,
             save_filename,
             object_textures,
-            layer_max
+            layer_max,
+            layers_to_draw
         }
+    }
+
+    pub fn set_layers_to_draw(&mut self, layers_to_draw: Vec<u32>) {
+        self.layers_to_draw = layers_to_draw;
     }
 
     pub fn save_to_file(&self) -> Result<(), Error> {
