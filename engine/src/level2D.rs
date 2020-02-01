@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 use texture_registry::Texture;
 use serde_json;
-use drawable::{Drawable, DrawContext};
 
 use Engine;
 
@@ -11,8 +10,6 @@ use std::io::Write;
 use std::path::PathBuf;
 use vector::Vec2;
 use Error;
-
-use transform::Transform;
 
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
@@ -38,19 +35,7 @@ pub struct ObjectType {
 pub struct Level2D {
     pub level_instance: LevelInstance,
     pub save_filename: String,
-    pub object_textures: HashMap<String, Texture>
-}
-
-impl Drawable for Level2D {
-    fn draw(&self, _ctx: &mut DrawContext) {
-        for object in self.level_instance.object_instances.iter() {
-            let mut transf: Transform = Transform::new();
-            transf.set_rotation(object.rotation);
-            transf.set_translation(object.position);
-            let object_type = &self.level_instance.object_types[object.object_id as usize];
-            _ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
-        }
-    }
+    pub object_textures: HashMap<String, Texture>,
 }
 
 impl Level2D {
