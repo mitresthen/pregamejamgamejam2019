@@ -8,7 +8,7 @@ pub struct LevelEditorState {
     camera_velocity: Vec2,
     object_index: usize,
     level: Level2D,
-    rotation: f64
+    rotation: f32
 }
 
 impl LevelEditorState {
