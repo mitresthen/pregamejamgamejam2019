@@ -17,7 +17,7 @@ struct GodSend { }
 
 impl GameInterface for GodSend {
     fn get_title() -> &'static str {
-        "God sent"
+        "Godsent"
     }
 
     fn create_starting_state(ctx: &mut Engine)
