@@ -4,4 +4,5 @@ pub enum AudioLibrary {
     Hell,
     Babylon,
     Space,
+    Noah,
 }

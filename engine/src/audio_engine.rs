@@ -124,6 +124,9 @@ impl AudioMixer {
 
     pub fn replace_sound(&mut self, sound: SoundInstance, id: usize) -> usize {
         let mut vector = self.playing.lock().unwrap();
+        while vector.len() <= id {
+            vector.push(SoundInstance::new(Vec::new(), 0))
+        }
         vector[id] = sound;
         return id;
     }
