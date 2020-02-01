@@ -1,7 +1,5 @@
 use serde_json;
 
-use std::collections::HashMap;
-
 use Engine;
 
 use std::fs::File;
