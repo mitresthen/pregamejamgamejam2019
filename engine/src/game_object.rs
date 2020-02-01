@@ -333,4 +333,5 @@ pub trait GameObject: 'static {
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { None }
 
     fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool { false }
+    fn get_z_index(&self) -> i32 { 0 }
 }

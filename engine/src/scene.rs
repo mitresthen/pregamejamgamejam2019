@@ -333,7 +333,9 @@ impl Scene {
                 screen_bounds
             );
 
-        for (_id, object) in self.objects.iter() {
+        let mut v :Vec<_> = self.objects.iter().collect();
+        v.sort_by(|(_, a), (_, b)| a.get_z_index().cmp(&b.get_z_index()));
+        for (_id, object) in v {
             object.render(&mut ctx);
         }
 
