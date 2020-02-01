@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use crate::prelude::*;
 
 use game_object::{
     GameObject,
@@ -33,6 +34,9 @@ pub struct Scene {
     event_queue: EventQueue,
     pending_raycasts: Vec<(Vec2, Vec2, SceneObjectId)>,
     forces: Vec<Box<dyn Force>>,
+
+    // FOR PHYSICS DEBUGGING
+    collision_points: Vec<Vec2>,
 }
 
 pub trait LevelCollider {
@@ -47,6 +51,7 @@ impl Scene {
             event_queue: EventQueue::new(),
             pending_raycasts: Vec::new(),
             forces: Vec::new(),
+            collision_points: Vec::new(),
         }
     }
 
@@ -238,15 +243,24 @@ impl Scene {
         }
 
         physics_set.find_collision_pairs();
-        for _ in 0..100 {
+
+        self.collision_points = physics_set.get_collision_points();
+
+        for _ in 0..4 {
             physics_set.iterate();
         }
+
 
         for (o, b) in self.objects.iter_mut().map(|(_, o)| o).zip(body_ids.into_iter()) {
             if let Some(po) = o.get_physical_object_mut() {
                 if let Some(id) = b {
                     let v = physics_set.get_velocity(id);
                     *po.get_velocity_mut() = v;
+
+                    if let Some(r) = po.get_rotatable_mut() {
+                        let spin = physics_set.get_spin(id);
+                        *r.get_spin_mut() = spin;
+                    }
                 }
             }
         }
@@ -277,6 +291,11 @@ impl Scene {
             if let Some(po) = o.get_physical_object_mut() {
                 let translate = *po.get_velocity() * dt;
                 po.get_transform_mut().translate(translate);
+
+                if let Some(r) = po.get_rotatable_mut() {
+                    let spin = r.get_spin() * dt;
+                    *po.get_transform_mut().get_angle_mut() += spin;
+                }
             }
         }
 
@@ -317,6 +336,15 @@ impl Scene {
         for (_id, object) in self.objects.iter() {
             object.render(&mut ctx);
         }
+
+        {
+            let mut draw_context = engine.get_draw_context();
+
+            for cp in self.collision_points.iter() {
+                draw_context.draw_point(*cp, Color::RGB(255, 0, 0));
+            }
+        }
+
     }
 
     pub fn add_object<T: GameObject>(&mut self, object: T) -> SceneObjectId {

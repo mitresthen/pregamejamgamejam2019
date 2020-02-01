@@ -428,6 +428,7 @@ impl<'t> Engine<'t> {
                 };
             }
 
+            engine.canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
             engine.canvas.clear();
 
 

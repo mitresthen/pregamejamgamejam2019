@@ -4,7 +4,7 @@ use vector::Vec2;
 pub struct Transform {
     translation: Vec2,
     scale: f32,
-    rotation: f32
+    angle: f32
 }
 
 impl Transform {
@@ -12,15 +12,15 @@ impl Transform {
         Transform {
             translation: Vec2::new(),
             scale: 1.0,
-            rotation: 0.0
+            angle: 0.0
         }
     }
 
     pub fn transform_point(&self, p: Vec2) -> Vec2 {
         let scaled = p * self.scale;
 
-        let cos = self.rotation.cos();
-        let sin = self.rotation.sin();
+        let cos = self.angle.cos();
+        let sin = self.angle.sin();
 
         let rotated =
             Vec2 {
@@ -34,8 +34,8 @@ impl Transform {
     pub fn transform_point_inv(&self, p: Vec2) -> Vec2 {
         let translated = p - self.translation;
 
-        let cos = self.rotation.cos();
-        let sin = self.rotation.sin();
+        let cos = self.angle.cos();
+        let sin = self.angle.sin();
 
         let rotated =
             Vec2 {
@@ -49,8 +49,8 @@ impl Transform {
     pub fn transform_vector(&self, v: Vec2) -> Vec2 {
         let scaled = v * self.scale;
 
-        let cos = self.rotation.cos();
-        let sin = self.rotation.sin();
+        let cos = self.angle.cos();
+        let sin = self.angle.sin();
 
         Vec2 {
             x: (cos * scaled.x) + (sin * scaled.y),
@@ -66,12 +66,16 @@ impl Transform {
         self.translation
     }
 
-    pub fn set_rotation(&mut self, r: f32) {
-        self.rotation = r;
+    pub fn set_angle(&mut self, r: f32) {
+        self.angle = r;
     }
 
-    pub fn get_rotation(&self) -> f32 {
-        self.rotation
+    pub fn get_angle(&self) -> f32 {
+        self.angle
+    }
+
+    pub fn get_angle_mut(&mut self) -> &mut f32 {
+        &mut self.angle
     }
 
     pub fn set_scale(&mut self, s: f32) {

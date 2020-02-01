@@ -7,12 +7,12 @@ use crate::game_object::{
 
 struct Body {
     velocity: Vec2,
-    rotation: f32,
+    spin: f32,
     shape: Box<dyn CollisionShape>,
     center: Vec2,
     radius: f32,
     inv_mass: f32,
-    inv_intertia: f32,
+    inv_inertia: f32,
 }
 
 #[derive(Copy, Clone)]
@@ -25,6 +25,10 @@ struct CollisionPair{
     b: usize,
     axis: Vec2,
     resistance: f32,
+    torque_a: f32,
+    torque_b: f32,
+    r_a: f32,
+    r_b: f32,
     depth: f32,
     point: Vec2,
 }
@@ -69,8 +73,8 @@ impl PhysicsSet {
                     center,
                     radius,
                     inv_mass: physics_object.get_inv_mass(),
-                    inv_intertia: physics_object.get_rotatable().map(|r| r.get_inv_intertia()).unwrap_or(0.0),
-                    rotation: physics_object.get_rotatable().map(|r| r.get_rotation()).unwrap_or(0.0),
+                    inv_inertia: physics_object.get_rotatable().map(|r| r.get_inv_inertia()).unwrap_or(0.0),
+                    spin: physics_object.get_rotatable().map(|r| r.get_spin()).unwrap_or(0.0),
                 };
 
             self.bodies.push(body);
@@ -84,7 +88,7 @@ impl PhysicsSet {
     pub fn find_collision_pairs(&mut self) {
         for (ai, a) in self.bodies.iter().enumerate() {
             for (bi, b) in self.bodies.iter().enumerate() {
-                if ai == bi {
+                if ai <= bi {
                     continue
                 }
                 if a.inv_mass == 0.0 && b.inv_mass == 0.0 {
@@ -95,8 +99,8 @@ impl PhysicsSet {
                 if distance < (radi_sum * radi_sum) {
                     if let Some(result) = a.shape.sat_collide(b.shape.as_ref()) {
 
-                        let manifold_a = a.shape.build_manifold(result.axis);
-                        let manifold_b = b.shape.build_manifold(result.axis * -1.0);
+                        let manifold_a = a.shape.build_manifold(result.axis * -1.0);
+                        let manifold_b = b.shape.build_manifold(result.axis);
 
                         let manifold = manifold_a.clip(manifold_b, result.axis);
 
@@ -106,11 +110,10 @@ impl PhysicsSet {
                             let r_a = perp.dot_product(a.center - manifold.points[i]);
                             let r_b = perp.dot_product(b.center - manifold.points[i]);
 
-                            let resistance =
-                                a.inv_mass +
-                                b.inv_mass +
-                                (r_a * r_a * a.inv_mass * a.inv_intertia) +
-                                (r_b * r_b * b.inv_mass * b.inv_intertia);
+                            let torque_a = r_a * a.inv_mass * a.inv_inertia;
+                            let torque_b = r_b * b.inv_mass * b.inv_inertia;
+
+                            let resistance = a.inv_mass + b.inv_mass + (torque_a * r_a) + (torque_b * r_b);
 
                             let collision_pair =
                                 CollisionPair {
@@ -119,6 +122,10 @@ impl PhysicsSet {
                                     axis: result.axis,
                                     depth: result.depth,
                                     point: manifold.points[i],
+                                    torque_a,
+                                    torque_b,
+                                    r_a,
+                                    r_b,
                                     resistance,
                                 };
 
@@ -135,13 +142,11 @@ impl PhysicsSet {
             let a = &self.bodies[cp.a];
             let b = &self.bodies[cp.b];
 
-
-
             let ma = a.inv_mass;
             let mb = b.inv_mass;
 
-            let v_a = a.velocity.dot_product(cp.axis);
-            let v_b = b.velocity.dot_product(cp.axis);
+            let v_a = a.velocity.dot_product(cp.axis) - (a.spin * cp.r_a);
+            let v_b = b.velocity.dot_product(cp.axis) - (b.spin * cp.r_b);
 
             let delta_v = v_a - v_b;
 
@@ -150,6 +155,9 @@ impl PhysicsSet {
 
                 self.bodies[cp.a].velocity -= cp.axis * f * ma;
                 self.bodies[cp.b].velocity += cp.axis * f * mb;
+
+                self.bodies[cp.a].spin += cp.torque_a * f;
+                self.bodies[cp.b].spin -= cp.torque_b * f;
             }
         }
     }
@@ -158,4 +166,13 @@ impl PhysicsSet {
         self.bodies.get(id.id).unwrap().velocity        
     }
 
+    pub fn get_spin(&self, id: BodyId) -> f32 {
+        self.bodies.get(id.id).unwrap().spin        
+    }
+
+    pub fn get_collision_points(&self) -> Vec<Vec2> {
+        self.collision_pairs.iter()
+            .map(|cp| cp.point)
+            .collect()
+    }
 }

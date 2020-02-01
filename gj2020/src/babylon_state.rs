@@ -62,7 +62,9 @@ impl GameState for BabylonState {
         let mut rigid_body = RigidBody::new(self.box_texture.clone());
         rigid_body.set_position(world_pos);
         rigid_body.set_mass(1.0);
-        rigid_body.set_rotation(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
+        rigid_body.set_angle(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
+        rigid_body.set_inertia(10000.0);
+        rigid_body.set_spin(1.0);
 
         self.scene.add_object(rigid_body);
 

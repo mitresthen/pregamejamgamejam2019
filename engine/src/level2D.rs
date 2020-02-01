@@ -45,7 +45,7 @@ impl Drawable for Level2D {
     fn draw(&self, _ctx: &mut DrawContext) {
         for object in self.level_instance.object_instances.iter() {
             let mut transf: Transform = Transform::new();
-            transf.set_rotation(object.rotation);
+            transf.set_angle(object.rotation);
             transf.set_translation(object.position);
             let object_type = &self.level_instance.object_types[object.object_id as usize];
             _ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
