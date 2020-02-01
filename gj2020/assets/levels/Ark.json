@@ -1,1 +1,1 @@
-{"object_instances":[{"object_id":0,"position":{"x":5.0,"y":5.0}}],"object_types":[{"file":"cake.png","density":1,"fixed":false,"layers":[1]},{"file":"item_Key.png","density":1,"fixed":false,"layers":[1]}]}
+{"object_instances":[{"object_id":0,"position":{"x":5.0,"y":5.0},"rotation":0.0}],"object_types":[{"file":"box.png","density":1,"fixed":false,"layers":[1]}]}

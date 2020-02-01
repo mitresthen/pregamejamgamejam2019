@@ -6,7 +6,7 @@ pub struct LevelEditorState {
     controller: AxisController,
     zoom: SliderController,
     camera_velocity: Vec2,
-    object_index: u32,
+    object_index: usize,
     level: Level2D
 }
 
@@ -57,7 +57,11 @@ impl GameState for LevelEditorState {
 
     fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error>
     {
+        _ctx.draw(&self.level);
+        let mut transf: Transform = Transform::new();
+        transf.set_translation(_ctx.get_mouse_position().position);
 
+        _ctx.get_draw_context().draw(&self.level.object_textures[self.object_index], &transf);
 
         Ok(())
     }
