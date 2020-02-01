@@ -43,6 +43,7 @@ pub mod trigger;
 pub mod sat_collider;
 
 pub mod level;
+pub mod level2D;
 
 pub mod prelude;
 
@@ -86,6 +87,19 @@ pub struct MouseDragState {
     pub current: vector::Vec2
 }
 
+#[derive(Debug, Copy, Clone)]
+pub struct MousePosition {
+    pub position: vector::Vec2,
+}
+
+impl MousePosition {
+    pub fn new(new_position: vector::Vec2) -> MousePosition {
+        MousePosition {
+            position: new_position
+        }
+    }
+}
+
 impl MouseDragState {
     pub fn new(initial: vector::Vec2) -> MouseDragState {
         MouseDragState {
@@ -121,6 +135,7 @@ pub struct Engine<'t> {
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
     drag_state: Option<MouseDragState>,
+    mouse_position: MousePosition
 }
 
 impl<'t> Engine<'t> {
@@ -190,6 +205,7 @@ impl<'t> Engine<'t> {
 
     pub fn on_mouse_move(&mut self, x: i32, y: i32) {
         let p = self.screen_to_world(x, y);
+        self.mouse_position = MousePosition::new(p);
         if let Some(ref mut drag_state) = &mut self.drag_state {
             drag_state.current = p;
         }
@@ -203,6 +219,9 @@ impl<'t> Engine<'t> {
         self.drag_state
     }
 
+    pub fn get_mouse_position(&self) -> MousePosition {
+        self.mouse_position
+    }
 
     pub fn key_is_down(&self, keycode: Keycode) -> bool {
         self.keys_down.contains(&keycode)
@@ -323,6 +342,7 @@ impl<'t> Engine<'t> {
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
                 drag_state: None,
+                mouse_position: MousePosition::new(vector::Vec2{x: 0.0, y: 0.0})
             };
 
         let mut current_game_state = <T as GameInterface>::create_starting_state(&mut engine)?;
@@ -380,6 +400,7 @@ impl<'t> Engine<'t> {
                         ..
                     } => {
                         engine.on_mouse_move(move_x, move_y);
+
                     },
                     Event::MouseButtonDown {
                         x: click_x,

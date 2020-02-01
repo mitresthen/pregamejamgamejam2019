@@ -3,15 +3,19 @@ use serde_json;
 use std::collections::HashMap;
 
 use Engine;
-use grid2::Grid2;
 
 use std::fs::File;
 use std::io::Read;
 use std::path::PathBuf;
+use vector::Vec2;
 
-##[derive(Serialize, Deserialize)]
-pub struct LevelInstance {
+pub struct LevelInstanceMapping {
     pub objects: HashMap<ObjectInstance, ObjectType>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct LevelInstance {
+    
 }
 
 #[derive(Serialize, Deserialize)]
@@ -25,7 +29,7 @@ pub struct ObjectType {
     file: String,
     density: u32,
     fixed: bool,
-    Layers: Vec2<u32>,
+    Layers: Vec<u32>,
 }
 
 pub struct Level2D {
@@ -33,7 +37,7 @@ pub struct Level2D {
 }
 
 impl Level2D {
-    pub fn load_from_file(ctx: &mut Engine, filename: &str) -> Level {
+    pub fn load_from_file(ctx: &mut Engine, filename: &str) -> Level2D {
         let mut file = File::open(&filename).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
@@ -47,7 +51,7 @@ impl Level2D {
         image_folder.pop();
         image_folder.push("image");
 
-        Level {
+        Level2D {
             level_instance
         }
     }
