@@ -40,6 +40,7 @@ pub use scene::{
 pub use dimmer::Dimmer;
 
 pub use level::Level;
+pub use level2D::Level2D;
 
 
 pub use rigid_body::RigidBody;

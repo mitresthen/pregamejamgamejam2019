@@ -46,6 +46,8 @@ pub mod trigger;
 pub mod sat_collider;
 
 pub mod level;
+#[allow(non_snake_case)]
+pub mod level2D;
 
 pub mod prelude;
 

@@ -9,13 +9,11 @@ use std::io::Read;
 use std::path::PathBuf;
 use vector::Vec2;
 
-pub struct LevelInstanceMapping {
-    pub objects: HashMap<ObjectInstance, ObjectType>
-}
 
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
-    
+    object_instances: Vec<ObjectInstance>,
+    object_types: Vec<ObjectType> 
 }
 
 #[derive(Serialize, Deserialize)]
@@ -29,7 +27,7 @@ pub struct ObjectType {
     file: String,
     density: u32,
     fixed: bool,
-    Layers: Vec<u32>,
+    layers: Vec<u32>,
 }
 
 pub struct Level2D {
@@ -37,7 +35,7 @@ pub struct Level2D {
 }
 
 impl Level2D {
-    pub fn load_from_file(ctx: &mut Engine, filename: &str) -> Level2D {
+    pub fn load_from_file(_ctx: &mut Engine, filename: &str) -> Level2D {
         let mut file = File::open(&filename).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
@@ -54,6 +52,10 @@ impl Level2D {
         Level2D {
             level_instance
         }
+    }
+
+    pub fn save(&mut self) {
+        println!("Saving to file        NOT");
     }
 }
 
