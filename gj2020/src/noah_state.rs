@@ -21,8 +21,7 @@ impl NoahState {
         noah.set_position(Vec2::from_coords(300.0, 300.0));
 
         let noah_id = _scene.add_object(noah);
-
-
+        
         let state =
             NoahState {
                 level,
@@ -50,8 +49,6 @@ impl GameState for NoahState {
         ctx.get_draw_context().draw_rect(bounds, Color::RGB(0, 55, 55));
 
         self.scene.render(ctx);
-        ctx.draw(&self.level);
-
 
         Ok(())
     }
