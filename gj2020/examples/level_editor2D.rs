@@ -78,9 +78,18 @@ impl GameState for LevelEditorState {
             println!("Current object id: {}", self.object_index);
         }
 
-        if keycode == Keycode::R {
+        if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
+            self.rotation = (self.rotation - 0.1);
+            if(self.rotation < 0.0) {
+                self.rotation = (2.0*3.14);
+            }
+        } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
+            self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
+        }else if keycode == Keycode::R {
             self.rotation = (self.rotation + 0.1) % (2.0*3.14);
         }
+
+        
 
         Ok(())
     }
@@ -92,6 +101,12 @@ impl GameState for LevelEditorState {
 
     fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
     {
+        let instance = ObjectInstance {
+            object_id: self.object_index as u32,
+            position: _ctx.get_mouse_position().position,
+            rotation: self.rotation
+        };
+        self.level.level_instance.object_instances.push(instance);
         Ok(())
     }
 }
