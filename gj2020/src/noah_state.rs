@@ -4,6 +4,10 @@ pub struct NoahState { }
 
 impl NoahState {
     pub fn new(ctx: &mut Engine) -> Result<Self, Error> {
+        let mut scene = Scene::new();
+        println!("Congratulations you are in the ark");
+
+
         let state =
             NoahState {
             };
@@ -13,8 +17,8 @@ impl NoahState {
 }
 
 impl GameState for NoahState {
+
     fn update(mut self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
-        println!("Congratulations you are in the ark");
 
         Ok(self)
     }
