@@ -24,7 +24,8 @@ pub struct LevelInstance {
 pub struct ObjectInstance {
     pub object_id: u32,
     pub position: Vec2,
-    pub rotation: f32
+    pub rotation: f32,
+    pub scale: f32
 }
 
 #[derive(Serialize, Deserialize)]
@@ -52,6 +53,7 @@ impl Drawable for Level2D {
                     let mut transf: Transform = Transform::new();
                     transf.set_angle(object.rotation);
                     transf.set_translation(object.position);
+                    transf.set_scale(object.scale);
                     _ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
                 }
             }

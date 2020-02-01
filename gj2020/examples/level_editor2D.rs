@@ -9,7 +9,8 @@ pub struct LevelEditorState {
     object_index: usize,
     level: Level2D,
     rotation: f32,
-    layers_to_draw: Vec<u32>
+    layers_to_draw: Vec<u32>,
+    scale: f32
 }
 
 impl LevelEditorState {
@@ -41,8 +42,8 @@ impl LevelEditorState {
                 camera_velocity: Vec2::new(),
                 object_index: 0,
                 rotation: 0.0,
-                layers_to_draw
-
+                layers_to_draw,
+                scale: 1.0
             };
 
         Ok(level_editor)
@@ -68,7 +69,7 @@ impl GameState for LevelEditorState {
         let mut transf: Transform = Transform::new();
         transf.set_translation(_ctx.get_mouse_position().position);
         transf.set_angle(self.rotation);
-
+        transf.set_scale(self.scale);
         let object_filename = &self.level.level_instance.object_types[self.object_index].file;
         _ctx.get_draw_context().draw(&self.level.object_textures[&object_filename.clone()], &transf);
 
@@ -84,14 +85,20 @@ impl GameState for LevelEditorState {
         }
 
         if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
-            self.rotation = (self.rotation - 0.1);
+            self.rotation = (self.rotation - 0.05);
             if(self.rotation < 0.0) {
                 self.rotation = (2.0*3.14);
             }
         } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
             self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
         }else if keycode == Keycode::R {
-            self.rotation = (self.rotation + 0.1) % (2.0*3.14);
+            self.rotation = (self.rotation + 0.05) % (2.0*3.14);
+        }
+
+        if keycode == Keycode::S && _ctx.key_is_down(Keycode::LShift) {
+            self.scale = (self.scale - 0.1).max(0.2);
+        } else if keycode == Keycode::S {
+            self.scale = (self.scale + 0.1).min(2.0);
         }
 
         let keycode_num: u32 = (keycode as u32)-48;
@@ -118,7 +125,8 @@ impl GameState for LevelEditorState {
         let instance = ObjectInstance {
             object_id: self.object_index as u32,
             position: _ctx.get_mouse_position().position,
-            rotation: self.rotation
+            rotation: self.rotation,
+            scale: self.scale
         };
         self.level.level_instance.object_instances.push(instance);
         Ok(())

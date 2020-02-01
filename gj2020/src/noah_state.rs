@@ -10,7 +10,7 @@ pub struct NoahState {
 
 impl NoahState {
     pub fn new(_ctx: &mut Engine) -> Result<Self, Error> {
-        let level = Level2D::load_from_file(_ctx, "assets/levels/Ark.json");
+        let level = Level2D::load_from_file(_ctx, "assets/levels/Ark3.json");
         let mut _scene = Scene::new();
         println!("Congratulations you are in the ark");
 
@@ -48,6 +48,7 @@ impl GameState for NoahState {
 
         ctx.get_draw_context().draw_rect(bounds, Color::RGB(0, 55, 55));
 
+        ctx.draw(&self.level);
         self.scene.render(ctx);
 
         Ok(())
