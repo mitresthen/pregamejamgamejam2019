@@ -1,4 +1,6 @@
+use texture_registry::Texture;
 use serde_json;
+use drawable::{Drawable, DrawContext};
 
 use Engine;
 
@@ -8,6 +10,8 @@ use std::io::Write;
 use std::path::PathBuf;
 use vector::Vec2;
 use Error;
+
+use transform::Transform;
 
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
@@ -19,6 +23,7 @@ pub struct LevelInstance {
 pub struct ObjectInstance {
     object_id: u32,
     position: Vec2,
+    rotation: f32
 }
 
 #[derive(Serialize, Deserialize)]
@@ -31,7 +36,17 @@ pub struct ObjectType {
 
 pub struct Level2D {
     pub level_instance: LevelInstance,
-    pub save_filename: String
+    pub save_filename: String,
+    pub object_textures: Vec<Texture>
+}
+
+impl Drawable for Level2D {
+    fn draw(&self, _ctx: &mut DrawContext) {
+        // for texture in self.object_textures.iter() {
+        //     let transf: Transform = Transform::new();
+        //     _ctx.draw(&texture, &transf);
+        // }
+    }
 }
 
 impl Level2D {
@@ -48,13 +63,26 @@ impl Level2D {
 
         let mut image_folder = level_folder.clone();
         image_folder.pop();
-        image_folder.push("image");
+        image_folder.push("images");
 
         let save_filename = filename.to_string();
 
+        let mut object_textures: Vec<Texture> = Vec::new();
+
+        for object in level_instance.object_types.iter() {
+            let mut object_filename = image_folder.clone();
+            object_filename.push(object.file.clone());
+            println!("Loading object texture: {:?}", object_filename);
+    
+            let texture = _ctx.get_texture_registry().load(&object_filename.to_str().unwrap()).unwrap();
+    
+            object_textures.push(texture);
+        }
+    
         Level2D {
             level_instance,
-            save_filename
+            save_filename,
+            object_textures
         }
     }
 

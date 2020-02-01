@@ -6,8 +6,9 @@ pub struct LevelEditorState {
     controller: AxisController,
     zoom: SliderController,
     camera_velocity: Vec2,
-    object_index: u32,
-    level: Level2D
+    object_index: usize,
+    level: Level2D,
+    rotation: f64
 }
 
 impl LevelEditorState {
@@ -35,6 +36,7 @@ impl LevelEditorState {
                 ),
                 camera_velocity: Vec2::new(),
                 object_index: 0,
+                rotation: 0.0
 
             };
 
@@ -57,7 +59,12 @@ impl GameState for LevelEditorState {
 
     fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error>
     {
+        _ctx.draw(&self.level);
+        let mut transf: Transform = Transform::new();
+        transf.set_translation(_ctx.get_mouse_position().position);
+        transf.set_rotation(self.rotation);
 
+        _ctx.get_draw_context().draw(&self.level.object_textures[self.object_index], &transf);
 
         Ok(())
     }
@@ -65,9 +72,13 @@ impl GameState for LevelEditorState {
     fn on_key_down(&mut self, _ctx: &mut Engine, keycode: Keycode, _is_repeated: bool) -> Result<(), Error>
     {
         if keycode == Keycode::C {
-            self.object_index = (self.object_index + 1) % 10;
+            self.object_index = (self.object_index + 1) % self.level.object_textures.len();
 
             println!("Current object id: {}", self.object_index);
+        }
+
+        if keycode == Keycode::R {
+            self.rotation = (self.rotation + 0.1) % (2.0*3.14);
         }
 
         Ok(())
