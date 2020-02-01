@@ -13,11 +13,13 @@
         "tiles" : [
 		"blank.png",
 		"box.png",
-		"action.png"
+        "action_babylon.png",
+        "action_noah.png"
 	]
     },
     "special_blocks" : {
-        "babylon" : 2
+        "babylon" : 2,
+        "noah" : 3
     }
 }
 
