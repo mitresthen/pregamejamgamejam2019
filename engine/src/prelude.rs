@@ -47,6 +47,7 @@ pub use dimmer::Dimmer;
 
 pub use level::Level;
 pub use level2D::Level2D;
+pub use level2D::ObjectInstance;
 
 
 pub use rigid_body::RigidBody;

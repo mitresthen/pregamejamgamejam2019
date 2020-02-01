@@ -92,6 +92,12 @@ impl GameState for LevelEditorState {
 
     fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
     {
+        let instance = ObjectInstance {
+            object_id: self.object_index as u32,
+            position: _ctx.get_mouse_position().position,
+            rotation: self.rotation
+        };
+        self.level.level_instance.object_instances.push(instance);
         Ok(())
     }
 }

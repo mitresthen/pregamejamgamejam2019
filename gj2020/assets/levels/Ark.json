@@ -1,1 +1,246 @@
-{"object_instances":[{"object_id":0,"position":{"x":263.0,"y":544.0},"rotation":0.0}],"object_types":[{"file":"box.png","density":1,"fixed":false,"layers":[1]},{"file":"Penguin/Penguin_Left_walk.png","density":1,"fixed":false,"layers":[1]},{"file":"Lion/lion_idle.png","density":1,"fixed":false,"layers":[1]},{"file":"Planets/Astroid.png","density":1,"fixed":false,"layers":[1]}]}
+{
+    "object_instances": [
+        {
+            "object_id": 0,
+            "position": {
+                "x": 263.0,
+                "y": 544.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 406.0,
+                "y": 288.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 217.0,
+                "y": 168.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 105.0,
+                "y": 464.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 1090.0,
+                "y": 574.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 1039.0,
+                "y": 183.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 953.0,
+                "y": 633.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 1218.0,
+                "y": 508.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 1167.0,
+                "y": 262.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 664.0,
+                "y": 76.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 238.0,
+                "y": 127.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 117.0,
+                "y": 242.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 103.0,
+                "y": 370.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 225.0,
+                "y": 509.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 449.0,
+                "y": 542.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 674.0,
+                "y": 501.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": 742.0,
+                "y": 407.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": -1005.0,
+                "y": -197.5
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 2,
+            "position": {
+                "x": 840.0,
+                "y": -602.5
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 3,
+            "position": {
+                "x": -1065.0,
+                "y": -692.5
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": -815.0,
+                "y": 615.0
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 1,
+            "position": {
+                "x": -35.0,
+                "y": -557.5
+            },
+            "rotation": 1.0
+        },
+        {
+            "object_id": 1,
+            "position": {
+                "x": -545.0,
+                "y": -742.5
+            },
+            "rotation": 1.0
+        },
+        {
+            "object_id": 1,
+            "position": {
+                "x": -1212.5,
+                "y": 175.0
+            },
+            "rotation": 1.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": -412.5,
+                "y": -137.5
+            },
+            "rotation": 0.0
+        },
+        {
+            "object_id": 0,
+            "position": {
+                "x": -620.0,
+                "y": 220.0
+            },
+            "rotation": 1.1
+        }
+    ],
+    "object_types": [
+        {
+            "file": "box.png",
+            "density": 1,
+            "fixed": false,
+            "layers": [
+                1
+            ]
+        },
+        {
+            "file": "Penguin/Penguin_Left_walk.png",
+            "density": 1,
+            "fixed": false,
+            "layers": [
+                1
+            ]
+        },
+        {
+            "file": "Lion/lion_idle.png",
+            "density": 1,
+            "fixed": false,
+            "layers": [
+                1
+            ]
+        },
+        {
+            "file": "Planets/Astroid.png",
+            "density": 1,
+            "fixed": false,
+            "layers": [
+                1
+            ]
+        }
+    ]
+}
