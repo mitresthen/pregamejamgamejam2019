@@ -18,6 +18,13 @@ impl Rect2D {
         }
     }
 
+    pub fn centered_rectangle(size: Vec2) -> Rect2D {
+        Rect2D {
+            min: Vec2::from_coords(-size.x, -size.y) * 0.5,
+            max: Vec2::from_coords(size.x, size.y) * 0.5,
+        }
+    }
+
     pub fn empty() -> Rect2D {
         use std::f32;
         Rect2D {
