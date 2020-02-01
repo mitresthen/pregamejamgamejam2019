@@ -64,7 +64,8 @@ impl GameState for LevelEditorState {
         transf.set_translation(_ctx.get_mouse_position().position);
         transf.set_rotation(self.rotation);
 
-        _ctx.get_draw_context().draw(&self.level.object_textures[self.object_index], &transf);
+        let object_filename = &self.level.level_instance.object_types[self.object_index].file;
+        _ctx.get_draw_context().draw(&self.level.object_textures[&object_filename.clone()], &transf);
 
         Ok(())
     }

@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use texture_registry::Texture;
 use serde_json;
 use drawable::{Drawable, DrawContext};
@@ -15,20 +16,20 @@ use transform::Transform;
 
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
-    object_instances: Vec<ObjectInstance>,
-    object_types: Vec<ObjectType> 
+    pub object_instances: Vec<ObjectInstance>,
+    pub object_types: Vec<ObjectType> 
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ObjectInstance {
     object_id: u32,
     position: Vec2,
-    rotation: f32
+    rotation: f64
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct ObjectType {
-    file: String,
+    pub file: String,
     density: u32,
     fixed: bool,
     layers: Vec<u32>,
@@ -37,15 +38,18 @@ pub struct ObjectType {
 pub struct Level2D {
     pub level_instance: LevelInstance,
     pub save_filename: String,
-    pub object_textures: Vec<Texture>
+    pub object_textures: HashMap<String, Texture>
 }
 
 impl Drawable for Level2D {
     fn draw(&self, _ctx: &mut DrawContext) {
-        // for texture in self.object_textures.iter() {
-        //     let transf: Transform = Transform::new();
-        //     _ctx.draw(&texture, &transf);
-        // }
+        for object in self.level_instance.object_instances.iter() {
+            let mut transf: Transform = Transform::new();
+            transf.set_rotation(object.rotation);
+            transf.set_translation(object.position);
+            let object_type = &self.level_instance.object_types[object.object_id as usize];
+            _ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
+        }
     }
 }
 
@@ -67,7 +71,7 @@ impl Level2D {
 
         let save_filename = filename.to_string();
 
-        let mut object_textures: Vec<Texture> = Vec::new();
+        let mut object_textures: HashMap<String, Texture> = HashMap::new();
 
         for object in level_instance.object_types.iter() {
             let mut object_filename = image_folder.clone();
@@ -76,7 +80,7 @@ impl Level2D {
     
             let texture = _ctx.get_texture_registry().load(&object_filename.to_str().unwrap()).unwrap();
     
-            object_textures.push(texture);
+            object_textures.insert(object.file.clone(), texture);
         }
     
         Level2D {
