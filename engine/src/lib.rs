@@ -333,7 +333,7 @@ impl<'t> Engine<'t> {
         let mut timer = timer::Timer::new();
 
         'main_loop: loop {
-            let dt = timer.get_time();
+            let dt = timer.get_time().max(0.0000001);
             timer.reset();
 
             for event in event_pump.poll_iter() {
