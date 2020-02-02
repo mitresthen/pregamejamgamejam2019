@@ -18,6 +18,7 @@ pub mod babylon_state;
 // Noah modules
 pub mod noah_state;
 pub mod plank;
+pub mod ladder;
 pub mod noah;
 
 // Snek modules
