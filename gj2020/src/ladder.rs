@@ -96,7 +96,7 @@ impl PhysicalObject for Ladder {
 
     fn get_src_mask(&self) -> u32 { 1 }
 
-    fn get_dst_mask(&self) -> u32 { 1 }
+    fn get_dst_mask(&self) -> u32 { 0 }
 
 
 }

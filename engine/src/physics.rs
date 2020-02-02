@@ -133,6 +133,9 @@ impl PhysicsSet {
     pub fn find_collision_pairs(&mut self) {
         for (ai, a) in self.bodies.iter().enumerate() {
             for (bi, b) in self.bodies.iter().enumerate() {
+                if (a.dst_mask & b.dst_mask != 0) {
+                    continue
+                }
                 if ai <= bi {
                     continue
                 }
@@ -144,7 +147,7 @@ impl PhysicsSet {
                 let radi_sum = a.radius + b.radius;
                 if distance < (radi_sum * radi_sum) {
                     if let Some(result) = a.shape.sat_collide(&a.transform, b.shape.as_ref(), &b.transform) {
-                        if (a.src_mask & b.dst_mask != 0) || (b.src_mask & a.dst_mask != 0) {
+                        if (b.src_mask & a.src_mask != 0) {
                             let mut result_vec: Vec<Vec2> = Vec::new();
                             result_vec.push(result.axis);
                             match self.event_axes.get_mut(&ai) {
