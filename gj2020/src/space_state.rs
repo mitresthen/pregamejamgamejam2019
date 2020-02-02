@@ -50,6 +50,7 @@ impl SpaceState {
 impl GameState for SpaceState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
     if ctx.key_is_down(Keycode::Q) {
+            ctx.reset_sound()?;
             let mut hub_state = Some(self.return_to_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
             return Ok(Box::new(transition_state));
