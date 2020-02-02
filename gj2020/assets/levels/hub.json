@@ -35,7 +35,8 @@
             "GodRoom/cloud_corner1.png",
             "GodRoom/cloud_corner2.png",
             "GodRoom/cloud_corner3.png",
-            "GodRoom/cloudTile.png"
+            "GodRoom/cloudTile.png",
+            "GodRoom/Coffe.png"
         ]
     },
     "special_blocks" : {

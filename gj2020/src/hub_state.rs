@@ -16,7 +16,7 @@ use audio_library::AudioLibrary;
 pub struct HubState {
     level: Level,
     scene: Scene,
-    _god_id: SceneObjectId,
+    god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
     noah_trigger: MinigameTrigger,
     snek_trigger: MinigameTrigger,
@@ -78,7 +78,7 @@ impl HubState {
         let hub_state =
             HubState {
                 level,
-                _god_id: god_id,
+                god_id: god_id,
                 scene,
                 babylon_trigger,
                 noah_trigger,
@@ -127,15 +127,29 @@ impl GameState for HubState {
 
         if self.space_trigger.is_triggered() {
             println!("[Balex]: You're going to space, bitches!",);
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SpaceState::new(_ctx, _hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(SpaceState::new(_ctx, _hub_state)?));
             return Ok(Box::new(transition_state));
         }
 
         Ok(self)
     }
+
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
-        ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
-        ctx.set_camera_zoom(4.0);
+        // ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
+        // ctx.set_camera_zoom(4.0);
+        let god_position = self.scene.get(self.god_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        ctx.set_camera_position(god_position);
+        ctx.set_camera_zoom(2.0);
+
+        ctx.draw(&self.level.ground);
+        ctx.draw(&self.level.objects.interleave_scene(&self.scene));
+
 
         ctx.draw(&self.level.ground);
         ctx.draw(&self.level.objects.interleave_scene(&self.scene));
