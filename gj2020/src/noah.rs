@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use engine::prelude::*;
 
 use std::ops::Add;
@@ -10,6 +11,7 @@ pub struct Noah {
     velocity: Vec2,
     direction: i32,
     collision_size: Vec2,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl Noah {
@@ -27,6 +29,10 @@ impl Noah {
         sprite.add(idle_sprite);
         sprite.add(walk_sprite);
 
+        let collision_size = Vec2::from_coords(200.0, 80.0);
+        let rect = Rect2D::centered_rectangle(collision_size);
+        let square = BevelShape::from_aabb(rect, rect.width() / 3.0);
+
         let Noah = 
             Noah {
                 controller: AxisController::new(
@@ -39,8 +45,9 @@ impl Noah {
                 sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                collision_size: Vec2::from_coords(200.0, 80.0),
+                collision_size,
                 direction: 0,
+                shape: Rc::new(square),
             };
 
         Ok(Noah)
@@ -139,10 +146,7 @@ impl PhysicalObject for Noah {
 
     fn get_inv_mass(&self) -> f32 { 5.0 }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let rect = Rect2D::centered_rectangle(self.collision_size);
-        let square = BevelShape::from_aabb(rect + self.transform.get_translation(), rect.width()/3.0);
-
-        Some(Box::new(square))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 }

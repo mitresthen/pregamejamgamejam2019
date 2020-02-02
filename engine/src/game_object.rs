@@ -321,7 +321,7 @@ pub trait PhysicalObject {
 
     fn get_velocity_mut(&mut self) -> &mut Vec2;
 
-    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>>;
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> { None }
 
     fn should_block(&self) -> bool { true }
 
