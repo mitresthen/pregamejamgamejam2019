@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::vector::Vec2;
@@ -81,6 +82,7 @@ pub struct PhysicsSet {
     bodies: Vec<Body>,
     collision_pairs: Vec<CollisionPair>,
     force_sums: Vec<f32>,
+    event_axes: HashMap<usize, Vec<Vec2>>
 }
 
 impl PhysicsSet {
@@ -89,6 +91,7 @@ impl PhysicsSet {
             bodies: Vec::new(),
             collision_pairs: Vec::new(),
             force_sums: Vec::new(),
+            event_axes: HashMap::new()
         }
     }
 
@@ -136,14 +139,24 @@ impl PhysicsSet {
                 if a.inv_mass == 0.0 && b.inv_mass == 0.0 {
                     continue
                 }
-                if (a.src_mask & b.dst_mask != 0) || (b.src_mask & a.dst_mask != 0) {
-                    continue
-                }
+
                 let distance = (a.transform.get_translation() - b.transform.get_translation()).len_sq();
                 let radi_sum = a.radius + b.radius;
                 if distance < (radi_sum * radi_sum) {
                     if let Some(result) = a.shape.sat_collide(&a.transform, b.shape.as_ref(), &b.transform) {
-
+                        if (a.src_mask & b.dst_mask != 0) || (b.src_mask & a.dst_mask != 0) {
+                            let mut result_vec: Vec<Vec2> = Vec::new();
+                            result_vec.push(result.axis);
+                            match self.event_axes.get_mut(&ai) {
+                                Some(i) => { i.push(result.axis) },
+                                None => { self.event_axes.insert(ai, result_vec.clone()); }
+                            }
+                            match self.event_axes.get_mut(&bi) {
+                                Some(i) => { i.push(result.axis) },
+                                None => { self.event_axes.insert(bi, result_vec.clone()); }
+                            }
+                            continue
+                        }
                         let manifold_a = a.shape.build_manifold(result.axis * -1.0, &a.transform);
                         let manifold_b = b.shape.build_manifold(result.axis, &b.transform);
 
@@ -167,7 +180,6 @@ impl PhysicsSet {
                 }
             }
         }
-
 
     }
 
@@ -232,10 +244,17 @@ impl PhysicsSet {
     }
 
     pub fn get_collision_axes_for_body(&self, id: BodyId) -> Vec<Vec2> {
-        self.collision_pairs.iter()
+        let mut axes_for_id: Vec<Vec2> = match self.event_axes.get(&id.id) {
+            Some(i) => { i.clone() },
+            None => { Vec::new()},
+        };
+        let mut pairs: Vec<Vec2> = self.collision_pairs.iter()
             .filter(|cp| cp.a == id.id || cp.b == id.id)
             .filter(|cp| !cp.unidirectional)
             .map(|cp| cp.axis.clone() * if cp.b == id.id { -1.0 } else { 1.0 })
-            .collect()
+            .collect();
+
+        axes_for_id.append(&mut pairs);
+        axes_for_id
     }
 }

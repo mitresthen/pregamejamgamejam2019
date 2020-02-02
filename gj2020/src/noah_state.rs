@@ -3,13 +3,15 @@ use audio_library::AudioLibrary;
 use crate::noah::Noah;
 use crate::plank::Plank;
 use crate::ladder::Ladder;
+use crate::ocean::Ocean;
 
 
 pub struct NoahState {
     level: Level2D,
     scene: Scene,
     noah_id: SceneObjectId,
-    sea_level: f32
+    sea_level: f32,
+    ocean_id: SceneObjectId
  }
 
 impl NoahState {
@@ -70,12 +72,17 @@ impl NoahState {
             _scene.add_object(new_ladder);
         }
 
+        let mut ocean = Ocean::new(_ctx)?;
+        ocean.get_transform_mut().set_translation(Vec2::from_coords(0.0, 0.0));
+        let ocean_id = _scene.add_object(ocean);
+
         let state =
             NoahState {
                 level,
                 scene: _scene,
                 noah_id,
-                sea_level: 226.0
+                sea_level: 226.0,
+                ocean_id
             };
 
         _ctx.replace_sound(AudioLibrary::Noah, 0, -1)?;
@@ -86,8 +93,8 @@ impl NoahState {
 
 impl GameState for NoahState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
-
         self.scene.update(ctx, None, _dt);
+
 
         Ok(self)
     }
@@ -109,10 +116,7 @@ impl GameState for NoahState {
         ctx.draw(&self.level);
         self.scene.render(ctx);
 
-        let mut ocean_bounds = bounds.clone();
-        ocean_bounds.set_height(self.sea_level);
-
-       // ctx.get_draw_context().draw_rect(ocean_bounds, Color::RGBA(0, 0, 166, 200));
+        //ctx.get_draw_context().draw_rect(ocean_bounds, Color::RGBA(0, 0, 166, 150));
 
         Ok(())
     }

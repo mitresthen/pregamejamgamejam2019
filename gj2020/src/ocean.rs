@@ -4,37 +4,46 @@ use std::rc::Rc;
 use engine::prelude::*;
 use self::rand::Rng;
 
-pub struct Ladder {
+pub struct Ocean {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     inv_mass: f32,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
+    ocean_state: OceanState
 }
 
-impl Ladder {
-    pub fn new(ctx: &mut Engine) -> Result<Ladder, Error> {
+#[derive(Debug)]
+enum OceanState {
+    Still,
+    Rising,
+    Sinking,
+}
+
+impl Ocean {
+    pub fn new(ctx: &mut Engine) -> Result<Ocean, Error> {
         let sprite;
         {
             let tr = ctx.get_texture_registry();
-            let texture_on = tr.load("assets/images/ladder.png")?;
-            sprite = AnimatedSprite::new(Extent::new(48, 221), texture_on)?;
+            let texture_on = tr.load("assets/images/ocean.png")?;
+            sprite = AnimatedSprite::new(Extent::new(1600,1200), texture_on)?;
         }
 
-        let size = sprite.calculate_size();
+        let mut size = sprite.calculate_size();
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
 
-        let mut ladder =
-            Ladder {
+        let mut ocean =
+            Ocean {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
+                ocean_state: OceanState::Still
             };
-            ladder.transform.set_scale(1.0);
+            ocean.transform.set_scale(6.0);
 
-        Ok(ladder)
+        Ok(ocean)
     }
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
@@ -47,9 +56,8 @@ impl Ladder {
     }
 }
 
-impl GameObject for Ladder {
+impl GameObject for Ocean {
     fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        
 
         true
     }
@@ -67,11 +75,11 @@ impl GameObject for Ladder {
     }
 
     fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        true
+       true
     }
 }
 
-impl PhysicalObject for Ladder {
+impl PhysicalObject for Ocean {
     fn get_transform(&self) -> &Transform {
         &self.transform
     }
@@ -97,6 +105,4 @@ impl PhysicalObject for Ladder {
     fn get_src_mask(&self) -> u32 { 1 }
 
     fn get_dst_mask(&self) -> u32 { 1 }
-
-
 }

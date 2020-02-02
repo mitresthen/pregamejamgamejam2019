@@ -58,11 +58,13 @@ impl Plank {
                 let texture_on = tr.load("assets/images/BrokenPlank.png");
                 let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on.unwrap());
                 self.sprite = sprite.unwrap();
+                self.sprite.set_transform(&self.transform);
             },
             _ => {
                 let texture_off = tr.load("assets/images/Plank.png");
                 let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_off.unwrap());
-                self.sprite = sprite.unwrap();    
+                self.sprite = sprite.unwrap();
+                self.sprite.set_transform(&self.transform);    
             }
         }
 
@@ -79,23 +81,23 @@ impl Plank {
 }
 
 impl GameObject for Plank {
-    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        // match self.plank_state {
-        //     PlankState::Ok => {
-        //         let mut rng = rand::thread_rng();
-        //         let x: f32 = rng.gen();
-        //         println!("Got {}", x);
-        //         if(x > 0.95){
-        //             self.plank_state = PlankState::Broken;
-        //             self.toggle_texture(ctx);
-        //         }
-        //     },
-        //     PlankState::Repairing => {
-        //         self.toggle_texture(ctx);
-        //         self.plank_state = PlankState::Repaired
-        //     },
-        //     _ => { }
-        // }
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        match self.plank_state {
+            PlankState::Ok => {
+                let mut rng = rand::thread_rng();
+                let x: f32 = rng.gen();
+                if(x > 0.99999){
+                    println!("Plank broke {}", x);
+                    self.plank_state = PlankState::Broken;
+                    self.toggle_texture(ctx);
+                }
+            },
+            PlankState::Repairing => {
+                self.toggle_texture(ctx);
+                self.plank_state = PlankState::Repaired
+            },
+            _ => { }
+        }
 
         true
     }
