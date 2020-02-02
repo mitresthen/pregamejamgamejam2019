@@ -27,9 +27,9 @@ impl SpaceState {
         let mut planet = CelestialBody::new(ctx, planet_sprite, 5.0)?;
         let mut planet2 = CelestialBody::new(ctx, planet2_sprite, 1.0)?;
         let mut planet3 = CelestialBody::new(ctx, planet3_sprite, 0.3)?;
-        planet.init_orbit(&mut sun, 0.2, false, Some(Polar2::deg(4000.0, 45.0)));
-        planet2.init_orbit(&mut sun, 1.4, true, Some(Polar2::deg(2500.0, 180.0)));
-        planet3.init_orbit(&mut sun, 0.8, false, Some(Polar2::deg(1400.0, 270.0)));
+        planet2.init_orbit(&mut sun, 1.7, true, Some(Polar2::deg(2500.0, 180.0)));
+        planet3.init_orbit(&mut sun, 0.8, false, Some(Polar2::deg(3000.0, 270.0)));
+        planet.init_orbit(&mut planet2, 0.2, false, Some(Polar2::deg(500.0, 45.0)));
         bodies.push(sun);
         bodies.push(planet);
         bodies.push(planet2);
@@ -51,7 +51,7 @@ impl SpaceState {
                 Box::new(state),
                 Animation::PopInAndOut,
                 ProceedMode::Click, 
-                "assets/images/tower/mission_info.png"
+                "assets/images/space_mission.png"
             )?;
 
         return Ok(state);
@@ -78,10 +78,24 @@ impl SpaceState {
 
 impl GameState for SpaceState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
-    if ctx.key_is_down(Keycode::Q) {
+        if ctx.key_is_down(Keycode::Q) {
             ctx.reset_sound()?;
             let mut hub_state = Some(self.return_to_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
+        }
+
+        if self.fixed.iter().all(|x| *x) {
+            ctx.reset_sound()?;
+            let mut hub_state = Some(self.return_to_state.take().unwrap());
+            let mut message_state = Some(MessageState::new(
+                ctx,
+                hub_state.take().unwrap(),
+                Animation::PopInAndOut,
+                ProceedMode::Click,
+                "assets/images/space_enough.png"
+            )?);
+            let transition_state = TransitionState::new(self, move |_, _| Ok(message_state.take().unwrap()));
             return Ok(Box::new(transition_state));
         }
 
@@ -135,8 +149,6 @@ impl GameState for SpaceState {
             }
             (_, _) => ()
         }
-
-        
         
         Ok(())
     }
