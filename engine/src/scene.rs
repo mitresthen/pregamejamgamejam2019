@@ -3,6 +3,7 @@ use crate::prelude::*;
 
 use game_object::{
     GameObject,
+    GameEvent,
     EventQueue,
     EventReceiver,
     EventType,
@@ -202,7 +203,7 @@ impl Scene {
         }
     }
 
-    pub fn handle_scene_event(&mut self, event_type: EventType, sender: Option<SceneObjectId>) {
+    pub fn handle_scene_event(&mut self, event_type: EventType, sender: Option<SceneObjectId>) -> bool {
         match event_type {
             EventType::RayCast { origin, target } => {
                 if let Some(s) = sender {
@@ -214,11 +215,12 @@ impl Scene {
             EventType::DeleteMe => {
                 self.remove_object(sender.unwrap());
             },
-            _ => { }
+            _ => { return false; }
         }
+        return true;
     }
 
-    pub fn update(&mut self, engine: &mut Engine, collider: Option<&dyn LevelCollider>, dt: f32) {
+    pub fn update(&mut self, engine: &mut Engine, collider: Option<&dyn LevelCollider>, dt: f32) -> Vec<GameEvent> {
         for (_, o) in self.objects.iter_mut( ) {
             if let Some(po) = o.get_physical_object_mut() {
                 for f in self.forces.iter() {
@@ -298,6 +300,7 @@ impl Scene {
                 }
             }
         }
+        let mut events_for_parent = Vec::new();
 
         while let Some(event) = self.event_queue.poll() {
             match event.receiver {
@@ -308,7 +311,9 @@ impl Scene {
                     self.broadcast_event(event.event_type, event.sender)
                 },
                 EventReceiver::Scene => {
-                    self.handle_scene_event(event.event_type, event.sender);
+                    if !self.handle_scene_event(event.event_type.clone(), event.sender) {
+                        events_for_parent.push(event);
+                    }
                 },
                 EventReceiver::Addressed { object_id } => {
                     if self.objects.contains_key(&object_id) {
@@ -320,6 +325,7 @@ impl Scene {
                 }
             }
         }
+        return events_for_parent;
     }
 
     pub fn render(&self, engine: &mut Engine) {
