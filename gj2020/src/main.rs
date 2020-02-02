@@ -53,6 +53,7 @@ impl GameInterface for GodSend {
         sounds.insert(AudioLibrary::Noah, "assets/music/noah.wav");
         sounds.insert(AudioLibrary::Snek, "assets/music/snek.wav");
         sounds.insert(AudioLibrary::Kill, "assets/sounds/squash.wav");
+        sounds.insert(AudioLibrary::Fall, "assets/sounds/heavy_steps2.wav");
         ctx.load_sounds(sounds)?;
 
         ctx.reset_sound()?;

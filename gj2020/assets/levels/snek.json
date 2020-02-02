@@ -6,19 +6,22 @@
         "tiles" : [
             "black.png",
             "red.png",
-            "floor.png"
+            "groundBackTile.png",
+            "bushBackTile.png",
+            "skyBackTile.png"
         ]
     },
     "objects" : {
         "file" : "snek-object-layer.dat",
         "tiles" : [
             "blank.png",
-            "box.png",
+            "bushTile.png",
             "grassTile.png",
-            "AppleTree/apple_tree.png"
+            "AppleTree/apple_tree.png",
+            "groundTile.png"
         ]
     },
     "special_blocks" : {
-        "apple_tree" : 2
+        "apple_tree" : 3
     }
 }

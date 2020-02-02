@@ -5,7 +5,16 @@
         "file" : "hub-floor-layer.dat",
         "tiles" : [
             "black.png",
-            "red.png"
+            "GodRoom\\floor.png",            
+            "GodRoom\\carpet_cnter.png",
+            "GodRoom\\carpet_corner.png",
+            "GodRoom\\carpet_corner1.png",
+            "GodRoom\\carpet_corner2.png",
+            "GodRoom\\carpet_corner3.png",
+            "GodRoom\\carpet_edge.png",
+            "GodRoom\\carpet_edge1.png",
+            "GodRoom\\carpet_edge2.png",
+            "GodRoom\\carpet_edge3.png"
         ]
     },
     "objects" : {
@@ -17,7 +26,17 @@
             "action_noah.png",
             "action_snek.png",
             "action_hell.png",
-            "action_space.png"
+            "action_space.png",
+            "GodRoom\\cloud_edge.png",
+            "GodRoom\\cloud_edge1.png",
+            "GodRoom\\cloud_edge2.png",
+            "GodRoom\\cloud_edge3.png",
+            "GodRoom\\cloud_corner.png",
+            "GodRoom\\cloud_corner1.png",
+            "GodRoom\\cloud_corner2.png",
+            "GodRoom\\cloud_corner3.png",
+            "GodRoom\\cloudTile.png",
+            "GodRoom\\Coffe.png"
         ]
     },
     "special_blocks" : {
