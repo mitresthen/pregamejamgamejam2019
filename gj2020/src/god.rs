@@ -125,6 +125,10 @@ impl GameObject for God {
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
     }
+
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        return true;
+    }
 }
 
 impl PhysicalObject for God {

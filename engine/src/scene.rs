@@ -242,6 +242,8 @@ impl Scene {
         for o in self.objects.iter().map(|(_, o)| o) {
             if let Some(po) = o.get_physical_object() {
                 body_ids.push(physics_set.add_physics_object(po));
+            } else {
+                body_ids.push(None)
             }
         }
 
@@ -254,7 +256,7 @@ impl Scene {
         }
 
 
-        for (o, b) in self.objects.iter_mut().map(|(_, o)| o).zip(body_ids.into_iter()) {
+        for ((ob_id, o), b) in self.objects.iter_mut().zip(body_ids.into_iter()) {
             if let Some(po) = o.get_physical_object_mut() {
                 if let Some(id) = b {
                     let v = physics_set.get_velocity(id);
@@ -264,23 +266,16 @@ impl Scene {
                         let spin = physics_set.get_spin(id);
                         *r.get_spin_mut() = spin;
                     }
+
+                    for axis in physics_set.get_collision_axes_for_body(id) {
+                        self.event_queue.submit_event(
+                            EventType::Collide { force: axis },
+                            EventReceiver::Addressed { object_id: *ob_id }
+                        );
+                    }
                 }
             }
         }
-
-        /*
-        {
-            //TODO: Find a way to do this through the physics thing
-            self.event_queue.submit_event(
-                EventType::Collide { force: axis },
-                EventReceiver::Addressed { object_id: ob_a }
-            );
-
-            self.event_queue.submit_event(
-                EventType::Collide { force: axis },
-                EventReceiver::Addressed { object_id: ob_b }
-            );
-        }*/
 
         if let Some(level_collider) = collider {
             self.do_level_collision(level_collider);

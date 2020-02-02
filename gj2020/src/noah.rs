@@ -6,18 +6,20 @@ use std::ops::Add;
 pub struct Noah {
     controller: AxisController,
     interact_trigger: Trigger,
+    jump_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     direction: i32,
     collision_size: Vec2,
+    jump_timer: f32,
     shape: Rc<dyn CollisionShape>,
 }
 
 impl Noah {
     pub fn new(ctx: &mut Engine) -> Result<Noah, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/God/God.png")?;
+        let texture = tr.load("assets/images/God/god.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
@@ -33,7 +35,7 @@ impl Noah {
         let rect = Rect2D::centered_rectangle(collision_size);
         let square = BevelShape::from_aabb(rect, rect.width() / 3.0);
 
-        let Noah = 
+        let noah = 
             Noah {
                 controller: AxisController::new(
                     Keycode::Up,
@@ -42,15 +44,17 @@ impl Noah {
                     Keycode::Right
                 ),
                 interact_trigger: Trigger::new(Keycode::Space),
+                jump_trigger: Trigger::new(Keycode::J),
                 sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 collision_size,
                 direction: 0,
+                jump_timer: 0.0,
                 shape: Rc::new(square),
             };
 
-        Ok(Noah)
+        Ok(noah)
     }
 
     pub fn set_position(&mut self, position: Vec2) {
@@ -65,8 +69,14 @@ impl Noah {
 impl GameObject for Noah {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let mut target_velocity = self.controller.poll(ctx) * 400.0;
+
+        target_velocity.y = 0.0;
         
+        self.jump_timer -= dt;
+
+        let old_velocity_y = self.velocity.y;
         self.velocity.approach(target_velocity, 400.0 * dt);
+        self.velocity.y = old_velocity_y;
 
         let is_walking =
             if target_velocity.len() > 0.1 {
@@ -82,7 +92,12 @@ impl GameObject for Noah {
                 false
             };
 
-       let mode = self.direction + if is_walking { 4 } else { 0 }; 
+        if self.jump_trigger.poll(ctx) && self.jump_timer > 0.0 {
+            self.velocity.y -= 400.0;
+            self.jump_timer = -1.0;
+        }
+
+        let mode = self.direction + if is_walking { 4 } else { 0 }; 
 
         let mut sprite_transform = self.transform.clone();
         let collision_height = self.collision_size.y;
@@ -124,6 +139,18 @@ impl GameObject for Noah {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> {
         Some(self)
+    }
+
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        match event {
+            EventType::Collide { force } => {
+                if force.y < -0.9 {
+                    self.jump_timer = 0.01;
+                }
+                true
+            },
+            _ => { false }
+        }
     }
 }
 
