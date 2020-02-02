@@ -177,11 +177,6 @@ impl Manifold {
     pub fn clip(self, other: Manifold, axis: Vec2) -> Manifold {
         let perp = axis.perpendicular();
 
-        println!("Clipping manifold");
-        println!("  a: {:?}", self);
-        println!("  b: {:?}", other);
-        println!("  axis: {:?}", axis);
-
 
         let mut range_a = Range::inf_negative();
         let mut range_b = Range::inf_negative();
@@ -193,7 +188,7 @@ impl Manifold {
             depth_range.expand(self.points[i].dot_product(axis));
         }
 
-        for i in 0..self.point_count {
+        for i in 0..other.point_count {
             range_b.expand(other.points[i].dot_product(perp));
             depth_range.expand(other.points[i].dot_product(axis));
         }
@@ -216,8 +211,6 @@ impl Manifold {
                     ]
                 }
             };
-
-        println!("  result: {:?}", manifold);
 
         manifold
     }
@@ -256,7 +249,7 @@ pub trait CollisionShape {
 
         points.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap());
 
-        let epsilon = 1.0e-5;
+        let epsilon = 0.1;
 
         let points : Vec<Vec2> = points.into_iter()
             .filter(|(d, p)| *d >= maximum - epsilon)
@@ -323,11 +316,11 @@ pub trait PhysicalObject {
 }
 
 pub trait Rotatable {
-    fn get_rotation(&self) -> f32;
+    fn get_spin(&self) -> f32;
 
-    fn get_rotation_mut(&mut self) -> &mut f32;
+    fn get_spin_mut(&mut self) -> &mut f32;
 
-    fn get_inv_intertia(&self) -> f32;
+    fn get_inv_inertia(&self) -> f32;
 }
 
 pub trait GameObject: 'static {
