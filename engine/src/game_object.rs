@@ -33,6 +33,9 @@ pub enum EventType {
     Suck,
     DeleteMe,
     FreeFromDust,
+    PlankBroke,
+    PlankRepaired,
+    OceanRiseRate { rate: f32 },
     Custom { data: Rc<dyn Any> }
 }
 

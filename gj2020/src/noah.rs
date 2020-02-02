@@ -17,16 +17,12 @@ pub struct Noah {
 impl Noah {
     pub fn new(ctx: &mut Engine) -> Result<Noah, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/God/god.png")?;
+        let texture = tr.load("assets/images/Noah/noah.png")?;
 
-        let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
+        let walk_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240 * 3, 480 * 2))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
 
-        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240 * 1, 480 * 4))?;
-        let idle_sprite = AnimatedSprite::new(Extent::new(240, 480), idle_texture)?;
-
         let mut sprite = AggregatedAnimatedSprite::new();
-        sprite.add(idle_sprite);
         sprite.add(walk_sprite);
 
         let collision_size = Vec2::from_coords(200.0, 80.0);
@@ -80,9 +76,9 @@ impl GameObject for Noah {
             if target_velocity.len() > 0.1 {
                 self.direction =
                     if target_velocity.x.abs() > target_velocity.y.abs() {
-                        if target_velocity.x > 0.0 { 1 } else { 3 }
+                        if target_velocity.x > 0.0 { 1 } else { 0 }
                     } else {
-                        if target_velocity.y > 0.0 { 2 } else { 0 }
+                        1
                     };
 
                 true
@@ -95,7 +91,7 @@ impl GameObject for Noah {
             self.jump_timer = -1.0;
         }
 
-        let mode = self.direction + if is_walking { 4 } else { 0 }; 
+        let mode = self.direction + if is_walking { 2 } else { 0 }; 
 
         let mut sprite_transform = self.transform.clone();
         let collision_height = self.collision_size.y;
@@ -169,9 +165,15 @@ impl PhysicalObject for Noah {
         &mut self.velocity
     }
 
+    fn get_friction(&self) -> f32 { 0.0 }
+
     fn get_inv_mass(&self) -> f32 { 5.0 }
 
     fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         Some(self.shape.clone())
     }
+
+    fn get_src_mask(&self) -> u32 { 1 }
+
+    fn get_dst_mask(&self) -> u32 { 1 }
 }
