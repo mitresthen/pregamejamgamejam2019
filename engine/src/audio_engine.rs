@@ -163,11 +163,17 @@ impl AudioMixer {
 
     pub fn is_done(&self, id: usize) -> bool {
         let vector = self.playing.lock().unwrap();
+        if id >= vector.len() {
+            return true;
+        }
         vector[id].is_done
     }
 
     pub fn is_playing(&self, id: usize) -> bool {
         let vector = self.playing.lock().unwrap();
+        if id >= vector.len() {
+            return false;
+        }
         vector[id].is_playing()
     }
 
