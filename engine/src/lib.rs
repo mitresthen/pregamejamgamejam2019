@@ -51,6 +51,7 @@ pub mod prelude;
 pub mod dimmer;
 pub mod square_shape;
 pub mod ray_shape;
+pub mod round_shape;
 
 use sdl2::event::Event;
 pub use sdl2::keyboard::Keycode;
@@ -316,6 +317,15 @@ impl<'t> Engine<'t> {
         }
     }
 
+    pub fn get_visible_area(&self) -> rect::Rect2D {
+        let mut bounds = self.get_screen_bounds();
+        bounds -= bounds.max * 0.5;
+
+        bounds *= self.camera.get_scale();
+        bounds += self.camera.get_translation();
+        return bounds;
+    }
+
     pub fn get_width(&self) -> u32 { self.width }
 
     pub fn get_height(&self) -> u32 { self.height }
@@ -353,7 +363,10 @@ impl<'t> Engine<'t> {
         let mut timer = timer::Timer::new();
 
         'main_loop: loop {
-            let dt = timer.get_time().max(0.0000001);
+            // If it gets lower than 30 fps it will go slower. Deal with it
+            let min_fps = 30.0;
+
+            let dt = timer.get_time().max(0.0000001).min(1.0 / min_fps);
             timer.reset();
 
             for event in event_pump.poll_iter() {

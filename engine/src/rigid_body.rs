@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::prelude::*;
 
 pub struct RigidBody {
@@ -7,7 +8,8 @@ pub struct RigidBody {
     inv_mass: f32,
     inv_inertia: f32,
     spin: f32,
-    bounding_box: Rect2D
+    friction: f32,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl RigidBody {
@@ -21,6 +23,8 @@ impl RigidBody {
                 max: Vec2::from_coords(sx, sy)
             };
 
+        let shape = Rc::new(SquareShape::from_aabb(bounding_box));
+
         RigidBody {
             texture,
             transform: Transform::new(),
@@ -28,8 +32,13 @@ impl RigidBody {
             inv_inertia: 0.0,
             spin: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
-            bounding_box,
+            shape,
+            friction: 0.3,
         }
+    }
+
+    pub fn set_friction(&mut self, friction: f32) {
+        self.friction = friction;
     }
 
     pub fn set_mass(&mut self, mass: f32) {
@@ -70,12 +79,8 @@ impl PhysicalObject for RigidBody {
 
     fn get_velocity_mut(&mut self) -> &mut Vec2 { &mut self.velocity }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let mut collision_shape = SquareShape::from_aabb(self.bounding_box);
-
-        collision_shape.transform(&self.transform);
-
-        Some(Box::new(collision_shape))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 
     fn should_block(&self) -> bool { true }
@@ -85,6 +90,8 @@ impl PhysicalObject for RigidBody {
     fn get_rotatable(&self) -> Option<&dyn Rotatable> { Some(self) }
 
     fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { Some(self) }
+
+    fn get_friction(&self) -> f32 { self.friction }
 }
 
 impl Rotatable for RigidBody {

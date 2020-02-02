@@ -8,7 +8,7 @@ use audio_library::AudioLibrary;
 
 pub struct BabylonState {
     scene: Scene,
-    box_texture: Texture,
+    cannon_ball_texture: Texture,
     hub_state: Option<Box<dyn GameState>>,
 }
 
@@ -20,7 +20,7 @@ impl BabylonState {
         let level = Level2D::load_from_file(ctx, "assets/levels/tower.json");
 
         let tr = ctx.get_texture_registry();
-        let box_texture = tr.load("assets/images/box.png")?;
+        let cannon_ball_texture = tr.load("assets/images/cannon_ball.png")?;
 
         let force = LinearForce::new(Vec2::from_coords(0.0, 400.0));
         scene.add_force(force);
@@ -33,7 +33,10 @@ impl BabylonState {
             let mut rigid_body = RigidBody::new(texture);
             rigid_body.set_position(instance.position);
             rigid_body.set_angle(instance.rotation);
+            rigid_body.set_friction(100.0);
+            if !object_type.fixed {
             rigid_body.set_mass(1.0);
+            }
             rigid_body.set_inertia(100.0);
             scene.add_object(rigid_body);
 
@@ -51,7 +54,7 @@ impl BabylonState {
         let state =
             BabylonState {
                 scene,
-                box_texture,
+                cannon_ball_texture,
                 hub_state: Some(hub_state),
             };
 
@@ -75,7 +78,7 @@ impl GameState for BabylonState {
 
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
         ctx.set_camera_position(Vec2::from_coords(0.0, 0.0));
-        ctx.set_camera_zoom(3.0);
+        ctx.set_camera_zoom(2.0);
         self.scene.render(ctx);
 
         Ok(())
@@ -88,12 +91,16 @@ impl GameState for BabylonState {
 
         let mut rng = rand::thread_rng();
 
-        let mut rigid_body = RigidBody::new(self.box_texture.clone());
-        rigid_body.set_position(world_pos);
+        let mut rigid_body = RigidBody::new(self.cannon_ball_texture.clone());
+        let area = ctx.get_visible_area();
+
+        rigid_body.set_position(Vec2::from_coords(area.max.x, area.center().y));
         rigid_body.set_mass(1.0);
-        rigid_body.set_angle(rng.gen::<f32>() * std::f32::consts::PI * 2.0);
         rigid_body.set_inertia(10000.0);
         rigid_body.set_spin(1.0);
+
+        let velocity_y = (rng.gen::<f32>() - 0.5) * std::f32::consts::PI * 2000.0;
+        rigid_body.set_velocity(Vec2::from_coords(-8000.0, velocity_y));
 
         self.scene.add_object(rigid_body);
 

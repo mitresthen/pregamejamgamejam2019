@@ -9,6 +9,8 @@ pub struct LevelEditorState {
     object_index: usize,
     level: Level2D,
     rotation: f32,
+    layers_to_draw: Vec<u32>,
+    scale: f32
 }
 
 impl LevelEditorState {
@@ -20,9 +22,12 @@ impl LevelEditorState {
         let level_filename = args.iter().nth(1)
             .expect("First argument must be the filename of the level");
 
+        let loaded_level =Level2D::load_from_file(ctx, &level_filename);
+        let layers_to_draw = loaded_level.layers_to_draw.clone();
+
         let level_editor =
             LevelEditorState {
-                level: Level2D::load_from_file(ctx, &level_filename),
+                level: loaded_level,
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -37,7 +42,8 @@ impl LevelEditorState {
                 camera_velocity: Vec2::new(),
                 object_index: 0,
                 rotation: 0.0,
-
+                layers_to_draw,
+                scale: 1.0
             };
 
         Ok(level_editor)
@@ -63,13 +69,15 @@ impl GameState for LevelEditorState {
         let mut transf: Transform = Transform::new();
         transf.set_translation(ctx.get_mouse_position().position);
         transf.set_angle(self.rotation);
-
+        transf.set_scale(self.scale);
         let object_type = &self.level.level_instance.object_types[self.object_index];
         let mut draw_ctx = ctx.get_draw_context();
         draw_ctx.draw(&self.level.object_textures[&object_type.file], &transf);
         if object_type.fixed {
             draw_ctx.draw_point(transf.get_translation(), Color::RGB(255, 0, 0));
         }
+        let object_filename = &self.level.level_instance.object_types[self.object_index].file;
+        ctx.get_draw_context().draw(&self.level.object_textures[&object_filename.clone()], &transf);
 
         Ok(())
     }
@@ -83,17 +91,35 @@ impl GameState for LevelEditorState {
         }
 
         if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
-            self.rotation = self.rotation - 0.1;
+            self.rotation = self.rotation - 0.05;
             if self.rotation < 0.0 {
                 self.rotation = 2.0 * 3.14;
             }
         } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
             self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
         }else if keycode == Keycode::R {
-            self.rotation = (self.rotation + 0.1) % (2.0*3.14);
+            self.rotation = (self.rotation + 0.05) % (2.0*3.14);
         }
 
-        
+        if keycode == Keycode::S && _ctx.key_is_down(Keycode::LShift) {
+            self.scale = (self.scale - 0.1).max(0.2);
+        } else if keycode == Keycode::S {
+            self.scale = (self.scale + 0.1).min(2.0);
+        }
+
+        let keycode_num_signed: i32 = (keycode as i32)-48;
+        if(keycode_num_signed >= 0) {
+            let keycode_num: u32 = (keycode as u32)-48;
+            
+            if (keycode_num >= 0 && keycode_num <= 9) {
+                if(self.layers_to_draw.contains(&keycode_num)) {
+                    self.layers_to_draw.retain(|&x| x != keycode_num);
+                } else{
+                    self.layers_to_draw.push(keycode_num);
+                }
+                self.level.set_layers_to_draw(self.layers_to_draw.clone());
+            }
+        }
 
         Ok(())
     }
@@ -111,7 +137,8 @@ impl GameState for LevelEditorState {
             let instance = ObjectInstance {
                 object_id: self.object_index as u32,
                 position: world_pos,
-                rotation: self.rotation
+                rotation: self.rotation,
+                scale: self.scale
             };
             self.level.level_instance.object_instances.push(instance);
         } else if button == MouseButton::Right {

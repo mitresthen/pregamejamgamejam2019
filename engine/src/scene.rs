@@ -9,6 +9,7 @@ use game_object::{
     CollisionShape
 };
 
+use transform::Transform;
 use ray_shape::RayShape;
 use drawable::DrawContext;
 use vector::Vec2;
@@ -39,7 +40,7 @@ pub struct Scene {
 }
 
 pub trait LevelCollider {
-    fn get_collision_vector(&self, collision_shape: &dyn CollisionShape) -> Option<Vec2>;
+    fn get_collision_vector(&self, collision_shape: &dyn CollisionShape, transform: &Transform) -> Option<Vec2>;
 }
 
 impl Scene {
@@ -166,7 +167,8 @@ impl Scene {
 
             let ray = RayShape::new(target, origin);
             if target.valid() && origin.valid() {
-                let success : bool = collider.get_collision_vector(&ray).is_none();
+                let transform = Transform::new();
+                let success : bool = collider.get_collision_vector(&ray, &transform).is_none();
 
                 self.event_queue.submit_event(
                     EventType::RayCastReply { success, target },
@@ -184,8 +186,8 @@ impl Scene {
         for (_id, object) in self.objects.iter_mut() {
             let mut maybe_axis = None;
             if let Some(physical_object) = object.get_physical_object_mut() {
-                if let Some(bounding_box) = physical_object.get_bounding_box() {
-                    if let Some(axis) = collider.get_collision_vector(bounding_box.as_ref()) {
+                if let Some(shape) = physical_object.get_collision_shape() {
+                    if let Some(axis) = collider.get_collision_vector(shape.as_ref(), physical_object.get_transform()) {
                         let velocity = physical_object.get_velocity_mut();
                         let perp = axis.perpendicular();
 
@@ -245,7 +247,7 @@ impl Scene {
 
         self.collision_points = physics_set.get_collision_points();
 
-        for _ in 0..50 {
+        for _ in 0..100 {
             physics_set.iterate();
         }
 

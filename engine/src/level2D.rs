@@ -22,11 +22,15 @@ pub struct LevelInstance {
     pub object_types: Vec<ObjectType> 
 }
 
+fn default_scale() -> f32 { 1.0 }
+
 #[derive(Serialize, Deserialize)]
 pub struct ObjectInstance {
     pub object_id: u32,
     pub position: Vec2,
-    pub rotation: f32
+    pub rotation: f32,
+    #[serde(default = "default_scale")]
+    pub scale: f32
 }
 
 #[derive(Serialize, Deserialize)]
@@ -41,7 +45,8 @@ pub struct Level2D {
     pub level_instance: LevelInstance,
     pub save_filename: String,
     pub object_textures: HashMap<String, Texture>,
-    pub layer_max: u32
+    pub layer_max: u32,
+    pub layers_to_draw: Vec<u32>
 }
 
 impl Drawable for Level2D {
@@ -49,12 +54,12 @@ impl Drawable for Level2D {
         for i in 0..(self.layer_max+1) {
             for object in self.level_instance.object_instances.iter() {
                 let object_type = &self.level_instance.object_types[object.object_id as usize];
-                if object_type.layers.contains(&i) {
+                if object_type.layers.contains(&i) && self.layers_to_draw.contains(&i) {
                     let mut transf: Transform = Transform::new();
                     transf.set_angle(object.rotation);
                     transf.set_translation(object.position);
+                    transf.set_scale(object.scale);
                     ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
-
                     if object_type.fixed {
                         ctx.draw_point(transf.get_translation(), Color::RGB(255, 0, 0));   
                     }
@@ -103,12 +108,17 @@ impl Level2D {
             object_textures.insert(object.file.clone(), texture);
         }
         println!("Layer max is {}", layer_max);
+        let mut layers_to_draw: Vec<u32> = Vec::new();
+        for i in 0..(layer_max+1) {
+            layers_to_draw.push(i);
+        }
     
         Level2D {
             level_instance,
             save_filename,
             object_textures,
-            layer_max
+            layer_max,
+            layers_to_draw
         }
     }
 
@@ -119,7 +129,7 @@ impl Level2D {
             let object_type = self.level_instance.object_types.get(instance.object_id as usize).unwrap();
             let texture = self.object_textures.get(&object_type.file).unwrap();
 
-            let half_size = Vec2::from_coords(texture.extent().width as f32, texture.extent().height as f32) * 0.5;
+            let half_size = Vec2::from_coords(texture.extent().width as f32, texture.extent().height as f32) * 0.5 * instance.scale;
 
             let rect = Rect2D::new(instance.position - half_size, instance.position + half_size);
 
@@ -133,6 +143,10 @@ impl Level2D {
         } else {
             None
         }
+    }
+
+    pub fn set_layers_to_draw(&mut self, layers_to_draw: Vec<u32>) {
+        self.layers_to_draw = layers_to_draw;
     }
 
     pub fn save_to_file(&self) -> Result<(), Error> {

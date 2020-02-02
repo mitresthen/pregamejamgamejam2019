@@ -81,3 +81,34 @@ impl std::ops::Add<Vec2> for Rect2D {
         }
     }
 }
+
+impl std::ops::Mul<f32> for Rect2D {
+    type Output = Rect2D;
+    fn mul(self, other: f32) -> Rect2D {
+        Rect2D {
+            min: self.min * other,
+            max: self.max * other,
+        }
+    }
+}
+
+impl std::ops::SubAssign<Vec2> for Rect2D {
+    fn sub_assign(&mut self, other: Vec2){
+        self.min -= other;
+        self.max -= other;
+    }
+}
+
+impl std::ops::AddAssign<Vec2> for Rect2D {
+    fn add_assign(&mut self, other: Vec2){
+        self.min += other;
+        self.max += other;
+    }
+}
+
+impl std::ops::MulAssign<f32> for Rect2D {
+    fn mul_assign(&mut self, other: f32){
+        self.min *= other;
+        self.max *= other;
+    }
+}

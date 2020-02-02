@@ -237,10 +237,10 @@ impl Grid2 {
 }
 
 impl LevelCollider for Grid2 {
-    fn get_collision_vector(&self, shape: &dyn CollisionShape)
+    fn get_collision_vector(&self, shape: &dyn CollisionShape, transform: &Transform)
         -> Option<Vec2>
     {
-        let aabb = shape.get_aabb();
+        let aabb = (shape.get_aabb() * transform.get_scale()) + transform.get_translation();
 
         let start_x = ((aabb.min.x / self.tile_size as f32).floor() as i32).max(0);
         let start_y = ((aabb.min.y / self.tile_size as f32).floor() as i32).max(0);
@@ -251,6 +251,8 @@ impl LevelCollider for Grid2 {
         let mut best_axis : Option<SATResult> = None;
 
         let empty : TileIndex = 0;
+
+        let tile_transform = Transform::new();
 
         for y in start_y..end_y {
             for x in start_x..end_x {
@@ -267,7 +269,7 @@ impl LevelCollider for Grid2 {
                 let tile_rect = Rect2D::centered_square(tile_size) + tile_center;
                 let tile_shape = SquareShape::from_aabb(tile_rect);
 
-                if let Some(result) = shape.sat_collide(&tile_shape) {
+                if let Some(result) = shape.sat_collide(&transform, &tile_shape, &tile_transform) {
                     best_axis = Some(best_axis.map(|x| if x.depth > result.depth { x } else { result }).unwrap_or(result));
                 }
             }

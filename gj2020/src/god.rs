@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use engine::prelude::*;
 
 
@@ -9,6 +10,7 @@ pub struct God {
     velocity: Vec2,
     direction: i32,
     collision_size: Vec2,
+    shape: Rc<SquareShape>,
 }
 
 impl God {
@@ -26,6 +28,10 @@ impl God {
         sprite.add(idle_sprite);
         sprite.add(walk_sprite);
 
+        let collision_size = Vec2::from_coords(200.0, 80.0);
+        let rect = Rect2D::centered_rectangle(collision_size);
+        let shape = SquareShape::from_aabb(rect);
+
         let god = 
             God {
                 controller: AxisController::new(
@@ -37,9 +43,10 @@ impl God {
                 interact_trigger: Trigger::new(Keycode::Space),
                 sprite,
                 transform: Transform::new(),
+                collision_size,
                 velocity: Vec2::new(),
-                collision_size: Vec2::from_coords(200.0, 80.0),
                 direction: 0,
+                shape: Rc::new(shape),
             };
 
         Ok(god)
@@ -47,6 +54,10 @@ impl God {
 
     pub fn set_position(&mut self, position: Vec2) {
         self.transform.set_translation(position);
+    }
+
+    pub fn set_scale(&mut self, scale: f32) {
+        self.transform.set_scale(scale);
     }
 }
 
@@ -131,10 +142,9 @@ impl PhysicalObject for God {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let rect = Rect2D::centered_rectangle(self.collision_size);
-        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
+    fn get_inv_mass(&self) -> f32 { 1.0 }
 
-        Some(Box::new(square))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 }
