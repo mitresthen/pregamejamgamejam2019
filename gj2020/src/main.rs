@@ -21,6 +21,7 @@ pub mod plank;
 pub mod ladder;
 pub mod noah;
 pub mod ocean;
+pub mod end_state;
 
 // Snek modules
 pub mod snek;
