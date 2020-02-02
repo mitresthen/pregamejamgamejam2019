@@ -50,6 +50,7 @@ pub mod prelude;
 
 pub mod dimmer;
 pub mod square_shape;
+pub mod bevel_shape;
 pub mod ray_shape;
 pub mod round_shape;
 

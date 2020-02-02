@@ -1,7 +1,11 @@
 use engine::prelude::*;
 use audio_library::AudioLibrary;
 use crate::god::God;
+use crate::noah::Noah;
 use crate::plank::Plank;
+use std::time::{Duration, SystemTime};
+use std::thread::sleep;
+
 
 pub struct NoahState {
     level: Level2D,
@@ -18,7 +22,7 @@ impl NoahState {
         let force = LinearForce::new(Vec2::from_coords(0.0, 400.0));
         _scene.add_force(force);
 
-        let mut noah = God::new(_ctx)?;
+        let mut noah = Noah::new(_ctx)?;
         noah.set_scale(0.4);
         noah.set_position(Vec2::from_coords(300.0, 300.0));
 
@@ -52,8 +56,9 @@ impl NoahState {
 }
 
 impl GameState for NoahState {
-    fn update(mut self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
-        self.scene.update(_ctx, None, _dt);
+    fn update(mut self: Box<Self>, ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
+
+        self.scene.update(ctx, None, _dt);
 
         Ok(self)
     }

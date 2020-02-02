@@ -70,6 +70,14 @@ impl Rect2D {
         v.x < self.max.x &&
         v.y < self.max.y
     }
+
+    pub fn width(&self) -> f32 {
+        return self.max.x - self.min.x;
+    }
+
+    pub fn height(&self) -> f32 {
+        return self.max.y - self.min.y;
+    }
 }
 
 impl std::ops::Add<Vec2> for Rect2D {

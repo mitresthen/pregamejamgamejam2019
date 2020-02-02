@@ -87,7 +87,7 @@ impl HubState {
                 space_trigger,
             };
 
-        ctx.loop_sound(AudioLibrary::HubWorld, -1)?;
+        ctx.replace_sound(AudioLibrary::HubWorld, 0, -1)?;
 
         Ok(hub_state)
     }

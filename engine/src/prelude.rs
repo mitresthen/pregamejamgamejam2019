@@ -56,4 +56,5 @@ pub use linear_force::LinearForce;
 pub use radial_force::RadialForce;
 pub use square_shape::SquareShape;
 pub use round_shape::RoundShape;
+pub use bevel_shape::BevelShape;
 pub use ray_shape::RayShape;
