@@ -169,9 +169,15 @@ impl PhysicalObject for Noah {
         &mut self.velocity
     }
 
+    fn get_friction(&self) -> f32 { 0.0 }
+
     fn get_inv_mass(&self) -> f32 { 5.0 }
 
     fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         Some(self.shape.clone())
     }
+
+    fn get_src_mask(&self) -> u32 { 1 }
+
+    fn get_dst_mask(&self) -> u32 { 1 }
 }

@@ -106,7 +106,7 @@ impl GameState for NoahState {
 
         ctx.get_draw_context().draw_rect(bounds, Color::RGB(0, 55, 55));
 
-        ctx.draw(&self.level);
+        //ctx.draw(&self.level);
         self.scene.render(ctx);
 
         let mut ocean_bounds = bounds.clone();

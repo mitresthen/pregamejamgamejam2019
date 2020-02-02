@@ -93,4 +93,10 @@ impl PhysicalObject for Ladder {
     fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         Some(self.shape.clone())
     }
+
+    fn get_src_mask(&self) -> u32 { 1 }
+
+    fn get_dst_mask(&self) -> u32 { 1 }
+
+
 }
