@@ -90,4 +90,12 @@ impl Transform {
         self.translation = self.translation + p;
     }
 
+    pub fn interpolate(&self, other: &Transform, f: f32) -> Transform {
+        let mut t = Transform::new();
+        t.set_translation((self.translation * (1.0 - f)) + (other.translation * f));
+        t.set_angle((self.angle * (1.0 - f)) + (other.angle * f));
+        t.set_scale((self.scale * (1.0 - f)) + (other.scale * f));
+        t
+    }
+
 }

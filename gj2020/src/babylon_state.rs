@@ -119,6 +119,10 @@ impl GameObject for Victim {
             self.animated_sprite.set_mode(1);
         }
 
+        if self.transform.get_translation().y > 2000.0 {
+            self.kill();
+        }
+
         self.velocity.approach(target_velocity, dt * 400.0);
         self.animated_sprite.set_transform(&self.transform);
         true
@@ -181,7 +185,9 @@ pub struct BabylonState {
     cannon_ball_texture: Texture,
     hub_state: Option<Box<dyn GameState>>,
     blood_texture: Texture,
+    remaining_victims: i32,
 }
+
 
 
 impl BabylonState {
@@ -230,6 +236,8 @@ impl BabylonState {
         use self::rand::Rng;
         let mut rng = rand::thread_rng();
 
+        let mut total_victim_count = 0;
+
         for _ in 0..10 {
             let r = rng.gen::<f32>();
             let x = (r * -1400.0) + ((1.0 - r) * -800.0);
@@ -239,6 +247,8 @@ impl BabylonState {
             let mut victim = Victim::new(ctx)?;
             victim.set_position(Vec2::from_coords(x, 540.0));
             scene.add_object(victim);
+
+            total_victim_count += 1;
         }
 
         for _ in 0..10 {
@@ -250,6 +260,8 @@ impl BabylonState {
             let mut victim = Victim::new(ctx)?;
             victim.set_position(Vec2::from_coords(x, 540.0));
             scene.add_object(victim);
+
+            total_victim_count += 1;
         }
 
 
@@ -260,10 +272,39 @@ impl BabylonState {
                 cannon_ball_texture,
                 hub_state: Some(hub_state),
                 blood_texture,
+                remaining_victims: total_victim_count
             };
 
 
         let state = Box::new(state);
+
+        let state =
+            MessageState::new(
+                ctx,
+                state,
+                Animation::PopInAndOut,
+                ProceedMode::Timer(1.0), 
+                "assets/images/tower/smite.png"
+            )?;
+
+        let state =
+            MessageState::new(
+                ctx,
+                state,
+                Animation::PopInAndOut,
+                ProceedMode::Timer(1.0), 
+                "assets/images/tower/two.png"
+            )?;
+
+        let state =
+            MessageState::new(
+                ctx,
+                state,
+                Animation::PopInAndOut,
+                ProceedMode::Timer(1.0), 
+                "assets/images/tower/one.png"
+            )?;
+
 
         let state =
             MessageState::new(
@@ -278,6 +319,9 @@ impl BabylonState {
     }
 
     fn spew_blood(&mut self, origin: Vec2) {
+        self.remaining_victims -= 1;
+
+        println!("Remaining victims: {:?}", self.remaining_victims);
         use self::rand::Rng;
         let mut rng = rand::thread_rng();
 
@@ -323,10 +367,20 @@ impl GameState for BabylonState {
             }
         }
 
-        if ctx.key_is_down(Keycode::Q) {
+        if self.remaining_victims == 0 {
             let mut hub_state = Some(self.hub_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
-            return Ok(Box::new(transition_state));
+            let state =  Box::new(transition_state);
+            let state =
+                MessageState::new(
+                    ctx,
+                    state,
+                    Animation::PopInAndOut,
+                    ProceedMode::Click, 
+                    "assets/images/tower/mission_success.png"
+                )?;
+
+            return Ok(state)
         }
 
         Ok(self)

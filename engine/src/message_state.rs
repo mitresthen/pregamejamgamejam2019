@@ -12,41 +12,85 @@ pub enum Animation {
 
 pub struct MessageState {
     proceed_mode: ProceedMode,
-    animation: Animation,
+    animation_type: Animation,
     next_state: Box<dyn GameState>,
     message_texture: Texture,
     done: bool,
+    animation: f32,
+    start_transform: Transform,
+    target_transform: Transform,
+    screen_height: f32,
 }
 
 impl MessageState {
     pub fn new(
         ctx: &mut Engine,
         next_state: Box<dyn GameState>,
-        animation: Animation,
+        animation_type: Animation,
         proceed_mode: ProceedMode,
         message_image_path: &str
     ) -> Result<Box<dyn GameState>, Error> {
         let tr = ctx.get_texture_registry();
         let message_texture = tr.load(message_image_path)?;
 
+        let screen_height = 1200.0;
+
+        let mut start_transform = Transform::new();
+        start_transform.set_translation(Vec2::from_coords(0.0, screen_height));
+
+        let target_transform = Transform::new();
+
         let message_state =
             MessageState {
                 proceed_mode,
-                animation,
+                animation_type,
                 message_texture,
-                next_state: next_state,//.update(ctx, 0.01)?,
-                done: false
+                next_state: next_state.update(ctx, 0.0001)?,
+                done: false,
+                animation: 0.0,
+                start_transform: start_transform,
+                target_transform: target_transform,
+                screen_height,
             };
 
         Ok(Box::new(message_state))
     }
+
+    fn trigger_out_animation(&mut self) {
+        if self.done {
+            return;
+        }
+
+        self.done = true;
+        self.animation = 0.0;
+        self.start_transform = Transform::new();
+
+        self.target_transform = Transform::new();
+        self.target_transform.set_translation(Vec2::from_coords(0.0, self.screen_height));
+    }
+
 }
 
 impl GameState for MessageState {
-    fn update(self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
+    fn update(mut self: Box<Self>, _ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
+        self.animation += dt;
+
         if self.done {
-            return Ok(self.next_state);
+            if self.animation >= 1.0 {
+                return Ok(self.next_state);
+            }
+        } else {
+            match self.proceed_mode {
+                ProceedMode::Timer { .. } => {
+                    if self.animation >= 1.0 {
+                        self.trigger_out_animation();
+                    }
+                },
+                _ => { }
+            }
         }
+
+        self.animation = self.animation.min(1.0);
 
         Ok(self)
     }
@@ -58,12 +102,9 @@ impl GameState for MessageState {
     fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {
         self.next_state.draw(ctx, dt);
 
-        let transform = Transform::new();
-        ctx.set_camera_position(Vec2::new());
-        ctx.set_camera_zoom(1.0);
-
         let mut draw_ctx = ctx.get_draw_context();
-        draw_ctx.draw(&self.message_texture, &transform);
+        let ramp = (1.0 - (self.animation * std::f32::consts::PI).cos()) * 0.5;
+        draw_ctx.draw(&self.message_texture, &self.start_transform.interpolate(&self.target_transform, ramp));
 
         Ok(())
     }
@@ -74,11 +115,13 @@ impl GameState for MessageState {
         x: i32, y: i32,
         button: MouseButton
     ) -> Result<(), Error> {
-        match self.proceed_mode {
-            ProceedMode::Click => {
-                self.done = true;
-            },
-            _ => { }
+        if self.animation > 0.999 {
+            match self.proceed_mode {
+                ProceedMode::Click => {
+                    self.trigger_out_animation();
+                },
+                _ => { }
+            }
         }
 
         Ok(())
