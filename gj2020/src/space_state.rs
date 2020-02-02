@@ -1,14 +1,17 @@
 use engine::prelude::*;
 use celestial_body::*;
+use smooth_transform::*;
 use engine::game_object::EventQueue;
 
 pub struct SpaceState {
     bodies: Vec::<CelestialBody>,
     event_queue: EventQueue,
+    camera: SmoothTransform,
+    return_to_state: Option<Box<dyn GameState>>,
 }
 
 impl SpaceState {
-    pub fn new(_ctx: &mut Engine) -> Result<SpaceState, Error> {
+    pub fn new(_ctx: &mut Engine, return_to_state: Box<dyn GameState>) -> Result<SpaceState, Error> {
         let mut bodies = Vec::<CelestialBody>::new();
         let tr = _ctx.get_texture_registry();
         let mut sun_sprite = StaticSprite::new(480, 480, tr.load("assets/images/Planets/Sun.png")?)?;
@@ -30,33 +33,51 @@ impl SpaceState {
         bodies.push(planet);
         bodies.push(planet2);
         bodies.push(planet3);
-        let state = SpaceState {
+        let mut state = SpaceState {
             bodies: bodies,
             event_queue: EventQueue::new(),
+            camera: SmoothTransform::new(&Transform {
+                translation: Vec2::new(),
+                scale: 1.0,
+                angle: 0.0,
+            }, 2.0, 1.0),
+            return_to_state: Some(return_to_state),
         };
         return Ok(state);
     }
 }
 
 impl GameState for SpaceState {
-    fn update(mut self: Box<Self>, _ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
+    fn update(mut self: Box<Self>, ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
+    if ctx.key_is_down(Keycode::Q) {
+            let mut hub_state = Some(self.return_to_state.take().unwrap());
+            let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
+        }
+
         let mut physics = Vec::<CelestialBodyPhysics>::new();
         for body in &self.bodies {
             physics.push(body.get_physics());
         }
         for body in &mut self.bodies {
             body.gravitate(&physics, _dt);
-            body.update(_ctx, &mut self.event_queue, _dt);
+            body.update(ctx, &mut self.event_queue, _dt);
         }
         Ok(self)
     }
     fn draw(&mut self, _engine: &mut Engine, _dt: f32) -> Result<(), Error> {
         let mut _ctx = _engine.get_draw_context();
+        let mut maxdist: f32 = 1.0;
+        let origin = self.bodies[0].get_position();
         for body in &self.bodies {
             body.render(&mut _ctx);
+            maxdist = f32::max(maxdist, (origin - body.get_position()).len());
         }
-        _engine.set_camera_position(self.bodies[0].get_position());
-        _engine.set_camera_zoom(10.0);
+        let mut camera = &mut self.camera;
+        camera.set_pan_target(origin);
+        camera.set_scale_target(maxdist / 333.0);
+        camera.update(_dt);
+        _engine.set_camera(camera.get());
         Ok(())
     }
 }

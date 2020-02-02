@@ -175,6 +175,10 @@ impl<'t> Engine<'t> {
         self.camera.clone()
     }
 
+    pub fn set_camera(&mut self, camera: transform::Transform) {
+        self.camera = camera.clone();
+    }
+
     pub fn move_camera(&mut self, translation: vector::Vec2) {
         self.camera.translate(translation);
     }
