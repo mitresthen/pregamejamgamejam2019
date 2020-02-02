@@ -728,6 +728,78 @@
       },
       "rotation": 0.0,
       "scale": 0.6999999
+    },
+    {
+      "object_id": 9,
+      "position": {
+        "x": 912.5,
+        "y": -512.5
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 10,
+      "position": {
+        "x": -218.3357,
+        "y": 300.61743
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 9,
+      "position": {
+        "x": -1545.8357,
+        "y": -124.38257
+      },
+      "rotation": 6.23,
+      "scale": 1.1
+    },
+    {
+      "object_id": 11,
+      "position": {
+        "x": -1632.2983,
+        "y": -462.5
+      },
+      "rotation": 0.0,
+      "scale": 1.8000002
+    },
+    {
+      "object_id": 11,
+      "position": {
+        "x": -1547.2983,
+        "y": -457.5
+      },
+      "rotation": 0.0,
+      "scale": 1.8000002
+    },
+    {
+      "object_id": 11,
+      "position": {
+        "x": -1587.2983,
+        "y": -522.5
+      },
+      "rotation": 0.0,
+      "scale": 1.5000001
+    },
+    {
+      "object_id": 0,
+      "position": {
+        "x": -409.7983,
+        "y": -505.0
+      },
+      "rotation": 0.0,
+      "scale": 0.79999995
+    },
+    {
+      "object_id": 0,
+      "position": {
+        "x": -212.29831,
+        "y": -517.5
+      },
+      "rotation": 0.0,
+      "scale": 0.9
     }
   ],
   "object_types": [
@@ -797,6 +869,30 @@
     },
     {
       "file": "ladder.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        0
+      ]
+    },
+    {
+      "file": "Animals/blobFish.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        0
+      ]
+    },
+    {
+      "file": "Animals/Mouse.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        0
+      ]
+    },
+    {
+      "file": "cannon_ball.png",
       "density": 1,
       "fixed": false,
       "layers": [

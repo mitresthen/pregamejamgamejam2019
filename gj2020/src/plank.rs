@@ -11,6 +11,7 @@ pub struct Plank {
     inv_mass: f32,
     shape: Rc<dyn CollisionShape>,
     plank_state: PlankState,
+    time_since_last_trial: f32
 }
 
 #[derive(Debug)]
@@ -34,6 +35,11 @@ impl Plank {
         size.x = size.x/4.0;
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
 
+        let mut rng = rand::thread_rng();
+        let x: f32 = rng.gen();
+
+        let time_since_last = 3.0 + x;
+
         let mut plank =
             Plank {
                 sprite: sprite,
@@ -41,7 +47,8 @@ impl Plank {
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
-                plank_state: PlankState::Ok
+                plank_state: PlankState::Ok,
+                time_since_last_trial: time_since_last
             };
             plank.transform.set_scale(1.0);
 
@@ -87,15 +94,19 @@ impl GameObject for Plank {
             PlankState::Ok => {
                 let mut rng = rand::thread_rng();
                 let x: f32 = rng.gen();
-                if(x > 0.9999){
-                    println!("Plank broke {}", x);
-                    self.plank_state = PlankState::Broken;
-                    self.toggle_texture(ctx);
+                self.time_since_last_trial -= dt;
+                if(self.time_since_last_trial < 0.0) {
+                    if(  x > 0.95){
+                        println!("Plank broke {}", x);
+                        self.plank_state = PlankState::Broken;
+                        self.toggle_texture(ctx);
 
-                    event_mailbox.submit_event(
-                        EventType::PlankBroke,
-                        EventReceiver::Scene
-                    );
+                        event_mailbox.submit_event(
+                            EventType::PlankBroke,
+                            EventReceiver::Scene
+                        );
+                    }
+                    self.time_since_last_trial = 5.0;
                 }
             },
             PlankState::Repairing => {
