@@ -15,10 +15,11 @@
             "blank.png",
             "box.png",
             "grassTile.png",
-            "AppleTree/apple_tree.png"
+            "AppleTree\\apple_tree.png",
+            "groundTile.png"
         ]
     },
     "special_blocks" : {
-        "apple_tree" : 2
+        "apple_tree" : 3
     }
 }

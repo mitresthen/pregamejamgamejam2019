@@ -16,19 +16,18 @@ impl SnekState {
 
         let mut scene = Scene::new();
 
+        let tile_size = 240.0;
         let apple_tree = level.objects.take_tile_with_id(*level.special_blocks.get("apple_tree").unwrap());
         for (_, position) in apple_tree.iter() {
             let mut apple_tree = AppleTree::new(ctx)?;
-            println!("Creating apple tree at position {:#?}", position);
-            apple_tree.get_transform_mut().set_translation(*position);
+            let mut apple_tree_mut = apple_tree.get_transform_mut();
+            let correct_pos = Vec2 { x: -0.5 * tile_size, y: -0.5 * tile_size };
+            apple_tree_mut.set_translation(*position + correct_pos);
             scene.add_object(apple_tree);
         }
 
         let mut snek = Snek::new(ctx)?;
-
-        let tile_size = 240.0;
         snek.set_position(Vec2::from_coords(1.5, 1.5) * tile_size);
-
         let snek_id = scene.add_object(snek);
 
         ctx.replace_sound(AudioLibrary::Snek, 0, -1)?;
@@ -51,7 +50,6 @@ impl GameState for SnekState {
         for event in events {
             match event.event_type {
                 EventType::Suck => {
-                    ctx.play_sound(AudioLibrary::Kill)?;
                     ctx.reset_sound()?;
                     let mut next_state = Some(self.return_to_state.take().unwrap());
                     let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
@@ -83,25 +81,33 @@ impl GameState for SnekState {
 }
 
 pub struct AppleTree {
-    sprite: AnimatedSprite,
+    sprite: AggregatedAnimatedSprite,
     transform: Transform,
     velocity: Vec2,
-    touched: bool,
+    touched: i32,
 }
 
 impl AppleTree {
     pub fn new(ctx: &mut Engine) -> Result<AppleTree, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/AppleTree/apple_tree.png")?;
+        let texture = tr.load("assets/images/AppleTree/apple_tree_full.png")?;
 
-        let sprite = AnimatedSprite::new(Extent::new(120, 240), texture)?;
+        let full_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(480 * 1, 480 * 1))?;
+        let full_sprite = AnimatedSprite::new(Extent::new(480, 480), full_texture)?;
+
+        let fall_texture = texture.sub_texture(Offset::from_coords(480, 0), Extent::new(480 * 1, 480 * 1))?;
+        let fall_sprite = AnimatedSprite::new(Extent::new(480, 480), fall_texture)?;
+
+        let mut sprite = AggregatedAnimatedSprite::new();
+        sprite.add(full_sprite);
+        sprite.add(fall_sprite);
 
         let mut apple_tree =
         AppleTree {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                touched: false,
+                touched: 0,
             };
         apple_tree.transform.set_scale(1.0);
 
@@ -115,18 +121,16 @@ impl AppleTree {
 
 impl GameObject for AppleTree {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
-        if self.touched {
-            // TODO: Make it look touched
-            // let id = ctx.replace_sound(AudioLibrary::AccidentSong, self.sound_channel, 0).unwrap();
-            // ctx.play(id);
-            // self.prompted_for_response = false;
+        if self.touched == 1 {
+            ctx.play_sound(AudioLibrary::Kill);
             event_mailbox.submit_event(
                 EventType::Suck,
                 EventReceiver::Scene
             );
         }
         let mut sprite_transform = self.transform.clone();
-        sprite_transform.translate(Vec2::from_coords(0.0, -60.0));
+        // sprite_transform.translate(Vec2::from_coords(0.0, 5.0));
+        self.sprite.set_mode(self.touched);
         self.sprite.set_transform(&sprite_transform);
 
         true
@@ -147,7 +151,7 @@ impl GameObject for AppleTree {
     fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
             EventType::Interact => {
-                self.touched = true;
+                self.touched = 1;
                 true
             },
             _ => {
