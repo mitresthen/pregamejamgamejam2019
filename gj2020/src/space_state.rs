@@ -4,6 +4,7 @@ use smooth_transform::*;
 use engine::game_object::EventQueue;
 
 pub struct SpaceState {
+    background: StaticSprite,
     bodies: Vec::<CelestialBody>,
     fixed: Vec::<bool>,
     event_queue: EventQueue,
@@ -15,6 +16,7 @@ impl SpaceState {
     pub fn new(ctx: &mut Engine, return_to_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
         let mut bodies = Vec::<CelestialBody>::new();
         let tr = ctx.get_texture_registry();
+        let background = StaticSprite::new(1200, 1200, tr.load("assets/images/starrySky.png")?)?;
         let mut sun_sprite = StaticSprite::new(480, 480, tr.load("assets/images/Planets/Sun.png")?)?;
         let mut planet_sprite = StaticSprite::new(240, 240, tr.load("assets/images/Planets/Swirly.png")?)?;
         let mut planet2_sprite = StaticSprite::new(240, 240, tr.load("assets/images/Planets/Earth.png")?)?;
@@ -37,6 +39,7 @@ impl SpaceState {
         let mut state = SpaceState {
             bodies: bodies,
             fixed: vec![false, false, false],
+            background: background,
             event_queue: EventQueue::new(),
             camera: SmoothTransform::new(&Transform {
                 translation: Vec2::new(),
@@ -72,6 +75,29 @@ impl SpaceState {
         match skip_first {
             false => first,
             true => second,
+        }
+    }
+
+    fn draw_bg(&mut self, ctx: &mut Engine) {
+        let camera = ctx.get_camera();
+        let x_factor = ctx.get_width() as f32 / 1280 as f32;
+        let y_factor = ctx.get_height() as f32 / 720 as f32;
+        let mut _factor = 1.0;
+        if x_factor < y_factor {
+            _factor = x_factor;
+        }
+        else {
+            _factor = y_factor;
+        }
+        self.background.set_position(ctx.screen_to_world((ctx.get_width()/2) as i32, (ctx.get_height()/2) as i32));
+        self.background.set_scale(_factor * camera.get_scale());
+        self.background.draw(&mut ctx.get_draw_context());
+    }
+
+    fn draw_fg(&mut self, engine: &mut Engine) {
+        let ctx = &mut engine.get_draw_context();
+        for body in &self.bodies {
+            body.render(ctx);
         }
     }
 }
@@ -111,11 +137,9 @@ impl GameState for SpaceState {
     }
 
     fn draw(&mut self, engine: &mut Engine, dt: f32) -> Result<(), Error> {
-        let mut ctx = engine.get_draw_context();
         let mut maxdist: f32 = 1.0;
         let origin = self.bodies[0].get_position();
         for body in &self.bodies {
-            body.render(&mut ctx);
             maxdist = f32::max(maxdist, (origin - body.get_position()).len());
         }
         let mut camera = &mut self.camera;
@@ -123,6 +147,10 @@ impl GameState for SpaceState {
         camera.set_scale_target(maxdist / 333.0);
         camera.update(dt);
         engine.set_camera(camera.get());
+        
+        self.draw_bg(engine);
+        self.draw_fg(engine);
+
         Ok(())
     }
 
