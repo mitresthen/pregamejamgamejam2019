@@ -20,6 +20,7 @@ pub struct AnimatedSprite {
 
 pub trait SpriteTrait : Drawable + 'static {
     fn set_position(&mut self, p: Vec2);
+    fn get_position(&self) -> Vec2;
 
     fn set_transform(&mut self, transform: &Transform);
 
@@ -86,6 +87,9 @@ impl Animatable for AnimatedSprite {
 impl SpriteTrait for AnimatedSprite {
     fn set_position(&mut self, position: Vec2) {
         self.transform.set_translation(position);
+    }
+    fn get_position(&self) -> Vec2 {
+        return self.transform.get_translation()
     }
 
     fn set_transform(&mut self, transform: &Transform) {
@@ -180,6 +184,9 @@ impl SpriteTrait for AggregatedAnimatedSprite
 {
     fn set_position(&mut self, position: Vec2) {
         self.sprites[self.sprite_index as usize].set_position(position);
+    }
+    fn get_position(&self) -> Vec2 {
+        return self.sprites[self.sprite_index as usize].get_position();
     }
 
     fn set_transform(&mut self, transform: &Transform) {
