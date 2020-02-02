@@ -60,6 +60,13 @@ impl GameState for SnekState {
             }
         }
 
+        if ctx.key_is_down(Keycode::Q) {
+            ctx.reset_sound()?;
+            let mut next_state = Some(self.return_to_state.take().unwrap());
+            let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
+        }
+
         Ok(self)
     }
 
