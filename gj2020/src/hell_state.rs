@@ -264,7 +264,7 @@ impl GameState for HellState {
                 _ => ()
             }
         }
-        if self.kills >=10 {
+        if self.kills >=10 ||  _ctx.key_is_down(Keycode::Q) {
             _ctx.reset_sound()?;
             let mut next_state = Some(self.return_to_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
