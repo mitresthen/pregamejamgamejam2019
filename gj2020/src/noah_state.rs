@@ -12,11 +12,12 @@ pub struct NoahState {
     sea_level: f32,
     ocean_id: SceneObjectId,
     broken_planks: u32,
-    total_planks: u32
+    total_planks: u32,
+    hub_state: Option<Box<dyn GameState>>,
  }
 
 impl NoahState {
-    pub fn new(_ctx: &mut Engine) -> Result<Self, Error> {
+    pub fn new(_ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error>  {
         let level = Level2D::load_from_file(_ctx, "assets/levels/Ark4.json");
         let mut _scene = Scene::new();
         println!("Welcome to the ark");
@@ -86,8 +87,10 @@ impl NoahState {
                 sea_level: 226.0,
                 ocean_id,
                 broken_planks: 0,
-                total_planks: plank_count as u32
+                total_planks: plank_count as u32,
+                hub_state: Some(hub_state),
             };
+        let state = Box::new(state);
 
         _ctx.replace_sound(AudioLibrary::Noah, 0, -1)?;
 
@@ -112,6 +115,12 @@ impl GameState for NoahState {
         println!("Broken planks {}, total planks {}", self.broken_planks, self.total_planks);
 
         self.scene.get_mut(self.ocean_id).unwrap().on_event(EventType::OceanRiseRate {rate: self.broken_planks as f32 /self.total_planks as f32}, None);
+
+        if ctx.key_is_down(Keycode::Q) {
+            let mut hub_state = Some(self.hub_state.take().unwrap());
+            let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
+        }
 
         Ok(self)
     }
