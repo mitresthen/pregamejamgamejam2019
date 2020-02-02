@@ -3,7 +3,6 @@ use self::rand::Rng;
 
 use engine::prelude::*;
 use audio_library::AudioLibrary;
-use crate::hub_state::HubState;
 
 pub struct Background {
     texture: Texture,
@@ -257,11 +256,16 @@ impl GameState for HellState {
         let events = self.scene.update(_ctx, None, dt);
         for event in events {
             match event.event_type {
-                EventType::Attack{damage} =>  { self.kills +=1; print!("{} monster killed!\n", damage) },
+                EventType::Attack{damage} =>  {
+                    self.kills +=1;
+                    print!("{} monster killed!\n", damage);
+                    _ctx.play_sound(AudioLibrary::Kill)?;
+                    },
                 _ => ()
             }
         }
         if self.kills >=10 {
+            _ctx.reset_sound()?;
             let mut next_state = Some(self.return_to_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
             return Ok(Box::new(transition_state));

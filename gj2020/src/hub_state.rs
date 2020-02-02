@@ -97,6 +97,10 @@ impl GameState for HubState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
         self.scene.update(ctx, Some(&self.level.objects), dt);
 
+        if !ctx.is_playing(0) {
+            ctx.replace_sound(AudioLibrary::HubWorld, 0, -1)?;
+        }
+
         if self.babylon_trigger.is_triggered() {
             println!("Going to babylon bitches");
             let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(BabylonState::new(_ctx, _hub_state)?)));
