@@ -127,7 +127,7 @@ impl GameState for HubState {
 
         if self.space_trigger.is_triggered() {
             println!("[Balex]: You're going to space, bitches!",);
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SpaceState::new(_ctx, _hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(SpaceState::new(_ctx, _hub_state)?));
             return Ok(Box::new(transition_state));
         }
 
