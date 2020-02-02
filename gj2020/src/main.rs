@@ -52,6 +52,7 @@ impl GameInterface for GodSend {
         sounds.insert(AudioLibrary::Noah, "assets/music/noah.wav");
         sounds.insert(AudioLibrary::Snek, "assets/music/snek.wav");
         sounds.insert(AudioLibrary::Kill, "assets/sounds/squash.wav");
+        sounds.insert(AudioLibrary::Fall, "assets/sounds/heavy_steps2.wav");
         ctx.load_sounds(sounds)?;
 
         ctx.reset_sound()?;
@@ -61,7 +62,7 @@ impl GameInterface for GodSend {
         if std::env::var("BABYLON").is_ok() {
             Ok(babylon_state::BabylonState::new(ctx, hub_state)?)
         } else if std::env::var("NOAH").is_ok() {
-            Ok(Box::new(noah_state::NoahState::new(ctx)?))
+            Ok(noah_state::NoahState::new(ctx, hub_state)?)
         } else {
             Ok(hub_state)
         }

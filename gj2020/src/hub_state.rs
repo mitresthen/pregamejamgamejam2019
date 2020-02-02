@@ -109,7 +109,7 @@ impl GameState for HubState {
 
         if self.noah_trigger.is_triggered() {
             println!("Going to noah ");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(NoahState::new(_ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(NoahState::new(_ctx, _hub_state)?));
             return Ok(Box::new(transition_state));
         }
 

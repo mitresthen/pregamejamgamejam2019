@@ -324,6 +324,7 @@ impl GameState for BabylonState {
         }
 
         if ctx.key_is_down(Keycode::Q) {
+            ctx.reset_sound()?;
             let mut hub_state = Some(self.hub_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
             return Ok(Box::new(transition_state));
