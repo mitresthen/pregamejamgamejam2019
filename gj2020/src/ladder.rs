@@ -12,14 +12,13 @@ pub struct Ladder {
     shape: Rc<CollisionShape>,
 }
 
-
 impl Ladder {
     pub fn new(ctx: &mut Engine) -> Result<Ladder, Error> {
         let sprite;
         {
             let tr = ctx.get_texture_registry();
             let texture_on = tr.load("assets/images/ladder.png")?;
-            sprite = AnimatedSprite::new(Extent::new(60, 240), texture_on)?;
+            sprite = AnimatedSprite::new(Extent::new(48, 221), texture_on)?;
         }
 
         let size = sprite.calculate_size();
@@ -37,8 +36,6 @@ impl Ladder {
 
         Ok(ladder)
     }
-
-    
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
         &mut self.transform

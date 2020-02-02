@@ -78,6 +78,10 @@ impl Rect2D {
     pub fn height(&self) -> f32 {
         return self.max.y - self.min.y;
     }
+
+    pub fn set_height(&mut self, height: f32) {
+        self.max.y = height;
+    }
 }
 
 impl std::ops::Add<Vec2> for Rect2D {

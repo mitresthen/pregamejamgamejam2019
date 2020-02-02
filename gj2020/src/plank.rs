@@ -27,10 +27,11 @@ impl Plank {
         {
             let tr = ctx.get_texture_registry();
             let texture_on = tr.load("assets/images/Plank.png")?;
-            sprite = AnimatedSprite::new(Extent::new(120, 240), texture_on)?;
+            sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on)?;
         }
 
-        let size = sprite.calculate_size();
+        let mut size = sprite.calculate_size();
+        size.x = size.x/4.0;
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
 
         let mut plank =
@@ -54,7 +55,7 @@ impl Plank {
 
         match self.plank_state {
             PlankState::Broken => {
-                let texture_on = tr.load("assets/images/Plank.png");
+                let texture_on = tr.load("assets/images/BrokenPlank.png");
                 let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on.unwrap());
                 self.sprite = sprite.unwrap();
             },
