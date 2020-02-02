@@ -5,5 +5,6 @@ pub enum AudioLibrary {
     Babylon,
     Space,
     Noah,
+    Snek,
     Kill,
 }
