@@ -9,11 +9,12 @@ pub struct NoahState {
     level: Level2D,
     scene: Scene,
     noah_id: SceneObjectId,
+    sea_level: f32
  }
 
 impl NoahState {
     pub fn new(_ctx: &mut Engine) -> Result<Self, Error> {
-        let level = Level2D::load_from_file(_ctx, "assets/levels/Ark3.json");
+        let level = Level2D::load_from_file(_ctx, "assets/levels/Ark4.json");
         let mut _scene = Scene::new();
         println!("Welcome to the ark");
 
@@ -73,7 +74,8 @@ impl NoahState {
             NoahState {
                 level,
                 scene: _scene,
-                noah_id
+                noah_id,
+                sea_level: 226.0
             };
 
         _ctx.replace_sound(AudioLibrary::Noah, 0, -1)?;
@@ -91,7 +93,7 @@ impl GameState for NoahState {
     }
 
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
-        ctx.set_camera_zoom(4.0);
+        ctx.set_camera_zoom(2.0);
         let noah_position = self.scene.get(self.noah_id)
             .unwrap()
             .get_physical_object()
@@ -106,6 +108,11 @@ impl GameState for NoahState {
 
         ctx.draw(&self.level);
         self.scene.render(ctx);
+
+        let mut ocean_bounds = bounds.clone();
+        ocean_bounds.set_height(self.sea_level);
+
+       // ctx.get_draw_context().draw_rect(ocean_bounds, Color::RGBA(0, 0, 166, 200));
 
         Ok(())
     }
