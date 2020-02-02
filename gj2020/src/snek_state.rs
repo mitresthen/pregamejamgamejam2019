@@ -20,7 +20,7 @@ impl SnekState {
         let apple_tree = level.objects.take_tile_with_id(*level.special_blocks.get("apple_tree").unwrap());
         for (_, position) in apple_tree.iter() {
             let mut apple_tree = AppleTree::new(ctx)?;
-            let mut apple_tree_mut = apple_tree.get_transform_mut();
+            let apple_tree_mut = apple_tree.get_transform_mut();
             let correct_pos = Vec2 { x: -0.5 * tile_size, y: -0.5 * tile_size };
             apple_tree_mut.set_translation(*position + correct_pos);
             scene.add_object(apple_tree);
@@ -50,10 +50,10 @@ impl GameState for SnekState {
         for event in events {
             match event.event_type {
                 EventType::Suck => {
-                    ctx.reset_sound()?;
-                    ctx.play_sound(AudioLibrary::Kill)?;
                     let mut next_state = Some(self.return_to_state.take().unwrap());
                     let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
+                    ctx.reset_sound()?;
+                    ctx.play_sound(AudioLibrary::Fall)?;
                     return Ok(Box::new(transition_state));
                 },
                 _ => ()
@@ -130,13 +130,12 @@ impl AppleTree {
 impl GameObject for AppleTree {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         if self.touched == 1 {
-            ctx.play_sound(AudioLibrary::Kill)?;
             event_mailbox.submit_event(
                 EventType::Suck,
                 EventReceiver::Scene
             );
         }
-        let mut sprite_transform = self.transform.clone();
+        let sprite_transform = self.transform.clone();
         // sprite_transform.translate(Vec2::from_coords(0.0, 5.0));
         self.sprite.set_mode(self.touched);
         self.sprite.set_transform(&sprite_transform);
@@ -185,9 +184,4 @@ impl PhysicalObject for AppleTree {
     fn get_velocity_mut(&mut self) -> &mut Vec2 {
         &mut self.velocity
     }
-
-    // fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-    //     let size = self.sprite.calculate_size() * 0.5;
-    //     Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
-    // }
 }

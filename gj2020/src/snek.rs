@@ -122,7 +122,6 @@ impl GameObject for Snek {
         self.sprite.step_time(dt * self.velocity.len() * 0.002);
 
         if self.interact_trigger.poll(ctx) {
-
             println!("Submitting interact event");
             event_mailbox.submit_event(
                 EventType::Interact,
@@ -157,7 +156,8 @@ impl GameObject for Snek {
                 {
                     self.just_colided = 0;
                     self.left_jumps = 2;
-                    0.0
+                    // Value to avoid sinking of Snek the penguin into ground.
+                    -1.0
                 } else {
                     self.velocity.y
                 };
