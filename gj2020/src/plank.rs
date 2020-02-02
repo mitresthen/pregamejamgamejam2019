@@ -10,7 +10,7 @@ pub struct Plank {
     velocity: Vec2,
     inv_mass: f32,
     shape: Rc<dyn CollisionShape>,
-    plank_state: PlankState
+    plank_state: PlankState,
 }
 
 #[derive(Debug)]
@@ -78,23 +78,33 @@ impl Plank {
         self.transform = input_transform;
         self.sprite.set_transform(&self.transform);
     }
+
 }
 
 impl GameObject for Plank {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         match self.plank_state {
             PlankState::Ok => {
                 let mut rng = rand::thread_rng();
                 let x: f32 = rng.gen();
-                if(x > 0.99999){
+                if(x > 0.9999){
                     println!("Plank broke {}", x);
                     self.plank_state = PlankState::Broken;
                     self.toggle_texture(ctx);
+
+                    event_mailbox.submit_event(
+                        EventType::PlankBroke,
+                        EventReceiver::Scene
+                    );
                 }
             },
             PlankState::Repairing => {
                 self.toggle_texture(ctx);
-                self.plank_state = PlankState::Repaired
+                self.plank_state = PlankState::Repaired;
+                event_mailbox.submit_event(
+                    EventType::PlankRepaired,
+                    EventReceiver::Scene
+                );
             },
             _ => { }
         }

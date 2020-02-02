@@ -10,7 +10,9 @@ pub struct NoahState {
     scene: Scene,
     noah_id: SceneObjectId,
     sea_level: f32,
-    ocean_id: SceneObjectId
+    ocean_id: SceneObjectId,
+    broken_planks: u32,
+    total_planks: u32
  }
 
 impl NoahState {
@@ -28,8 +30,10 @@ impl NoahState {
 
         let noah_id = _scene.add_object(noah);
 
-        let planks = level.level_instance.object_instances.iter()
-            .filter(|x| level.level_instance.object_types[x.object_id as usize].file == "Plank.png");
+        let planks: Vec<_> = level.level_instance.object_instances.iter()
+            .filter(|x| level.level_instance.object_types[x.object_id as usize].file == "Plank.png").collect();
+
+        let plank_count = planks.len();
 
         for plank in planks {
             let mut new_plank = Plank::new(_ctx)?;
@@ -80,7 +84,9 @@ impl NoahState {
                 scene: _scene,
                 noah_id,
                 sea_level: 226.0,
-                ocean_id
+                ocean_id,
+                broken_planks: 0,
+                total_planks: plank_count as u32
             };
 
         _ctx.replace_sound(AudioLibrary::Noah, 0, -1)?;
@@ -91,8 +97,21 @@ impl NoahState {
 
 impl GameState for NoahState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, _dt: f32) -> Result<Box<dyn GameState>, Error> {
-        self.scene.update(ctx, None, _dt);
+        let events = self.scene.update(ctx, None, _dt);
+        for event in events {
+            match event.event_type {
+                EventType::PlankBroke => {
+                    self.broken_planks += 1;
+                },
+                EventType::PlankRepaired => {
+                    self.broken_planks -= 1;
+                },
+                _ => {}
+            }
+        }
+        println!("Broken planks {}, total planks {}", self.broken_planks, self.total_planks);
 
+        self.scene.get_mut(self.ocean_id).unwrap().on_event(EventType::OceanRiseRate {rate: self.broken_planks as f32 /self.total_planks as f32}, None);
 
         Ok(self)
     }
