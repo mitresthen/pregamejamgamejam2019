@@ -17,7 +17,6 @@ pub struct Ocean {
 enum OceanState {
     Still,
     Rising,
-    Sinking,
 }
 
 impl Ocean {
@@ -31,17 +30,18 @@ impl Ocean {
 
         let mut size = sprite.calculate_size();
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
+        let mut transform = Transform::new();
+        transform.set_translation(Vec2{x:0.0, y:1950.0});
 
         let mut ocean =
             Ocean {
                 sprite: sprite,
-                transform: Transform::new(),
+                transform: transform,
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
                 ocean_state: OceanState::Still
             };
-            ocean.transform.set_scale(6.0);
 
         Ok(ocean)
     }
@@ -57,9 +57,21 @@ impl Ocean {
 }
 
 impl GameObject for Ocean {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
-        true
+        let change;
+        match self.ocean_state {
+            OceanState::Still => change=0.0,
+            OceanState::Rising => change=-50.0 * dt,
+        }
+        let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600 as f32;
+        let mut transform = Transform::new();
+        let mut translation = _ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32);
+        translation.y = self.transform.get_translation().y + change;
+        transform.set_translation(translation);
+        transform.set_scale(_factor);
+        self.set_transform(transform);
+        return true;
     }
 
     fn render(&self, ctx: &mut DrawContext) {
