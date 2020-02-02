@@ -125,6 +125,17 @@ impl GameState for SpaceState {
             return Ok(Box::new(transition_state));
         }
 
+        let mut maxdist: f32 = 1.0;
+        let origin = self.bodies[0].get_position();
+        for body in &self.bodies {
+            maxdist = f32::max(maxdist, (origin - body.get_position()).len());
+        }
+        let mut camera = &mut self.camera;
+        camera.set_pan_target(origin);
+        camera.set_scale_target(maxdist / 333.0);
+        camera.update(dt);
+        ctx.set_camera(camera.get());
+
         let mut physics = Vec::<CelestialBodyPhysics>::new();
         for body in &self.bodies {
             physics.push(body.get_physics());
@@ -137,17 +148,6 @@ impl GameState for SpaceState {
     }
 
     fn draw(&mut self, engine: &mut Engine, dt: f32) -> Result<(), Error> {
-        let mut maxdist: f32 = 1.0;
-        let origin = self.bodies[0].get_position();
-        for body in &self.bodies {
-            maxdist = f32::max(maxdist, (origin - body.get_position()).len());
-        }
-        let mut camera = &mut self.camera;
-        camera.set_pan_target(origin);
-        camera.set_scale_target(maxdist / 333.0);
-        camera.update(dt);
-        engine.set_camera(camera.get());
-        
         self.draw_bg(engine);
         self.draw_fg(engine);
 
