@@ -710,6 +710,24 @@
       },
       "rotation": 1.57,
       "scale": 1.0
+    },
+    {
+      "object_id": 0,
+      "position": {
+        "x": 101.09299,
+        "y": 846.80225
+      },
+      "rotation": 0.0,
+      "scale": 0.6999999
+    },
+    {
+      "object_id": 0,
+      "position": {
+        "x": -61.407013,
+        "y": 846.80225
+      },
+      "rotation": 0.0,
+      "scale": 0.6999999
     }
   ],
   "object_types": [
