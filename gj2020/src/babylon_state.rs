@@ -3,6 +3,10 @@ extern crate rand;
 use engine::prelude::*;
 use audio_library::AudioLibrary;
 
+struct SpewBloodData {
+    origin: Vec2
+}
+
 struct Victim {
     animated_sprite: AnimatedSprite,
     transform: Transform,
@@ -13,12 +17,14 @@ struct Victim {
     shape: Rc<dyn CollisionShape>,
     dead: bool,
     friction: f32,
+    outgoing_events: Vec<EventType>,
 }
 
 impl Victim {
     pub fn new(ctx: &mut Engine) -> Result<Victim, Error> {
          let tr = ctx.get_texture_registry();
          let texture = tr.load("assets/images/tower/victim.png")?;
+
 
          let extent = Extent::new(64, 128);
          let sprite = AnimatedSprite::new(extent, texture)?;
@@ -38,6 +44,7 @@ impl Victim {
                 standing_position: Vec2::new(),
                 dead: false,
                 friction: 0.0,
+                outgoing_events: Vec::new(),
              };
 
          Ok(victim)
@@ -61,12 +68,20 @@ impl Victim {
 
             self.shape = Rc::new(SquareShape::from_aabb(rect));
             self.friction = 100.0;
+
+            let data = SpewBloodData { origin: self.transform.get_translation() };
+
+            self.outgoing_events.push(EventType::Custom { data: Rc::new(data) });
         }
     }
 }
 
 impl GameObject for Victim {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        for event in self.outgoing_events.drain(..) {
+            event_mailbox.submit_event(event, EventReceiver::Scene);
+        }
+
         if self.dead {
             self.animated_sprite.set_mode(2);
             self.animated_sprite.set_transform(&self.transform);
@@ -165,6 +180,7 @@ pub struct BabylonState {
     scene: Scene,
     cannon_ball_texture: Texture,
     hub_state: Option<Box<dyn GameState>>,
+    blood_texture: Texture,
 }
 
 
@@ -176,6 +192,7 @@ impl BabylonState {
 
         let tr = ctx.get_texture_registry();
         let cannon_ball_texture = tr.load("assets/images/cannon_ball.png")?;
+        let blood_texture = tr.load("assets/images/tower/blood.png")?;
 
         let force = LinearForce::new(Vec2::from_coords(0.0, 400.0));
         scene.add_force(force);
@@ -242,16 +259,57 @@ impl BabylonState {
                 scene,
                 cannon_ball_texture,
                 hub_state: Some(hub_state),
+                blood_texture,
             };
 
         Ok(state)
+    }
+
+    fn spew_blood(&mut self, origin: Vec2) {
+        use self::rand::Rng;
+        let mut rng = rand::thread_rng();
+
+        for i in 0..20 {
+            let mut rigid_body =
+                RigidBody::new(
+                    self.blood_texture.clone(),
+                    ShapeFit::Rectangle(0.5)
+                );
+
+            let speed = 400.0;
+            let mut velocity = Vec2::new();
+            velocity.x = (rng.gen::<f32>() - 0.5) * speed;
+            velocity.y = (rng.gen::<f32>() - 1.0) * speed;
+
+            rigid_body.set_mass(0.01);
+            rigid_body.set_inertia(100.0);
+            rigid_body.set_position(origin);
+            rigid_body.set_velocity(velocity);
+            rigid_body.set_dst_mask(5);
+            rigid_body.set_src_mask(5);
+            self.scene.add_object(rigid_body);
+        }
     }
 }
 
 
 impl GameState for BabylonState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
-        self.scene.update(ctx, None, dt);
+        let events = self.scene.update(ctx, None, dt);
+
+        for event in events.into_iter() {
+            match event.event_type {
+                EventType::Custom { data } => {
+                    if let Ok(data) = data.downcast::<SpewBloodData>() {
+                        println!("Got spew blood data");
+                        self.spew_blood(data.origin);
+                    }
+                },
+                _ => {
+                    println!("Unknown event received");
+                }
+            }
+        }
 
         if ctx.key_is_down(Keycode::Q) {
             let mut hub_state = Some(self.hub_state.take().unwrap());
@@ -277,7 +335,7 @@ impl GameState for BabylonState {
     {
         let world_pos = ctx.screen_to_world(x,y);
 
-        let mut rigid_body = RigidBody::new(self.cannon_ball_texture.clone(), ShapeFit::Sphere(1.0));
+        let mut rigid_body = RigidBody::new(self.cannon_ball_texture.clone(), ShapeFit::Sphere(0.8));
         let area = ctx.get_visible_area();
 
         let origin = Vec2::from_coords(area.max.x, area.center().y);

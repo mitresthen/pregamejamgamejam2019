@@ -10,6 +10,8 @@ pub struct RigidBody {
     spin: f32,
     friction: f32,
     shape: Rc<dyn CollisionShape>,
+    dst_mask: u32,
+    src_mask: u32,
 }
 
 pub enum ShapeFit {
@@ -47,6 +49,8 @@ impl RigidBody {
             velocity: Vec2::from_coords(0.0, 0.0),
             shape: shape,
             friction: 0.3,
+            src_mask: 0,
+            dst_mask: 0,
         }
     }
 
@@ -85,6 +89,14 @@ impl RigidBody {
     pub fn set_spin(&mut self, spin: f32) {
         self.spin = spin;
     }
+
+    pub fn set_dst_mask(&mut self, mask: u32) {
+        self.dst_mask = mask;
+    }
+
+    pub fn set_src_mask(&mut self, mask: u32) {
+        self.src_mask = mask;
+    }
 }
 
 impl PhysicalObject for RigidBody {
@@ -109,6 +121,10 @@ impl PhysicalObject for RigidBody {
     fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { Some(self) }
 
     fn get_friction(&self) -> f32 { self.friction }
+
+    fn get_dst_mask(&self) -> u32 { self.dst_mask }
+
+    fn get_src_mask(&self) -> u32 { self.src_mask }
 }
 
 impl Rotatable for RigidBody {

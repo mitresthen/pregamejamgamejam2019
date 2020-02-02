@@ -1,3 +1,4 @@
+use std::any::Any;
 use drawable::DrawContext;
 use transform::Transform;
 use vector::Vec2;
@@ -32,6 +33,7 @@ pub enum EventType {
     Suck,
     DeleteMe,
     FreeFromDust,
+    Custom { data: Rc<dyn Any> }
 }
 
 #[derive(Debug)]
