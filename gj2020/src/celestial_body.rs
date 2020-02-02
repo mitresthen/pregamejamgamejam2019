@@ -62,8 +62,15 @@ impl CelestialBody {
 		self.velocity += impulse;
 	}
 
-	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool, offset: Polar2) {
-		self.place(other.position + offset);
+	pub fn stop(&mut self) {
+		self.velocity = Vec2::new();
+	}
+
+	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool, offset: Option<Polar2>) {
+		match offset {
+			Some(o) => self.place(other.position + o),
+			None => (),
+		}
 		let self_ratio = self.mass / (self.mass + other.mass);
 		let other_ratio = other.mass / (self.mass + other.mass);
 		let barycenter = self.position + (other.position - self.position) * other_ratio as f32;

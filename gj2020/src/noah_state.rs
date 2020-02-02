@@ -117,6 +117,7 @@ impl GameState for NoahState {
         self.scene.get_mut(self.ocean_id).unwrap().on_event(EventType::OceanRiseRate {rate: self.broken_planks as f32 /self.total_planks as f32}, None);
 
         if ctx.key_is_down(Keycode::Q) {
+            ctx.reset_sound()?;
             let mut hub_state = Some(self.hub_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
             return Ok(Box::new(transition_state));
