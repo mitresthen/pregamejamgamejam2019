@@ -5,7 +5,6 @@ use crate::plank::Plank;
 use crate::ladder::Ladder;
 use crate::ocean::Ocean;
 
-
 pub struct NoahState {
     level: Level2D,
     scene: Scene,
@@ -73,7 +72,6 @@ impl NoahState {
         }
 
         let mut ocean = Ocean::new(_ctx)?;
-        ocean.get_transform_mut().set_translation(Vec2::from_coords(0.0, 0.0));
         let ocean_id = _scene.add_object(ocean);
 
         let state =
