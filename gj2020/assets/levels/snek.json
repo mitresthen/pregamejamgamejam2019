@@ -6,7 +6,9 @@
         "tiles" : [
             "black.png",
             "red.png",
-            "floor.png"
+            "groundBackTile.png",
+            "bushBackTile.png",
+            "skyBackTile.png"
         ]
     },
     "objects" : {
