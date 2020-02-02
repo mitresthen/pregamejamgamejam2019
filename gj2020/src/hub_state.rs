@@ -115,7 +115,7 @@ impl GameState for HubState {
 
         if self.snek_trigger.is_triggered() {
             println!("Time to test some people!");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SnekState::new(_ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SnekState::new(_ctx, _hub_state)?)));
             return Ok(Box::new(transition_state));
         }
 
