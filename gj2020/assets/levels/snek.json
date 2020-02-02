@@ -13,7 +13,7 @@
         "file" : "snek-object-layer.dat",
         "tiles" : [
             "blank.png",
-            "box.png",
+            "bushTile.png",
             "grassTile.png",
             "AppleTree\\apple_tree.png",
             "groundTile.png"
