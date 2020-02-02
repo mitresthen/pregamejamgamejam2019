@@ -16,6 +16,11 @@ pub use rect::Rect2D;
 
 pub use transition_state::TransitionState;
 pub use Color;
+pub use message_state::{
+    Animation,
+    ProceedMode,
+    MessageState
+};
 
 pub use grid2::Grid2;
 

@@ -38,6 +38,8 @@ pub mod decoration_object;
 pub mod rigid_body;
 pub mod physics;
 
+pub mod message_state;
+
 pub mod transition_state;
 
 pub mod axis_controller;

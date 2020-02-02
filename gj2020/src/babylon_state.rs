@@ -185,7 +185,7 @@ pub struct BabylonState {
 
 
 impl BabylonState {
-    pub fn new(ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Self, Error> {
+    pub fn new(ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
         let mut scene = Scene::new();
 
         let level = Level2D::load_from_file(ctx, "assets/levels/tower.json");
@@ -232,7 +232,7 @@ impl BabylonState {
 
         for _ in 0..10 {
             let r = rng.gen::<f32>();
-            let x = (r * bounds.min.x) + ((1.0 - r) * -800.0);
+            let x = (r * -1400.0) + ((1.0 - r) * -800.0);
 
             println!("x = {}", x);
 
@@ -243,7 +243,7 @@ impl BabylonState {
 
         for _ in 0..10 {
             let r = rng.gen::<f32>();
-            let x = (r * bounds.max.x) + ((1.0 - r) * 400.0);
+            let x = (r * 1400.0) + ((1.0 - r) * 400.0);
 
             println!("x = {}", x);
 
@@ -261,6 +261,18 @@ impl BabylonState {
                 hub_state: Some(hub_state),
                 blood_texture,
             };
+
+
+        let state = Box::new(state);
+
+        let state =
+            MessageState::new(
+                ctx,
+                state,
+                Animation::PopInAndOut,
+                ProceedMode::Click, 
+                "assets/images/tower/mission_info.png"
+            )?;
 
         Ok(state)
     }
@@ -342,7 +354,7 @@ impl GameState for BabylonState {
         let velocity = (world_pos - origin) * 0.5;
 
         rigid_body.set_position(origin);
-        rigid_body.set_mass(1.0);
+        rigid_body.set_mass(3.0);
         rigid_body.set_inertia(100.0);
         rigid_body.set_spin(1.0);
 
