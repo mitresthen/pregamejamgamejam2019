@@ -1,5 +1,5 @@
 use std::fmt;
-use std::ops::{Add, Sub, Mul, AddAssign, SubAssign};
+use std::ops::{Add, Sub, Mul, AddAssign, SubAssign, MulAssign};
 
 use rand::Rng;
 use rand;
@@ -118,6 +118,13 @@ impl SubAssign for Vec2 {
     fn sub_assign(&mut self, other: Vec2) {
         self.x -= other.x;
         self.y -= other.y;
+    }
+}
+
+impl MulAssign<f32> for Vec2 {
+    fn mul_assign(&mut self, other: f32) {
+        self.x *= other;
+        self.y *= other;
     }
 }
 

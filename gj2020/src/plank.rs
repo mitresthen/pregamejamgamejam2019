@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use engine::prelude::*;
 
 
@@ -6,7 +7,8 @@ pub struct Plank {
     transform: Transform,
     velocity: Vec2,
     broken: bool,
-    inv_mass: f32
+    inv_mass: f32,
+    shape: Rc<CollisionShape>,
 }
 
 impl Plank {
@@ -18,13 +20,17 @@ impl Plank {
             sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on)?;
         }
 
+        let size = sprite.calculate_size() * 0.5;
+        let shape = SquareShape::from_aabb(Rect2D::centered_square(size.x));
+
         let mut plank =
             Plank {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 broken: false,
-                inv_mass: 0.0
+                inv_mass: 0.0,
+                shape: Rc::new(shape),
             };
             plank.transform.set_scale(1.0);
 
@@ -110,8 +116,7 @@ impl PhysicalObject for Plank {
 
     fn get_inv_mass(&self) -> f32 { self.inv_mass }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let size = self.sprite.calculate_size() * 0.5;
-        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 }

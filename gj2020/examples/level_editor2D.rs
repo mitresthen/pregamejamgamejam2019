@@ -63,15 +63,21 @@ impl GameState for LevelEditorState {
         Ok(self)
     }
 
-    fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error>
+    fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error>
     {
-        _ctx.draw(&self.level);
+        ctx.draw(&self.level);
         let mut transf: Transform = Transform::new();
-        transf.set_translation(_ctx.get_mouse_position().position);
+        transf.set_translation(ctx.get_mouse_position().position);
         transf.set_angle(self.rotation);
         transf.set_scale(self.scale);
+        let object_type = &self.level.level_instance.object_types[self.object_index];
+        let mut draw_ctx = ctx.get_draw_context();
+        draw_ctx.draw(&self.level.object_textures[&object_type.file], &transf);
+        if object_type.fixed {
+            draw_ctx.draw_point(transf.get_translation(), Color::RGB(255, 0, 0));
+        }
         let object_filename = &self.level.level_instance.object_types[self.object_index].file;
-        _ctx.get_draw_context().draw(&self.level.object_textures[&object_filename.clone()], &transf);
+        ctx.get_draw_context().draw(&self.level.object_textures[&object_filename.clone()], &transf);
 
         Ok(())
     }
@@ -85,9 +91,9 @@ impl GameState for LevelEditorState {
         }
 
         if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
-            self.rotation = (self.rotation - 0.05);
-            if(self.rotation < 0.0) {
-                self.rotation = (2.0*3.14);
+            self.rotation = self.rotation - 0.05;
+            if self.rotation < 0.0 {
+                self.rotation = 2.0 * 3.14;
             }
         } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
             self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
@@ -123,15 +129,23 @@ impl GameState for LevelEditorState {
         Ok(())
     }
 
-    fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
+    fn on_mouse_button_up(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<(), Error>
     {
-        let instance = ObjectInstance {
-            object_id: self.object_index as u32,
-            position: _ctx.get_mouse_position().position,
-            rotation: self.rotation,
-            scale: self.scale
-        };
-        self.level.level_instance.object_instances.push(instance);
+        let world_pos = ctx.screen_to_world(x,y);
+
+        if button == MouseButton::Left {
+            let instance = ObjectInstance {
+                object_id: self.object_index as u32,
+                position: world_pos,
+                rotation: self.rotation,
+                scale: self.scale
+            };
+            self.level.level_instance.object_instances.push(instance);
+        } else if button == MouseButton::Right {
+            if let Some(instance) = self.level.take_instance_at(world_pos) {
+                self.object_index = instance.object_id as usize;
+            }
+        }
         Ok(())
     }
 }

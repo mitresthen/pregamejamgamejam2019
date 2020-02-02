@@ -4,6 +4,7 @@ use vector::Vec2;
 use scene::SceneObjectId;
 use Engine;
 use rect::Rect2D;
+use std::rc::Rc;
 
 #[derive(Hash, Eq, PartialEq, Clone, Copy, Debug)]
 pub enum Items {
@@ -155,7 +156,7 @@ pub struct Manifold {
 }
 
 impl Manifold {
-    pub fn from_points(mut v: Vec<Vec2>) -> Manifold {
+    pub fn from_points(v: Vec<Vec2>) -> Manifold {
 
         if v.len() == 0 {
             panic!("Cannot create manifold from zero points!");
@@ -237,12 +238,13 @@ pub trait CollisionShape {
         aabb
     }
 
-    fn build_manifold(&self, axis: Vec2) -> Manifold {
+    fn build_manifold(&self, axis: Vec2, transform: &Transform) -> Manifold {
         let mut points = Vec::new();
 
         let mut maximum = -std::f32::MAX;
-        for p in self.get_points() {
-            let d = axis.dot_product(*p);
+        for p0 in self.get_points() {
+            let p = transform.transform_point(*p0);
+            let d = axis.dot_product(p);
             maximum = maximum.max(d);
             points.push((d, p));
         }
@@ -252,30 +254,45 @@ pub trait CollisionShape {
         let epsilon = 0.1;
 
         let points : Vec<Vec2> = points.into_iter()
-            .filter(|(d, p)| *d >= maximum - epsilon)
-            .map(|(_, p)| *p)
+            .filter(|(d, _p)| *d >= maximum - epsilon)
+            .map(|(_, p)| p)
             .collect();
 
         Manifold::from_points(points)
     }
 
-    fn sat_collide(&self, other: &dyn CollisionShape) -> Option<SATResult> {
+    fn sat_collide(
+        &self,
+        transform: &Transform,
+        other: &dyn CollisionShape,
+        other_transform: &Transform
+    ) -> Option<SATResult> {
         let mut result =
             SATResult {
                 axis: Vec2::new(),
                 depth: std::f32::MAX,
             };
 
-        for axis in self.get_axes().iter().chain(other.get_axes()) {
+        let transformed_axes : Vec<Vec2> = self.get_axes()
+            .iter()
+            .map(|a| transform.transform_vector(*a).normalize())
+            .chain(
+                other.get_axes()
+                .iter()
+                .map(|b| other_transform.transform_vector(*b).normalize())
+            )
+            .collect();
+
+        for axis in transformed_axes.into_iter() {
             let mut r1 = Range::inf_negative();
             let mut r2 = Range::inf_negative();
 
             for p in self.get_points() {
-                r1.expand(p.dot_product(*axis));
+                r1.expand(transform.transform_point(*p).dot_product(axis));
             }
 
             for p in other.get_points() {
-                r2.expand(p.dot_product(*axis));
+                r2.expand(other_transform.transform_point(*p).dot_product(axis));
             }
 
             let overlap = r1.overlap(&r2).size();
@@ -283,7 +300,7 @@ pub trait CollisionShape {
             let factor = if r1.center() < r2.center() { -1.0 } else { 1.0 };
             if overlap < result.depth {
                 result.depth = overlap;
-                result.axis = *axis * factor;
+                result.axis = axis * factor;
             }
         }
 
@@ -304,7 +321,7 @@ pub trait PhysicalObject {
 
     fn get_velocity_mut(&mut self) -> &mut Vec2;
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>>;
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> { None }
 
     fn should_block(&self) -> bool { true }
 
@@ -313,6 +330,8 @@ pub trait PhysicalObject {
     fn get_rotatable(&self) -> Option<&dyn Rotatable> { None }
 
     fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { None }
+
+    fn get_friction(&self) -> f32 { 0.3 }
 }
 
 pub trait Rotatable {

@@ -1,5 +1,7 @@
-use crate::vector::Vec2;
+use std::rc::Rc;
 
+use crate::vector::Vec2;
+use crate::transform::Transform;
 use crate::game_object::{
     CollisionShape,
     PhysicalObject
@@ -8,11 +10,12 @@ use crate::game_object::{
 struct Body {
     velocity: Vec2,
     spin: f32,
-    shape: Box<dyn CollisionShape>,
-    center: Vec2,
+    shape: Rc<dyn CollisionShape>,
+    transform: Transform,
     radius: f32,
     inv_mass: f32,
     inv_inertia: f32,
+    friction: f32,
 }
 
 #[derive(Copy, Clone)]
@@ -25,6 +28,7 @@ struct CollisionPair{
     a: usize,
     b: usize,
     axis: Vec2,
+    target_velocity: f32,
     resistance: f32,
     torque_a: f32,
     torque_b: f32,
@@ -41,13 +45,15 @@ impl CollisionPair {
     fn calculate(ai: usize, bi: usize, a: &Body, b: &Body, point: Vec2, axis: Vec2, depth: f32) -> Self {
         let perp = axis.perpendicular();
 
-        let r_a = perp.dot_product(a.center - point);
-        let r_b = perp.dot_product(b.center - point);
+        let r_a = perp.dot_product(a.transform.get_translation() - point);
+        let r_b = perp.dot_product(b.transform.get_translation() - point);
 
         let torque_a = r_a * a.inv_mass * a.inv_inertia;
         let torque_b = r_b * b.inv_mass * b.inv_inertia;
 
         let resistance = a.inv_mass + b.inv_mass + (torque_a * r_a) + (torque_b * r_b);
+
+        let separation = 1.0;
 
         CollisionPair {
             a: ai,
@@ -57,6 +63,7 @@ impl CollisionPair {
             point,
             torque_a,
             torque_b,
+            target_velocity: depth * separation,
             r_a,
             r_b,
             resistance,
@@ -90,28 +97,22 @@ impl PhysicsSet {
     }
 
     pub fn add_physics_object(&mut self, physics_object: &dyn PhysicalObject) -> Option<BodyId> {
-        if let Some(shape) = physics_object.get_bounding_box() {
-            let mut center = Vec2::new();
-            for p in shape.get_points() {
-                center = center + *p;
-            }
-            center = center * (1.0 / (shape.get_points().len() as f32));
-
+        if let Some(shape) = physics_object.get_collision_shape() {
             let mut radius : f32 = 0.0;
             for p in shape.get_points() {
-                radius = radius.max((*p - center).len());
+                radius = radius.max(p.len());
             }
-
 
             let body =
                 Body {
                     velocity: *physics_object.get_velocity(),
                     shape,
-                    center,
+                    transform: physics_object.get_transform().clone(),
                     radius,
                     inv_mass: physics_object.get_inv_mass(),
                     inv_inertia: physics_object.get_rotatable().map(|r| r.get_inv_inertia()).unwrap_or(0.0),
                     spin: physics_object.get_rotatable().map(|r| r.get_spin()).unwrap_or(0.0),
+                    friction: physics_object.get_friction(),
                 };
 
             self.bodies.push(body);
@@ -131,13 +132,13 @@ impl PhysicsSet {
                 if a.inv_mass == 0.0 && b.inv_mass == 0.0 {
                     continue
                 }
-                let distance = (a.center - b.center).len_sq();
+                let distance = (a.transform.get_translation() - b.transform.get_translation()).len_sq();
                 let radi_sum = a.radius + b.radius;
                 if distance < (radi_sum * radi_sum) {
-                    if let Some(result) = a.shape.sat_collide(b.shape.as_ref()) {
+                    if let Some(result) = a.shape.sat_collide(&a.transform, b.shape.as_ref(), &b.transform) {
 
-                        let manifold_a = a.shape.build_manifold(result.axis * -1.0);
-                        let manifold_b = b.shape.build_manifold(result.axis);
+                        let manifold_a = a.shape.build_manifold(result.axis * -1.0, &a.transform);
+                        let manifold_b = b.shape.build_manifold(result.axis, &b.transform);
 
                         let manifold = manifold_a.clip(manifold_b, result.axis);
 
@@ -148,8 +149,10 @@ impl PhysicsSet {
                             self.force_sums.push(0.0);
 
                             let mut friction_cp = CollisionPair::calculate(ai, bi, a, b, manifold.points[i], result.axis.perpendicular(), 0.0);
+
+                            let friction_factor = (a.friction * b.friction).sqrt();
                             friction_cp.unidirectional = true;
-                            friction_cp.force_limit = Some((normal_id, 0.1));
+                            friction_cp.force_limit = Some((normal_id, friction_factor));
                             self.collision_pairs.push(friction_cp);
                             self.force_sums.push(0.0);
                         }
@@ -174,7 +177,7 @@ impl PhysicsSet {
             let v_a = a.velocity.dot_product(cp.axis) - (a.spin * cp.r_a);
             let v_b = b.velocity.dot_product(cp.axis) - (b.spin * cp.r_b);
 
-            let delta_v = v_b - v_a;
+            let delta_v = cp.target_velocity + v_b - v_a;
 
             if delta_v > 0.0 || cp.unidirectional {
                 let mut f = delta_v / cp.resistance;

@@ -18,6 +18,7 @@ pub mod babylon_state;
 // Noah modules
 pub mod noah_state;
 pub mod plank;
+pub mod noah;
 
 // Snek modules
 pub mod snek;
@@ -50,10 +51,12 @@ impl GameInterface for GodSend {
 
         ctx.reset_sound()?;
 
+        let hub_state = Box::new(hub_state::HubState::new(ctx)?);
+
         if std::env::var("BABYLON").is_ok() {
-            Ok(Box::new(babylon_state::BabylonState::new(ctx)?))
+            Ok(Box::new(babylon_state::BabylonState::new(ctx, hub_state)?))
         } else {
-            Ok(Box::new(hub_state::HubState::new(ctx)?))
+            Ok(hub_state)
         }
     }
 }

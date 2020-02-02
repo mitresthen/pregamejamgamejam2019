@@ -42,7 +42,8 @@ pub struct Minigame {
     texture: Texture,
     transform: Transform,
     velocity: Vec2,
-    trigger: MinigameTrigger
+    trigger: MinigameTrigger,
+    shape: Rc<CollisionShape>,
 }
 
 impl Minigame {
@@ -50,11 +51,15 @@ impl Minigame {
         let mut transform = Transform::new();
         transform.set_translation(position);
 
+        let rect = Rect2D::centered_square(240.0);
+        let shape = SquareShape::from_aabb(rect);
+
         Minigame {
             texture,
             transform,
             velocity: Vec2::from_coords(0.0, 0.0),
             trigger: MinigameTrigger::new(),
+            shape: Rc::new(shape),
         }
     }
 
@@ -107,11 +112,8 @@ impl PhysicalObject for Minigame {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let rect = Rect2D::centered_square(240.0) + self.transform.get_translation();
-        let shape = SquareShape::from_aabb(rect);
-
-        Some(Box::new(shape))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 
     fn get_inv_mass(&self) -> f32 { 0.0 }

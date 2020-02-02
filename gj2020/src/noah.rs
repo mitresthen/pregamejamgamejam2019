@@ -3,7 +3,7 @@ use engine::prelude::*;
 
 use std::ops::Add;
 
-pub struct God {
+pub struct Noah {
     controller: AxisController,
     interact_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
@@ -11,13 +11,13 @@ pub struct God {
     velocity: Vec2,
     direction: i32,
     collision_size: Vec2,
-    shape: Rc<SquareShape>,
+    shape: Rc<dyn CollisionShape>,
 }
 
-impl God {
-    pub fn new(ctx: &mut Engine) -> Result<God, Error> {
+impl Noah {
+    pub fn new(ctx: &mut Engine) -> Result<Noah, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/God/god.png")?;
+        let texture = tr.load("assets/images/God/God.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
@@ -31,10 +31,10 @@ impl God {
 
         let collision_size = Vec2::from_coords(200.0, 80.0);
         let rect = Rect2D::centered_rectangle(collision_size);
-        let shape = SquareShape::from_aabb(rect);
+        let square = BevelShape::from_aabb(rect, rect.width() / 3.0);
 
-        let god = 
-            God {
+        let Noah = 
+            Noah {
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -44,13 +44,13 @@ impl God {
                 interact_trigger: Trigger::new(Keycode::Space),
                 sprite,
                 transform: Transform::new(),
-                collision_size,
                 velocity: Vec2::new(),
+                collision_size,
                 direction: 0,
-                shape: Rc::new(shape),
+                shape: Rc::new(square),
             };
 
-        Ok(god)
+        Ok(Noah)
     }
 
     pub fn set_position(&mut self, position: Vec2) {
@@ -62,7 +62,7 @@ impl God {
     }
 }
 
-impl GameObject for God {
+impl GameObject for Noah {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let mut target_velocity = self.controller.poll(ctx) * 400.0;
         
@@ -127,7 +127,7 @@ impl GameObject for God {
     }
 }
 
-impl PhysicalObject for God {
+impl PhysicalObject for Noah {
     fn get_transform(&self) -> &Transform {
         &self.transform
     }

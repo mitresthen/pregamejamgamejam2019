@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use engine::prelude::*;
 
 
@@ -12,6 +13,7 @@ pub struct Snek {
     just_colided: i32,
     just_jumped: i32,
     left_jumps: i32,
+    shape: Rc<CollisionShape>,
 }
 
 impl Snek {
@@ -29,6 +31,10 @@ impl Snek {
         sprite.add(idle_sprite);
         sprite.add(walk_sprite);
 
+        let collision_size = Vec2::from_coords(200.0, 200.0);
+        let rect = Rect2D::centered_rectangle(collision_size);
+        let square = SquareShape::from_aabb(rect);
+
         let snek =
             Snek {
                 controller: AxisController::new(
@@ -41,11 +47,12 @@ impl Snek {
                 sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                collision_size: Vec2::from_coords(200.0, 200.0),
+                collision_size,
                 direction: 0,
                 just_colided: 0,
                 just_jumped: 0,
                 left_jumps: 2,
+                shape: Rc::new(square),
             };
 
         Ok(snek)
@@ -112,7 +119,7 @@ impl GameObject for Snek {
 
         self.sprite.set_mode(mode);
         self.sprite.set_transform(&sprite_transform);
-        self.sprite.step_time(dt * self.velocity.len() * 0.02);
+        self.sprite.step_time(dt * self.velocity.len() * 0.002);
 
         if self.interact_trigger.poll(ctx) {
 
@@ -180,10 +187,7 @@ impl PhysicalObject for Snek {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        let rect = Rect2D::centered_rectangle(self.collision_size);
-        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
-
-        Some(Box::new(square))
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
     }
 }

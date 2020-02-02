@@ -121,10 +121,6 @@ impl PhysicalObject for Demon {
     fn get_velocity_mut(&mut self) -> &mut Vec2 {
         &mut self.velocity
     }
-
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
-        None
-    }
 }
 
 
