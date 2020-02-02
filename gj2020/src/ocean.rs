@@ -52,7 +52,7 @@ impl Ocean {
 }
 
 impl GameObject for Ocean {
-    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
         let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600 as f32;
         let mut transform = Transform::new();
@@ -61,6 +61,14 @@ impl GameObject for Ocean {
         transform.set_translation(translation);
         transform.set_scale(_factor);
         self.set_transform(transform);
+
+        if(self.sprite.get_position().y < 365.0) {
+            event_mailbox.submit_event(
+                EventType::BoatSunk,
+                EventReceiver::Scene
+            );
+        }
+
         return true;
     }
 

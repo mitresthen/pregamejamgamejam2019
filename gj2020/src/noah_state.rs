@@ -4,6 +4,7 @@ use crate::noah::Noah;
 use crate::plank::Plank;
 use crate::ladder::Ladder;
 use crate::ocean::Ocean;
+use crate::end_state::EndState;
 
 pub struct NoahState {
     level: Level2D,
@@ -14,6 +15,7 @@ pub struct NoahState {
     broken_planks: u32,
     total_planks: u32,
     hub_state: Option<Box<dyn GameState>>,
+    planks_repaired: u32
  }
 
 impl NoahState {
@@ -89,6 +91,7 @@ impl NoahState {
                 broken_planks: 0,
                 total_planks: plank_count as u32,
                 hub_state: Some(hub_state),
+                planks_repaired: 0,
             };
         let state = Box::new(state);
 
@@ -108,7 +111,13 @@ impl GameState for NoahState {
                 },
                 EventType::PlankRepaired => {
                     self.broken_planks -= 1;
+                    self.planks_repaired += 1;
                 },
+                EventType::BoatSunk => {
+                    let mut hub_state = Some(self.hub_state.take().unwrap());
+                    let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+                    return Ok(Box::new(transition_state));        
+                }
                 _ => {}
             }
         }
@@ -120,6 +129,16 @@ impl GameState for NoahState {
             ctx.reset_sound()?;
             let mut hub_state = Some(self.hub_state.take().unwrap());
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
+        }
+
+        if ctx.key_is_down(Keycode::V) {
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(EndState::new(_ctx, _hub_state, "assets/images/noah_victory.png")?));
+            return Ok(Box::new(transition_state));
+        }
+
+        if self.planks_repaired >= 10 {
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(EndState::new(_ctx, _hub_state, "assets/images/noah_victory.png")?));
             return Ok(Box::new(transition_state));
         }
 

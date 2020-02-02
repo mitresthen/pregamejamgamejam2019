@@ -36,6 +36,7 @@ pub enum EventType {
     PlankBroke,
     PlankRepaired,
     OceanRiseRate { rate: f32 },
+    BoatSunk,
     Custom { data: Rc<dyn Any> }
 }
 
