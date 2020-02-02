@@ -20,6 +20,7 @@ pub mod noah_state;
 pub mod plank;
 pub mod ladder;
 pub mod noah;
+pub mod ocean;
 
 // Snek modules
 pub mod snek;
