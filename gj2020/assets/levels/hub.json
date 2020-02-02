@@ -4,8 +4,8 @@
     "ground" : {
         "file" : "hub-floor-layer.dat",
         "tiles" : [
-            "black.png",
-            "GodRoom\\floor.png",            
+            "GodRoom\\cloudTile.png",
+            "GodRoom\\floor.png",
             "GodRoom\\carpet_cnter.png",
             "GodRoom\\carpet_corner.png",
             "GodRoom\\carpet_corner1.png",

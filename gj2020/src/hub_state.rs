@@ -16,7 +16,7 @@ use audio_library::AudioLibrary;
 pub struct HubState {
     level: Level,
     scene: Scene,
-    _god_id: SceneObjectId,
+    god_id: SceneObjectId,
     babylon_trigger: MinigameTrigger,
     noah_trigger: MinigameTrigger,
     snek_trigger: MinigameTrigger,
@@ -78,7 +78,7 @@ impl HubState {
         let hub_state =
             HubState {
                 level,
-                _god_id: god_id,
+                god_id: god_id,
                 scene,
                 babylon_trigger,
                 noah_trigger,
@@ -133,9 +133,23 @@ impl GameState for HubState {
 
         Ok(self)
     }
+
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
-        ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
-        ctx.set_camera_zoom(4.0);
+        // ctx.set_camera_position(Vec2::from_coords(240.0 * 5.0, 240.0 * 3.0));
+        // ctx.set_camera_zoom(4.0);
+        let god_position = self.scene.get(self.god_id)
+            .unwrap()
+            .get_physical_object()
+            .unwrap()
+            .get_transform()
+            .get_translation();
+
+        ctx.set_camera_position(god_position);
+        ctx.set_camera_zoom(2.0);
+
+        ctx.draw(&self.level.ground);
+        ctx.draw(&self.level.objects.interleave_scene(&self.scene));
+
 
         ctx.draw(&self.level.ground);
         ctx.draw(&self.level.objects.interleave_scene(&self.scene));
