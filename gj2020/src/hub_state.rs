@@ -99,31 +99,31 @@ impl GameState for HubState {
 
         if self.babylon_trigger.is_triggered() {
             println!("Going to babylon bitches");
-            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(BabylonState::new(ctx, hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(BabylonState::new(_ctx, _hub_state)?)));
             return Ok(Box::new(transition_state));
         }
 
         if self.noah_trigger.is_triggered() {
             println!("Going to noah ");
-            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(NoahState::new(ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(NoahState::new(_ctx)?)));
             return Ok(Box::new(transition_state));
         }
 
         if self.snek_trigger.is_triggered() {
             println!("Time to test some people!");
-            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(SnekState::new(ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SnekState::new(_ctx)?)));
             return Ok(Box::new(transition_state));
         }
 
         if self.hell_trigger.is_triggered() {
             println!("Time to test some people!");
-            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(HellState::new(ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(HellState::new(_ctx, _hub_state)?)));
             return Ok(Box::new(transition_state));
         }
 
         if self.space_trigger.is_triggered() {
             println!("[Balex]: You're going to space, bitches!",);
-            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(SpaceState::new(ctx)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SpaceState::new(_ctx)?)));
             return Ok(Box::new(transition_state));
         }
 

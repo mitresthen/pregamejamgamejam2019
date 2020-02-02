@@ -18,24 +18,24 @@ impl Background {
 }
 
 impl GameObject for Background {
-    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         //let screen = Vec2{x:(_ctx.get_width()/2) as f32, y: (_ctx.get_height()/2) as f32};
         let x_factor = _ctx.get_width() as f32 / 1280 as f32;
         let y_factor = _ctx.get_height() as f32 / 720 as f32;
-        let mut factor = 1.0;
+        let mut _factor = 1.0;
         if x_factor < y_factor {
-            factor = x_factor;
+            _factor = x_factor;
         }
         else {
-            factor = y_factor;
+            _factor = y_factor;
         }
         self.transform.set_translation(_ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32));
-        self.transform.set_scale(factor);
+        self.transform.set_scale(_factor);
         return true;
     }
 
-    fn render(&self, ctx: &mut DrawContext) {
-        ctx.draw(&self.texture, &self.transform);
+    fn render(&self, _ctx: &mut DrawContext) {
+        _ctx.draw(&self.texture, &self.transform);
     }
 
     fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { None }
@@ -62,7 +62,7 @@ pub struct Demon {
 
 impl Demon {
     fn new(tex: AggregatedAnimatedSprite) -> Demon {
-        Demon { texture: tex, transform: Transform::new(), velocity: Vec2{x:0.0,y:0.0}, distance: 3.0, health: 1.0}
+        Demon { texture: tex, transform: Transform::new(), velocity: Vec2{x:0.0,y:0.0}, distance: 2.0, health: 1.0}
     }
 
     fn set_translation(&mut self, pos: Vec2) {
@@ -77,7 +77,7 @@ impl GameObject for Demon {
         if self.distance < 0.0 {
             self.distance = 0.0;
         }
-        self.texture.set_scale( 3.1 - self.distance );
+        self.texture.set_scale( 2.1 - self.distance );
         if self.health < 0.0 {
             _event_mailbox.submit_event(EventType::Attack{damage:1.0}, EventReceiver::Scene);
             _event_mailbox.submit_event(EventType::DeleteMe, EventReceiver::Scene);
@@ -85,8 +85,8 @@ impl GameObject for Demon {
         return true;
     }
 
-    fn render(&self, ctx: &mut DrawContext) {
-        self.texture.draw(ctx);
+    fn render(&self, _ctx: &mut DrawContext) {
+        self.texture.draw(_ctx);
     }
 
     fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { Some(self) }
@@ -128,9 +128,9 @@ pub struct HellState {
     scene: Scene,
     demon_textures: Vec<Texture>,
     demons: Vec<SceneObjectId>,
-    club_id : SceneObjectId,
     last_spawn: f32,
     kills: u8,
+    return_to_state: Option<Box<dyn GameState>>,
 }
 
 pub struct Club {
@@ -150,10 +150,10 @@ impl Club {
 }
 
 impl GameObject for Club {
-    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         self.set_translation(_ctx.get_mouse_position().position);
         match _ctx.get_mouse_drag_state() {
-            Some(x) => {
+            Some(_x) => {
                     self.texture.set_mode(1);
                     if !self.down {
                         self.down = true;
@@ -170,8 +170,8 @@ impl GameObject for Club {
         return true;
     }
 
-    fn render(&self, ctx: &mut DrawContext) {
-        self.texture.draw(ctx);
+    fn render(&self, _ctx: &mut DrawContext) {
+        self.texture.draw(_ctx);
     }
 
     fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { None }
@@ -190,11 +190,11 @@ impl GameObject for Club {
 }
 
 impl HellState {
-    pub fn new(ctx: &mut Engine) -> Result<Self, Error> {
+    pub fn new(_ctx: &mut Engine, return_to_state: Box<dyn GameState>) -> Result<Self, Error> {
         let mut scene = Scene::new();
 
-        ctx.replace_sound(AudioLibrary::Hell, 0, -1)?;
-        let tr = ctx.get_texture_registry();
+        _ctx.replace_sound(AudioLibrary::Hell, 0, -1)?;
+        let tr = _ctx.get_texture_registry();
         let demon_texture = tr.load("assets/images/Demon/Demon.png")?;
         let demon1_texture = tr.load("assets/images/Demon/Demon1.png")?;
 
@@ -209,18 +209,18 @@ impl HellState {
         club_sprite.add(club_down_sprite);
 
         let club = Club::new( club_sprite );
-        let id = scene.add_object(club);
+        scene.add_object(club);
         let background_texture = tr.load("assets/images/Hell.png")?;
         let background = Background::new(background_texture);
         scene.add_object(background);
         let state =
             HellState {
                 scene,
-                demon_textures:vec![demon_texture, demon1_texture],
+                demon_textures: vec![demon_texture, demon1_texture],
                 demons: Vec::new(),
-                club_id: id,
                 last_spawn: 0.0,
-                kills:0,
+                kills: 0,
+                return_to_state: Some(return_to_state),
             };
 
         Ok(state)
@@ -246,15 +246,15 @@ impl GameState for HellState {
             self.last_spawn -= 2.0;
             let mut rng = rand::thread_rng();
             let mut demon = Demon::new(self.spawn_demon_sprite());
-            let x = rng.gen::<u32>() % ctx.get_width();
-            let y = rng.gen::<u32>() % ctx.get_height();
-            let world_pos = ctx.screen_to_world(x as i32,y as i32);
+            let x = rng.gen::<u32>() % _ctx.get_width();
+            let y = rng.gen::<u32>() % _ctx.get_height();
+            let world_pos = _ctx.screen_to_world(x as i32,y as i32);
             demon.set_translation(world_pos);
 
             let id = self.scene.add_object(demon);
             self.demons.push(id);
         }
-        let events = self.scene.update(ctx, None, dt);
+        let events = self.scene.update(_ctx, None, dt);
         for event in events {
             match event.event_type {
                 EventType::Attack{damage} =>  { self.kills +=1; print!("{} monster killed!\n", damage) },
@@ -262,14 +262,16 @@ impl GameState for HellState {
             }
         }
         if self.kills >=10 {
-            return Ok(Box::new(HubState::new(ctx)?));
+            let mut next_state = Some(self.return_to_state.take().unwrap());
+            let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
+            return Ok(Box::new(transition_state));
         }
         Ok(self)
     }
 
-    fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
-        ctx.set_camera_zoom(1.0);
-        self.scene.render(ctx);
+    fn draw(&mut self, _ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
+        _ctx.set_camera_zoom(1.0);
+        self.scene.render(_ctx);
 
         Ok(())
     }
