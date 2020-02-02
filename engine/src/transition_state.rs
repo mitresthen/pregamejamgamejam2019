@@ -31,6 +31,7 @@ impl GameState for TransitionState {
         let half_duration = self.duration / 2.0;
         if self.time + dt >= half_duration && self.time < half_duration {
             self.current_state = (*self.create_target_callback)(self.current_state, ctx)?;
+            self.current_state = self.current_state.update(ctx, dt)?;
         }
 
         self.time += dt;
@@ -40,6 +41,10 @@ impl GameState for TransitionState {
         }
 
         Ok(self)
+    }
+
+    fn get_background_color(&self) -> Color {
+        self.current_state.get_background_color()
     }
 
     fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {

@@ -10,20 +10,35 @@ pub struct RigidBody {
     spin: f32,
     friction: f32,
     shape: Rc<dyn CollisionShape>,
+    dst_mask: u32,
+    src_mask: u32,
+}
+
+pub enum ShapeFit {
+    Rectangle(f32),
+    Sphere(f32),
 }
 
 impl RigidBody {
-    pub fn new(texture: Texture) -> RigidBody {
+    pub fn new(texture: Texture, shape_fit: ShapeFit) -> RigidBody {
         let sx = texture.extent().width as f32 * 0.5;
         let sy = texture.extent().height as f32 * 0.5;
 
-        let bounding_box =
-            Rect2D {
-                min: Vec2::from_coords(-sx, -sy),
-                max: Vec2::from_coords(sx, sy)
+        let shape : Rc<dyn CollisionShape>=
+            match shape_fit {
+                ShapeFit::Rectangle(factor) => {
+                    let bounding_box =
+                        Rect2D {
+                            min: Vec2::from_coords(-sx, -sy) * factor,
+                            max: Vec2::from_coords(sx, sy) * factor
+                        };
+                    Rc::new(SquareShape::from_aabb(bounding_box))
+                },
+                ShapeFit::Sphere(factor) => {
+                    let r = sx.max(sy) * factor;
+                    Rc::new(RoundShape::new(r, 16))
+                }
             };
-
-        let shape = Rc::new(SquareShape::from_aabb(bounding_box));
 
         RigidBody {
             texture,
@@ -32,9 +47,15 @@ impl RigidBody {
             inv_inertia: 0.0,
             spin: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
-            shape,
+            shape: shape,
             friction: 0.3,
+            src_mask: 0,
+            dst_mask: 0,
         }
+    }
+
+    pub fn set_transform(&mut self, transform: Transform) {
+        self.transform = transform;
     }
 
     pub fn set_friction(&mut self, friction: f32) {
@@ -68,6 +89,14 @@ impl RigidBody {
     pub fn set_spin(&mut self, spin: f32) {
         self.spin = spin;
     }
+
+    pub fn set_dst_mask(&mut self, mask: u32) {
+        self.dst_mask = mask;
+    }
+
+    pub fn set_src_mask(&mut self, mask: u32) {
+        self.src_mask = mask;
+    }
 }
 
 impl PhysicalObject for RigidBody {
@@ -92,6 +121,10 @@ impl PhysicalObject for RigidBody {
     fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { Some(self) }
 
     fn get_friction(&self) -> f32 { self.friction }
+
+    fn get_dst_mask(&self) -> u32 { self.dst_mask }
+
+    fn get_src_mask(&self) -> u32 { self.src_mask }
 }
 
 impl Rotatable for RigidBody {

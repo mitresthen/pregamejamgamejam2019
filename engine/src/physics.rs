@@ -16,6 +16,8 @@ struct Body {
     inv_mass: f32,
     inv_inertia: f32,
     friction: f32,
+    src_mask: u32,
+    dst_mask: u32,
 }
 
 #[derive(Copy, Clone)]
@@ -113,6 +115,8 @@ impl PhysicsSet {
                     inv_inertia: physics_object.get_rotatable().map(|r| r.get_inv_inertia()).unwrap_or(0.0),
                     spin: physics_object.get_rotatable().map(|r| r.get_spin()).unwrap_or(0.0),
                     friction: physics_object.get_friction(),
+                    dst_mask: physics_object.get_dst_mask(),
+                    src_mask: physics_object.get_src_mask(),
                 };
 
             self.bodies.push(body);
@@ -130,6 +134,9 @@ impl PhysicsSet {
                     continue
                 }
                 if a.inv_mass == 0.0 && b.inv_mass == 0.0 {
+                    continue
+                }
+                if (a.src_mask & b.dst_mask != 0) || (b.src_mask & a.dst_mask != 0) {
                     continue
                 }
                 let distance = (a.transform.get_translation() - b.transform.get_translation()).len_sq();

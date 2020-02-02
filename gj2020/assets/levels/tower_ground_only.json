@@ -1,0 +1,144 @@
+{
+  "object_instances": [
+    {
+      "object_id": 14,
+      "position": {
+        "x": -127.5,
+        "y": 722.5
+      },
+      "rotation": 0.0,
+      "scale": 1.3999999
+    },
+    {
+      "object_id": 13,
+      "position": {
+        "x": -50.0,
+        "y": 510.0
+      },
+      "rotation": 0.0,
+      "scale": 1.6000001
+    }
+  ],
+  "object_types": [
+    {
+      "file": "tower/floor.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_middle.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/foundation.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/large_block.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/medium_block.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/pillar.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/slope_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/slope_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_middle_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_middle_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/grass_visual.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        0
+      ]
+    },
+    {
+      "file": "tower/grass_collide.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        1
+      ]
+    }
+  ]
+}

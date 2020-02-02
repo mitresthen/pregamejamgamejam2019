@@ -1,3 +1,4 @@
+use std::any::Any;
 use drawable::DrawContext;
 use transform::Transform;
 use vector::Vec2;
@@ -32,6 +33,7 @@ pub enum EventType {
     Suck,
     DeleteMe,
     FreeFromDust,
+    Custom { data: Rc<dyn Any> }
 }
 
 #[derive(Debug)]
@@ -332,6 +334,10 @@ pub trait PhysicalObject {
     fn get_rotatable_mut(&mut self) -> Option<&mut dyn Rotatable> { None }
 
     fn get_friction(&self) -> f32 { 0.3 }
+
+    fn get_src_mask(&self) -> u32 { 0 }
+
+    fn get_dst_mask(&self) -> u32 { 0 }
 }
 
 pub trait Rotatable {

@@ -6,7 +6,7 @@ pub struct RoundShape {
 }
 
 impl RoundShape {
-    pub fn from_aabb(radius: f32, point_count: usize) -> RoundShape {
+    pub fn new(radius: f32, point_count: usize) -> RoundShape {
         let mut points = Vec::new();
         for i in 0..point_count {
             let angle = ((i as f32) / (point_count as f32)) * std::f32::consts::PI * 2.0;

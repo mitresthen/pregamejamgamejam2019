@@ -1,11 +1,8 @@
 use engine::prelude::*;
 use audio_library::AudioLibrary;
-use crate::god::God;
 use crate::noah::Noah;
 use crate::plank::Plank;
 use crate::ladder::Ladder;
-use std::time::{Duration, SystemTime};
-use std::thread::sleep;
 
 
 pub struct NoahState {
@@ -50,7 +47,7 @@ impl NoahState {
         for floor_plank in floor {
             let texture = level.object_textures.get("DarkPlank.png").unwrap().clone();
 
-            let mut rigid_body = RigidBody::new(texture);
+            let mut rigid_body = RigidBody::new(texture, ShapeFit::Rectangle(1.0));
             rigid_body.set_position(floor_plank.position);
             rigid_body.set_angle(floor_plank.rotation);
             rigid_body.set_friction(0.5);

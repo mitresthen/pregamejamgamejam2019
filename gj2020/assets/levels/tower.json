@@ -467,6 +467,69 @@
       },
       "rotation": 0.0,
       "scale": 1.0
+    },
+    {
+      "object_id": 13,
+      "position": {
+        "x": -155.0,
+        "y": 505.0
+      },
+      "rotation": 0.0,
+      "scale": 1.5000001
+    },
+    {
+      "object_id": 15,
+      "position": {
+        "x": -1220.0,
+        "y": -690.0
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 15,
+      "position": {
+        "x": 1055.0,
+        "y": -762.5
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 15,
+      "position": {
+        "x": 1242.5,
+        "y": -680.0
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 15,
+      "position": {
+        "x": 332.5,
+        "y": -597.5
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 15,
+      "position": {
+        "x": -1367.5,
+        "y": -635.0
+      },
+      "rotation": 0.0,
+      "scale": 1.0
+    },
+    {
+      "object_id": 14,
+      "position": {
+        "x": 12.5,
+        "y": 742.5
+      },
+      "rotation": 0.0,
+      "scale": 1.7000002
     }
   ],
   "object_types": [
@@ -505,7 +568,7 @@
     {
       "file": "tower/foundation.png",
       "density": 1,
-      "fixed": true,
+      "fixed": false,
       "layers": [
         1
       ]
@@ -572,6 +635,30 @@
       "fixed": false,
       "layers": [
         1
+      ]
+    },
+    {
+      "file": "tower/grass_visual.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        0
+      ]
+    },
+    {
+      "file": "tower/grass_collide.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/clouds.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        0
       ]
     }
   ]

@@ -62,6 +62,10 @@ impl AnimatedSprite {
         Ok(animated_sprite)
     }
 
+    pub fn get_size(&self) -> Vec2 {
+        Vec2::from_coords(self.tile_extent.width as f32, self.tile_extent.height as f32) * self.transform.get_scale()
+    }
+
 }
 
 impl Animatable for AnimatedSprite {

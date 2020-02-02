@@ -53,12 +53,12 @@ impl LevelEditorState {
 
 
 impl GameState for LevelEditorState {
-    fn update(mut self: Box<Self>, _ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error>
+    fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error>
     {
-        self.camera_velocity = self.controller.poll(_ctx) * 800.0;
-        _ctx.move_camera(self.camera_velocity * dt);
-        let zoom = self.zoom.poll(_ctx, dt);
-        _ctx.set_camera_zoom(zoom);
+        self.camera_velocity = self.controller.poll(ctx) * 800.0;
+        ctx.move_camera(self.camera_velocity * dt);
+        let zoom = self.zoom.poll(ctx, dt);
+        ctx.set_camera_zoom(zoom);
 
         Ok(self)
     }
@@ -82,26 +82,31 @@ impl GameState for LevelEditorState {
         Ok(())
     }
 
-    fn on_key_down(&mut self, _ctx: &mut Engine, keycode: Keycode, _is_repeated: bool) -> Result<(), Error>
+    fn on_key_down(&mut self, ctx: &mut Engine, keycode: Keycode, _is_repeated: bool) -> Result<(), Error>
     {
         if keycode == Keycode::C {
-            self.object_index = (self.object_index + 1) % self.level.object_textures.len();
+            if ctx.key_is_down(Keycode::LShift) {
+                self.object_index = (self.object_index + self.level.object_textures.len() - 1) % self.level.object_textures.len();
+            } else {
+                self.object_index = (self.object_index + 1) % self.level.object_textures.len();
+            }
 
             println!("Current object id: {}", self.object_index);
         }
 
-        if keycode == Keycode::R && _ctx.key_is_down(Keycode::LShift) {
+
+        if keycode == Keycode::R && ctx.key_is_down(Keycode::LShift) {
             self.rotation = self.rotation - 0.05;
             if self.rotation < 0.0 {
                 self.rotation = 2.0 * 3.14;
             }
-        } else if keycode == Keycode::R && _ctx.key_is_down(Keycode::LCtrl) {
+        } else if keycode == Keycode::R && ctx.key_is_down(Keycode::LCtrl) {
             self.rotation = (self.rotation + (2.0*3.14/4.0)) % (2.0*3.14);
         }else if keycode == Keycode::R {
             self.rotation = (self.rotation + 0.05) % (2.0*3.14);
         }
 
-        if keycode == Keycode::S && _ctx.key_is_down(Keycode::LShift) {
+        if keycode == Keycode::S && ctx.key_is_down(Keycode::LShift) {
             self.scale = (self.scale - 0.1).max(0.2);
         } else if keycode == Keycode::S {
             self.scale = (self.scale + 0.1).min(2.0);

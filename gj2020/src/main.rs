@@ -48,6 +48,7 @@ impl GameInterface for GodSend {
         sounds.insert(AudioLibrary::Babylon, "assets/music/thetowerofbabylon.wav");
         sounds.insert(AudioLibrary::Space, "assets/music/toomuchspacetoolittlelove.wav");
         sounds.insert(AudioLibrary::Noah, "assets/music/noah.wav");
+        sounds.insert(AudioLibrary::Snek, "assets/music/snek.wav");
         sounds.insert(AudioLibrary::Kill, "assets/sounds/squash.wav");
         ctx.load_sounds(sounds)?;
 

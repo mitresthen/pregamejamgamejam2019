@@ -33,6 +33,8 @@ pub mod scene;
 pub mod linear_force;
 pub mod radial_force;
 
+pub mod decoration_object;
+
 pub mod rigid_body;
 pub mod physics;
 
@@ -129,6 +131,8 @@ pub trait GameState {
 
     fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
     fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
+
+    fn get_background_color(&self) -> Color { Color::RGB(0, 0, 0) }
 }
 
 pub struct Engine<'t> {
@@ -140,7 +144,8 @@ pub struct Engine<'t> {
     keys_down: HashSet<Keycode>,
     camera: transform::Transform,
     drag_state: Option<MouseDragState>,
-    mouse_position: MousePosition
+    mouse_position: MousePosition,
+    window_scale: f32,
 }
 
 impl<'t> Engine<'t> {
@@ -181,7 +186,7 @@ impl<'t> Engine<'t> {
     }
 
     pub fn set_camera_zoom(&mut self, value: f32) {
-        self.camera.set_scale(value);
+        self.camera.set_scale(value * self.window_scale);
     }
 
     pub fn on_key_down(&mut self, keycode: Keycode) {
@@ -335,6 +340,9 @@ impl<'t> Engine<'t> {
         let sdl_context = sdl2::init()?;
         let video_subsystem = sdl_context.video()?;
 
+        let initial_width = width;
+        let initial_height = height;
+
         let window = video_subsystem.window(<T as GameInterface>::get_title(), width, height)
             .position_centered().opengl().build().map_err(|e| e.to_string())?;
 
@@ -356,7 +364,8 @@ impl<'t> Engine<'t> {
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),
                 drag_state: None,
-                mouse_position: MousePosition::new(vector::Vec2{x: 0.0, y: 0.0})
+                mouse_position: MousePosition::new(vector::Vec2{x: 0.0, y: 0.0}),
+                window_scale: 1.0,
             };
 
         let mut current_game_state = <T as GameInterface>::create_starting_state(&mut engine)?;
@@ -388,15 +397,38 @@ impl<'t> Engine<'t> {
                         if key == Keycode::F {
                             let curr_fullscreen_state = engine.canvas.window().fullscreen_state();
                             if curr_fullscreen_state != sdl2::video::FullscreenType::True {
+                                println!("Going full screen");
                                 engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::True).unwrap();
                             }
                             else
                             {
+                                println!("Going windowed");
                                 engine.canvas.window_mut().set_fullscreen(sdl2::video::FullscreenType::Off).unwrap();
                             }
+
                             let window_size = engine.canvas.window().size();
+
+                            println!("Window size is now: {:?}", window_size);
+                            println!("Engine size is noe: {}x{}", engine.width, engine.height);
+
+                            let width_factor = (engine.width as f32) / (window_size.0 as f32);
+                            let height_factor = (engine.height as f32) / (window_size.1 as f32);
+
+                            let revert_scale  = (width_factor + height_factor) * 0.5;
+
+                            println!("Reverting scale: {:?}", revert_scale);
+
+                            engine.camera.set_scale(engine.camera.get_scale() * revert_scale);
+
                             engine.width = window_size.0;
                             engine.height = window_size.1;
+
+                            let width_factor = (initial_width as f32) / (window_size.0 as f32);
+                            let height_factor = (initial_height as f32) / (window_size.1 as f32);
+
+                            engine.window_scale  = (width_factor + height_factor) * 0.5;
+
+                            println!("Setting window_scale to {:?}", engine.window_scale);
 
                             timer.reset();
                         }
@@ -443,7 +475,7 @@ impl<'t> Engine<'t> {
                 };
             }
 
-            engine.canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
+            engine.canvas.set_draw_color(current_game_state.get_background_color());
             engine.canvas.clear();
 
 
