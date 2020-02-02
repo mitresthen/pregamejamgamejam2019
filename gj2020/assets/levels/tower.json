@@ -469,15 +469,6 @@
       "scale": 1.0
     },
     {
-      "object_id": 14,
-      "position": {
-        "x": -127.5,
-        "y": 722.5
-      },
-      "rotation": 0.0,
-      "scale": 1.3999999
-    },
-    {
       "object_id": 13,
       "position": {
         "x": -155.0,
@@ -530,6 +521,15 @@
       },
       "rotation": 0.0,
       "scale": 1.0
+    },
+    {
+      "object_id": 14,
+      "position": {
+        "x": 12.5,
+        "y": 742.5
+      },
+      "rotation": 0.0,
+      "scale": 1.7000002
     }
   ],
   "object_types": [

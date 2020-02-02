@@ -65,9 +65,7 @@ impl Plank {
 }
 
 impl GameObject for Plank {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        
-
+    fn update(&mut self,  _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         true
     }
 

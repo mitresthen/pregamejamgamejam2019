@@ -1,10 +1,7 @@
 use engine::prelude::*;
 use audio_library::AudioLibrary;
-use crate::god::God;
 use crate::noah::Noah;
 use crate::plank::Plank;
-use std::time::{Duration, SystemTime};
-use std::thread::sleep;
 
 
 pub struct NoahState {

@@ -1,3 +1,5 @@
+extern crate rand;
+
 use engine::prelude::*;
 use audio_library::AudioLibrary;
 
@@ -5,7 +7,12 @@ struct Victim {
     animated_sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
+    direction: f32,
+    standing_still: f32,
+    standing_position: Vec2,
     shape: Rc<dyn CollisionShape>,
+    dead: bool,
+    friction: f32,
 }
 
 impl Victim {
@@ -26,14 +33,78 @@ impl Victim {
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 shape,
+                direction: 1.0,
+                standing_still: 0.0,
+                standing_position: Vec2::new(),
+                dead: false,
+                friction: 0.0,
              };
 
          Ok(victim)
     }
+
+    pub fn set_position(&mut self, position: Vec2) {
+        self.transform.set_translation(position)
+    }
+
+    pub fn kill(&mut self) {
+        if ! self.dead {
+            self.dead = true;
+
+            let size = self.animated_sprite.get_size();
+
+            let rect =
+                Rect2D::new(
+                    Vec2::from_coords(-size.x, -size.y * 0.125),
+                    Vec2::from_coords(size.x, size.y * 0.125)
+                );
+
+            self.shape = Rc::new(SquareShape::from_aabb(rect));
+            self.friction = 100.0;
+        }
+    }
 }
 
 impl GameObject for Victim {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        if self.dead {
+            self.animated_sprite.set_mode(2);
+            self.animated_sprite.set_transform(&self.transform);
+            return true;
+        }
+
+        let target_velocity = Vec2::from_coords(self.direction * 100.0, 0.0);
+
+        if (self.standing_position - self.transform.get_translation()).len() > 5.0 {
+            self.standing_position = self.transform.get_translation();
+            self.standing_still = 0.0;
+        }
+
+        self.standing_still += dt;
+
+        let bounds = ctx.get_visible_area();
+
+        if self.direction > 0.0 && self.transform.get_translation().x > bounds.max.x {
+            self.standing_still = 1000.0;
+        }
+
+        if self.direction < 0.0 && self.transform.get_translation().x < bounds.min.x {
+            self.standing_still = 1000.0;
+        }
+
+        if self.standing_still > 1.0 {
+            self.direction = self.direction * -1.0;
+            self.standing_still = 0.0;
+            println!("Standing still!");
+        }
+
+        if self.direction > 0.0 {
+            self.animated_sprite.set_mode(0);
+        } else {
+            self.animated_sprite.set_mode(1);
+        }
+
+        self.velocity.approach(target_velocity, dt * 400.0);
         self.animated_sprite.set_transform(&self.transform);
         true
     }
@@ -45,6 +116,19 @@ impl GameObject for Victim {
     fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { Some(self) }
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { Some(self) }
+
+    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        match event {
+            EventType::Collide { force } => {
+                if force.y > 0.5 {
+                    self.kill();
+                }
+
+                true
+            },
+            _ => { false }
+        }
+    }
 }
 
 impl PhysicalObject for Victim {
@@ -70,7 +154,11 @@ impl PhysicalObject for Victim {
 
     fn get_inv_mass(&self) -> f32 { 1.0 }
 
-    fn get_friction(&self) -> f32 { 0.0 }
+    fn get_friction(&self) -> f32 { self.friction }
+
+    fn get_src_mask(&self) -> u32 { 1 }
+
+    fn get_dst_mask(&self) -> u32 { 1 }
 }
 
 pub struct BabylonState {
@@ -119,6 +207,34 @@ impl BabylonState {
                 scene.add_object(object);
             }
         }
+
+        let bounds = ctx.get_visible_area() * 2.0;
+
+        use self::rand::Rng;
+        let mut rng = rand::thread_rng();
+
+        for _ in 0..10 {
+            let r = rng.gen::<f32>();
+            let x = (r * bounds.min.x) + ((1.0 - r) * -800.0);
+
+            println!("x = {}", x);
+
+            let mut victim = Victim::new(ctx)?;
+            victim.set_position(Vec2::from_coords(x, 540.0));
+            scene.add_object(victim);
+        }
+
+        for _ in 0..10 {
+            let r = rng.gen::<f32>();
+            let x = (r * bounds.max.x) + ((1.0 - r) * 400.0);
+
+            println!("x = {}", x);
+
+            let mut victim = Victim::new(ctx)?;
+            victim.set_position(Vec2::from_coords(x, 540.0));
+            scene.add_object(victim);
+        }
+
 
         ctx.replace_sound(AudioLibrary::Babylon, 0, -1)?;
         let state =

@@ -62,7 +62,7 @@ impl God {
 
 impl GameObject for God {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        let mut target_velocity = self.controller.poll(ctx) * 400.0;
+        let target_velocity = self.controller.poll(ctx) * 400.0;
         
         self.velocity.approach(target_velocity, 400.0 * dt);
 
@@ -124,7 +124,7 @@ impl GameObject for God {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
         return true;
     }
 }
