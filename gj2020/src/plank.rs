@@ -9,7 +9,7 @@ pub struct Plank {
     transform: Transform,
     velocity: Vec2,
     inv_mass: f32,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
     plank_state: PlankState
 }
 
@@ -78,7 +78,7 @@ impl Plank {
 }
 
 impl GameObject for Plank {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         // match self.plank_state {
         //     PlankState::Ok => {
         //         let mut rng = rand::thread_rng();

@@ -13,7 +13,7 @@ pub struct Snek {
     just_colided: i32,
     just_jumped: i32,
     left_jumps: i32,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl Snek {

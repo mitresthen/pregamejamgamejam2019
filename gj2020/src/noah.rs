@@ -1,8 +1,6 @@
 use std::rc::Rc;
 use engine::prelude::*;
 
-use std::ops::Add;
-
 pub struct Noah {
     controller: AxisController,
     interact_trigger: Trigger,

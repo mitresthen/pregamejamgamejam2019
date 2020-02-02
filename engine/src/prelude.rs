@@ -1,3 +1,4 @@
+pub use std::rc::Rc;
 pub use Engine;
 pub use GameInterface;
 pub use Error;
@@ -50,8 +51,12 @@ pub use level::Level;
 pub use level2D::Level2D;
 pub use level2D::ObjectInstance;
 
+pub use decoration_object::DecorationObject;
 
-pub use rigid_body::RigidBody;
+pub use rigid_body::{
+    ShapeFit,
+    RigidBody
+};
 pub use linear_force::LinearForce;
 pub use radial_force::RadialForce;
 pub use square_shape::SquareShape;
