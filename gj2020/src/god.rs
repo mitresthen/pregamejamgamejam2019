@@ -57,6 +57,7 @@ impl God {
 impl GameObject for God {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let target_velocity = self.controller.poll(ctx) * 400.0;
+        
         self.velocity.approach(target_velocity, 400.0 * dt);
 
         let is_walking =
@@ -139,7 +140,7 @@ impl PhysicalObject for God {
 
     fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
         let rect = Rect2D::centered_rectangle(self.collision_size);
-        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
+        let square = BevelShape::from_aabb(rect + self.transform.get_translation(), rect.width()/3.0);
 
         Some(Box::new(square))
     }
