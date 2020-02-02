@@ -31,6 +31,7 @@ pub mod hell_state;
 // Space modules
 pub mod space_state;
 pub mod celestial_body;
+pub mod smooth_transform;
 
 struct GodSend { }
 
