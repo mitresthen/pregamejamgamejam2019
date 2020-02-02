@@ -10,14 +10,9 @@ pub struct Ocean {
     velocity: Vec2,
     inv_mass: f32,
     shape: Rc<dyn CollisionShape>,
-    ocean_state: OceanState
+    change: f32
 }
 
-#[derive(Debug)]
-enum OceanState {
-    Still,
-    Rising,
-}
 
 impl Ocean {
     pub fn new(ctx: &mut Engine) -> Result<Ocean, Error> {
@@ -40,7 +35,7 @@ impl Ocean {
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
-                ocean_state: OceanState::Still
+                change: 0.0
             };
 
         Ok(ocean)
@@ -59,15 +54,10 @@ impl Ocean {
 impl GameObject for Ocean {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
-        let change;
-        match self.ocean_state {
-            OceanState::Still => change=0.0,
-            OceanState::Rising => change=-50.0 * dt,
-        }
         let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600 as f32;
         let mut transform = Transform::new();
         let mut translation = _ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32);
-        translation.y = self.transform.get_translation().y + change;
+        translation.y = self.transform.get_translation().y - self.change*dt;
         transform.set_translation(translation);
         transform.set_scale(_factor);
         self.set_transform(transform);
@@ -87,6 +77,12 @@ impl GameObject for Ocean {
     }
 
     fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        match event {
+            EventType::OceanRiseRate{rate} => {
+                self.change = rate*42.0;
+            },
+            _ => {} 
+        }
        true
     }
 }

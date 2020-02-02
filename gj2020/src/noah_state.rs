@@ -111,6 +111,7 @@ impl GameState for NoahState {
         }
         println!("Broken planks {}, total planks {}", self.broken_planks, self.total_planks);
 
+        self.scene.get_mut(self.ocean_id).unwrap().on_event(EventType::OceanRiseRate {rate: self.broken_planks as f32 /self.total_planks as f32}, None);
 
         Ok(self)
     }

@@ -35,6 +35,7 @@ pub enum EventType {
     FreeFromDust,
     PlankBroke,
     PlankRepaired,
+    OceanRiseRate { rate: f32 },
     Custom { data: Rc<dyn Any> }
 }
 
