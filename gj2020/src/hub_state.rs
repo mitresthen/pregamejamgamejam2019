@@ -103,7 +103,7 @@ impl GameState for HubState {
 
         if self.babylon_trigger.is_triggered() {
             println!("Going to babylon bitches");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(BabylonState::new(_ctx, _hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(BabylonState::new(_ctx, _hub_state)?));
             return Ok(Box::new(transition_state));
         }
 

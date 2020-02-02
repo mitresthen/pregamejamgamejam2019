@@ -8,7 +8,7 @@ pub use GameState;
 pub use static_sprite::StaticSprite;
 pub use animated_sprite::{Animatable, AnimatedSprite, AggregatedAnimatedSprite, SpriteTrait};
 pub use drawable::{Drawable, DrawContext, Origin};
-pub use vector::Vec2;
+pub use vector::{Vec2, Polar2};
 pub use extent::Extent;
 pub use offset::Offset;
 pub use texture_registry::Texture;
@@ -16,6 +16,11 @@ pub use rect::Rect2D;
 
 pub use transition_state::TransitionState;
 pub use Color;
+pub use message_state::{
+    Animation,
+    ProceedMode,
+    MessageState
+};
 
 pub use grid2::Grid2;
 

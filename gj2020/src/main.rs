@@ -58,7 +58,7 @@ impl GameInterface for GodSend {
         let hub_state = Box::new(hub_state::HubState::new(ctx)?);
 
         if std::env::var("BABYLON").is_ok() {
-            Ok(Box::new(babylon_state::BabylonState::new(ctx, hub_state)?))
+            Ok(babylon_state::BabylonState::new(ctx, hub_state)?)
         } else if std::env::var("NOAH").is_ok() {
             Ok(Box::new(noah_state::NoahState::new(ctx)?))
         } else {

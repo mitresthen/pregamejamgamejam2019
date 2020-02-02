@@ -19,10 +19,10 @@ pub struct CelestialBody {
 }
 
 impl CelestialBody {
-	pub fn new(ctx: &mut Engine, sprite: StaticSprite, mass: f64, scale: f32, position: Vec2) -> Result<CelestialBody, Error> {
+	pub fn new(ctx: &mut Engine, sprite: StaticSprite, mass: f64) -> Result<CelestialBody, Error> {
 		ctx.replace_sound(AudioLibrary::Space, 0, -1)?;
 		let body = CelestialBody {
-			position: position,
+			position: Vec2::new(),
 			velocity: Vec2::new(),
 			sprite: sprite,
 			mass: mass * MASS_SCALE,
@@ -35,6 +35,10 @@ impl CelestialBody {
 			position: self.position,
 			mass: self.mass,
 		}
+	}
+
+	pub fn get_position(&self) -> Vec2 {
+		self.position
 	}
 
 	pub fn gravitate(&mut self, bodies: &Vec::<CelestialBodyPhysics>, dt: f32) {
@@ -58,7 +62,8 @@ impl CelestialBody {
 		self.velocity += impulse;
 	}
 
-	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool) {
+	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool, offset: Polar2) {
+		self.place(other.position + offset);
 		let self_ratio = self.mass / (self.mass + other.mass);
 		let other_ratio = other.mass / (self.mass + other.mass);
 		let barycenter = self.position + (other.position - self.position) * other_ratio as f32;
@@ -73,7 +78,7 @@ impl CelestialBody {
 			self_speed = -self_speed;
 			other_speed = -other_speed;
 		}
-		self.push(bary_to_self.perpendicular().normalize() * self_speed as f32);
+		self.push(other.velocity + bary_to_self.perpendicular().normalize() * self_speed as f32);
 		other.push(bary_to_other.perpendicular().normalize() * other_speed as f32);
 	}
 }
