@@ -1,14 +1,24 @@
+extern crate rand;
+
 use std::rc::Rc;
 use engine::prelude::*;
-
+use self::rand::Rng;
 
 pub struct Plank {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
-    broken: bool,
     inv_mass: f32,
     shape: Rc<CollisionShape>,
+    plank_state: PlankState
+}
+
+#[derive(Debug)]
+enum PlankState {
+    Ok,
+    Broken,
+    Repairing,
+    Repaired
 }
 
 impl Plank {
@@ -17,20 +27,20 @@ impl Plank {
         {
             let tr = ctx.get_texture_registry();
             let texture_on = tr.load("assets/images/Plank.png")?;
-            sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on)?;
+            sprite = AnimatedSprite::new(Extent::new(120, 240), texture_on)?;
         }
 
-        let size = sprite.calculate_size() * 0.5;
-        let shape = SquareShape::from_aabb(Rect2D::centered_square(size.x));
+        let size = sprite.calculate_size();
+        let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
 
         let mut plank =
             Plank {
                 sprite: sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
-                broken: false,
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
+                plank_state: PlankState::Ok
             };
             plank.transform.set_scale(1.0);
 
@@ -40,18 +50,21 @@ impl Plank {
     pub fn toggle_texture(&mut self, ctx: &mut Engine) {
         let tr = ctx.get_texture_registry();
 
-        println!("Toggeling texture to {:#?}", self.broken);
+        println!("Toggeling texture to {:#?}", self.plank_state);
 
-        if self.broken {
-            let texture_on = tr.load("assets/images/Plank.png");
-            let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on.unwrap());
-            self.sprite = sprite.unwrap();
+        match self.plank_state {
+            PlankState::Broken => {
+                let texture_on = tr.load("assets/images/Plank.png");
+                let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_on.unwrap());
+                self.sprite = sprite.unwrap();
+            },
+            _ => {
+                let texture_off = tr.load("assets/images/Plank.png");
+                let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_off.unwrap());
+                self.sprite = sprite.unwrap();    
+            }
         }
-        else{
-            let texture_off = tr.load("assets/images/BrokenPlank.png");
-            let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_off.unwrap());
-            self.sprite = sprite.unwrap();
-        }
+
     }
 
     pub fn get_transform_mut(&mut self) -> &mut Transform {
@@ -66,7 +79,22 @@ impl Plank {
 
 impl GameObject for Plank {
     fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        
+        // match self.plank_state {
+        //     PlankState::Ok => {
+        //         let mut rng = rand::thread_rng();
+        //         let x: f32 = rng.gen();
+        //         println!("Got {}", x);
+        //         if(x > 0.95){
+        //             self.plank_state = PlankState::Broken;
+        //             self.toggle_texture(ctx);
+        //         }
+        //     },
+        //     PlankState::Repairing => {
+        //         self.toggle_texture(ctx);
+        //         self.plank_state = PlankState::Repaired
+        //     },
+        //     _ => { }
+        // }
 
         true
     }
@@ -87,7 +115,12 @@ impl GameObject for Plank {
         match event {
             EventType::Interact => {
                 println!("Someone tried to fix the plank");
-                self.broken = false;
+                match self.plank_state {
+                    PlankState::Broken  => {
+                        self.plank_state = PlankState::Repairing;
+                    },
+                    _ => {}
+                }
                 true
             },
             _ => {
