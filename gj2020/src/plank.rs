@@ -8,7 +8,7 @@ pub struct Plank {
     velocity: Vec2,
     broken: bool,
     inv_mass: f32,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl Plank {

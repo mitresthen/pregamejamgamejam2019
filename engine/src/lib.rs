@@ -33,6 +33,8 @@ pub mod scene;
 pub mod linear_force;
 pub mod radial_force;
 
+pub mod decoration_object;
+
 pub mod rigid_body;
 pub mod physics;
 
@@ -129,6 +131,8 @@ pub trait GameState {
 
     fn on_mouse_button_down(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
     fn on_mouse_button_up(&mut self, _ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error> { Ok(()) }
+
+    fn get_background_color(&self) -> Color { Color::RGB(0, 0, 0) }
 }
 
 pub struct Engine<'t> {
@@ -443,7 +447,7 @@ impl<'t> Engine<'t> {
                 };
             }
 
-            engine.canvas.set_draw_color(Color::RGBA(0, 0, 0, 0));
+            engine.canvas.set_draw_color(current_game_state.get_background_color());
             engine.canvas.clear();
 
 

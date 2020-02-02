@@ -1,8 +1,6 @@
 use std::rc::Rc;
 use engine::prelude::*;
 
-use std::ops::Add;
-
 pub struct God {
     controller: AxisController,
     interact_trigger: Trigger,

@@ -1,10 +1,77 @@
-extern crate rand;
-use self::rand::Rng;
-
-use std::path::PathBuf;
-
 use engine::prelude::*;
 use audio_library::AudioLibrary;
+
+struct Victim {
+    animated_sprite: AnimatedSprite,
+    transform: Transform,
+    velocity: Vec2,
+    shape: Rc<dyn CollisionShape>,
+}
+
+impl Victim {
+    pub fn new(ctx: &mut Engine) -> Result<Victim, Error> {
+         let tr = ctx.get_texture_registry();
+         let texture = tr.load("assets/images/tower/victim.png")?;
+
+         let extent = Extent::new(64, 128);
+         let sprite = AnimatedSprite::new(extent, texture)?;
+
+         let size = Vec2::from_coords(extent.width as f32, extent.height as f32);
+         let rect = Rect2D::centered_rectangle(size);
+         let shape = Rc::new(SquareShape::from_aabb(rect));
+
+         let victim =
+             Victim {
+                animated_sprite: sprite,
+                transform: Transform::new(),
+                velocity: Vec2::new(),
+                shape,
+             };
+
+         Ok(victim)
+    }
+}
+
+impl GameObject for Victim {
+    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        self.animated_sprite.set_transform(&self.transform);
+        true
+    }
+
+    fn render(&self, ctx: &mut DrawContext) {
+        self.animated_sprite.draw(ctx);
+    }
+
+    fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { Some(self) }
+
+    fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { Some(self) }
+}
+
+impl PhysicalObject for Victim {
+    fn get_transform(&self) -> &Transform {
+        &self.transform
+    }
+
+    fn get_transform_mut(&mut self) -> &mut Transform {
+        &mut self.transform
+    }
+
+    fn get_velocity(&self) -> &Vec2 {
+        &self.velocity
+    }
+
+    fn get_velocity_mut(&mut self) -> &mut Vec2 {
+        &mut self.velocity
+    }
+
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
+        Some(self.shape.clone())
+    }
+
+    fn get_inv_mass(&self) -> f32 { 1.0 }
+
+    fn get_friction(&self) -> f32 { 0.0 }
+}
 
 pub struct BabylonState {
     scene: Scene,
@@ -30,25 +97,28 @@ impl BabylonState {
 
             let texture = level.object_textures.get(&object_type.file).unwrap().clone();
 
-            let mut rigid_body = RigidBody::new(texture);
-            rigid_body.set_position(instance.position);
-            rigid_body.set_angle(instance.rotation);
-            rigid_body.set_friction(100.0);
-            if !object_type.fixed {
-            rigid_body.set_mass(1.0);
-            }
-            rigid_body.set_inertia(100.0);
-            scene.add_object(rigid_body);
+            let mut transform = Transform::new();
+            transform.set_translation(instance.position);
+            transform.set_angle(instance.rotation);
+            transform.set_scale(instance.scale);
 
+            if object_type.layers.contains(&1) {
+                let mut rigid_body = RigidBody::new(texture, ShapeFit::Rectangle(1.0));
+                rigid_body.set_transform(transform);
+                rigid_body.set_friction(100.0);
+                rigid_body.set_scale(instance.scale);
+                if !object_type.fixed {
+                    rigid_body.set_mass(1.0);
+                }
+                rigid_body.set_inertia(100.0);
+                scene.add_object(rigid_body);
+            } else {
+                let mut object = DecorationObject::new(texture);
+                object.set_transform(transform);
+                object.set_z_index(-1);
+                scene.add_object(object);
+            }
         }
-    
-        /*
-        let ground_texture = tr.load("assets/images/ground.png")?;
-        let mut ground = RigidBody::new(ground_texture);
-        ground.set_position(Vec2::from_coords(0.0, 1800.0));
-        ground.set_scale(8.0);
-        scene.add_object(ground);
-        */
 
         ctx.replace_sound(AudioLibrary::Babylon, 0, -1)?;
         let state =
@@ -76,6 +146,8 @@ impl GameState for BabylonState {
         Ok(self)
     }
 
+    fn get_background_color(&self) -> Color { Color::RGB(215, 224, 255) }
+
     fn draw(&mut self, ctx: &mut Engine, _dt: f32) -> Result<(), Error> {
         ctx.set_camera_position(Vec2::from_coords(0.0, 0.0));
         ctx.set_camera_zoom(2.0);
@@ -89,18 +161,18 @@ impl GameState for BabylonState {
     {
         let world_pos = ctx.screen_to_world(x,y);
 
-        let mut rng = rand::thread_rng();
-
-        let mut rigid_body = RigidBody::new(self.cannon_ball_texture.clone());
+        let mut rigid_body = RigidBody::new(self.cannon_ball_texture.clone(), ShapeFit::Sphere(1.0));
         let area = ctx.get_visible_area();
 
-        rigid_body.set_position(Vec2::from_coords(area.max.x, area.center().y));
+        let origin = Vec2::from_coords(area.max.x, area.center().y);
+        let velocity = (world_pos - origin) * 0.5;
+
+        rigid_body.set_position(origin);
         rigid_body.set_mass(1.0);
-        rigid_body.set_inertia(10000.0);
+        rigid_body.set_inertia(100.0);
         rigid_body.set_spin(1.0);
 
-        let velocity_y = (rng.gen::<f32>() - 0.5) * std::f32::consts::PI * 2000.0;
-        rigid_body.set_velocity(Vec2::from_coords(-8000.0, velocity_y));
+        rigid_body.set_velocity(velocity);
 
         self.scene.add_object(rigid_body);
 
