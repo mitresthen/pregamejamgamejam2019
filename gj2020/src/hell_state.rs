@@ -4,6 +4,7 @@ use std::mem;
 
 use engine::prelude::*;
 use audio_library::AudioLibrary;
+use crate::hub_state::HubState;
 
 pub struct Demon {
     texture: AggregatedAnimatedSprite,
@@ -26,8 +27,6 @@ impl Demon {
 
 impl GameObject for Demon {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        let pos = self.transform.get_translation();
-        self.set_translation(pos);
         self.distance -= dt * 100.0;
         if self.distance < 0.0 {
             self.distance = 0.0;
@@ -50,7 +49,11 @@ impl GameObject for Demon {
 
     fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
         match event {
-            EventType::Attack{ damage } => {self.health -= damage; self.texture.set_mode(1); true},
+            EventType::Attack{ damage } => {
+                self.health -= damage;
+                self.texture.set_mode(1);
+                self.texture.set_transform(&self.transform);
+                true},
             _ => false
         }
     }
@@ -85,6 +88,7 @@ pub struct HellState {
     demons: Vec<SceneObjectId>,
     club_id : SceneObjectId,
     last_spawn: f32,
+    kills: u8,
 }
 
 pub struct Club {
@@ -107,12 +111,13 @@ impl Club {
 
 impl GameObject for Club {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
+        self.set_translation(_ctx.get_mouse_position().position);
         match _ctx.get_mouse_drag_state() {
             Some(x) => {
                     self.texture.set_mode(1);
                     if !self.down {
                         self.down = true;
-                        let origin = self.texture.get_position();
+                        let origin = _ctx.get_mouse_position().position;
                         let max_distance = Some(100.0);
                         _event_mailbox.submit_event(EventType::Attack{damage:1.0}, EventReceiver::Nearby{ origin, max_distance });
                     }
@@ -122,7 +127,6 @@ impl GameObject for Club {
                 self.texture.set_mode(0);
             }
         }
-        self.set_translation(_ctx.get_mouse_position().position);
         return true;
     }
 
@@ -173,6 +177,7 @@ impl HellState {
                 demons: Vec::new(),
                 club_id: id,
                 last_spawn: 0.0,
+                kills:0,
             };
 
         Ok(state)
@@ -210,9 +215,12 @@ impl GameState for HellState {
         let events = self.scene.update(ctx, None, dt);
         for event in events {
             match event.event_type {
-                EventType::Attack{damage} => print!("{} monster killed!\n", damage),
+                EventType::Attack{damage} =>  { self.kills +=1; print!("{} monster killed!\n", damage) },
                 _ => ()
             }
+        }
+        if self.kills >=10 {
+            return Ok(Box::new(HubState::new(ctx)?));
         }
         Ok(self)
     }
