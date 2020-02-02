@@ -43,7 +43,7 @@ pub struct Minigame {
     transform: Transform,
     velocity: Vec2,
     trigger: MinigameTrigger,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl Minigame {

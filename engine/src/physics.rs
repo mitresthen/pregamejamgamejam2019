@@ -223,4 +223,12 @@ impl PhysicsSet {
             .map(|cp| cp.point)
             .collect()
     }
+
+    pub fn get_collision_axes_for_body(&self, id: BodyId) -> Vec<Vec2> {
+        self.collision_pairs.iter()
+            .filter(|cp| cp.a == id.id || cp.b == id.id)
+            .filter(|cp| !cp.unidirectional)
+            .map(|cp| cp.axis.clone() * if cp.b == id.id { -1.0 } else { 1.0 })
+            .collect()
+    }
 }
