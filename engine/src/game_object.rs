@@ -33,6 +33,8 @@ pub enum EventType {
     Suck,
     DeleteMe,
     FreeFromDust,
+    PlankBroke,
+    PlankRepaired,
     Custom { data: Rc<dyn Any> }
 }
 
