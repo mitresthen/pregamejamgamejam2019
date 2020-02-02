@@ -130,7 +130,7 @@ impl AppleTree {
 impl GameObject for AppleTree {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         if self.touched == 1 {
-            ctx.play_sound(AudioLibrary::Kill);
+            ctx.play_sound(AudioLibrary::Kill)?;
             event_mailbox.submit_event(
                 EventType::Suck,
                 EventReceiver::Scene
