@@ -2,7 +2,7 @@ use engine::prelude::*;
 
 use std::ops::Add;
 
-pub struct God {
+pub struct Noah {
     controller: AxisController,
     interact_trigger: Trigger,
     sprite: AggregatedAnimatedSprite,
@@ -12,10 +12,10 @@ pub struct God {
     collision_size: Vec2,
 }
 
-impl God {
-    pub fn new(ctx: &mut Engine) -> Result<God, Error> {
+impl Noah {
+    pub fn new(ctx: &mut Engine) -> Result<Noah, Error> {
         let tr = ctx.get_texture_registry();
-        let texture = tr.load("assets/images/God/god.png")?;
+        let texture = tr.load("assets/images/God/God.png")?;
 
         let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
@@ -27,8 +27,8 @@ impl God {
         sprite.add(idle_sprite);
         sprite.add(walk_sprite);
 
-        let god = 
-            God {
+        let Noah = 
+            Noah {
                 controller: AxisController::new(
                     Keycode::Up,
                     Keycode::Down,
@@ -43,7 +43,7 @@ impl God {
                 direction: 0,
             };
 
-        Ok(god)
+        Ok(Noah)
     }
 
     pub fn set_position(&mut self, position: Vec2) {
@@ -55,7 +55,7 @@ impl God {
     }
 }
 
-impl GameObject for God {
+impl GameObject for Noah {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         let mut target_velocity = self.controller.poll(ctx) * 400.0;
         
@@ -120,7 +120,7 @@ impl GameObject for God {
     }
 }
 
-impl PhysicalObject for God {
+impl PhysicalObject for Noah {
     fn get_transform(&self) -> &Transform {
         &self.transform
     }
@@ -141,7 +141,7 @@ impl PhysicalObject for God {
 
     fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
         let rect = Rect2D::centered_rectangle(self.collision_size);
-        let square = SquareShape::from_aabb(rect + self.transform.get_translation());
+        let square = BevelShape::from_aabb(rect + self.transform.get_translation(), rect.width()/3.0);
 
         Some(Box::new(square))
     }
