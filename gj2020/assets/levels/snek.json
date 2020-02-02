@@ -14,7 +14,7 @@
         "tiles" : [
             "blank.png",
             "box.png",
-            "blank.png",
+            "grassTile.png",
             "AppleTree/apple_tree.png"
         ]
     },
