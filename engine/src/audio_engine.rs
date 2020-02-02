@@ -74,8 +74,9 @@ impl SoundInstance {
         let mut return_vec = Vec::new();
         let mut remaining = amount;
         while remaining > 0 {
+
             let mut end : usize = self.position + remaining;
-            if self.data.len() - self.position < remaining {
+            if self.data.len() - self.position < remaining || end >= self.data.len() {
                 end = self.data.len() - 1;
             }
             return_vec.extend(self.data[self.position..end].to_vec());

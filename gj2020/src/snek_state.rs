@@ -1,6 +1,7 @@
 use engine::prelude::*;
 
 use crate::snek::Snek;
+use crate::audio_library::AudioLibrary;
 
 pub struct SnekState {
     level: Level,
@@ -20,6 +21,8 @@ impl SnekState {
         snek.set_position(Vec2::from_coords(1.5, 1.5) * tile_size);
 
         let snek_id = scene.add_object(snek);
+
+        ctx.replace_sound(AudioLibrary::Snek, 0, -1)?;
 
         let snek_state =
             SnekState {
