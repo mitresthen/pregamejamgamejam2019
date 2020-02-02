@@ -99,37 +99,32 @@ impl GameState for HubState {
 
         if self.babylon_trigger.is_triggered() {
             println!("Going to babylon bitches");
-            let babylon_state = Box::new(BabylonState::new(ctx)?);
-            let transition_state = Box::new(TransitionState::new(self, babylon_state));
-            return Ok(transition_state);
+            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(BabylonState::new(ctx, hub_state)?)));
+            return Ok(Box::new(transition_state));
         }
 
         if self.noah_trigger.is_triggered() {
             println!("Going to noah ");
-            let noah_state = Box::new(NoahState::new(ctx)?);
-            let transition_state = Box::new(TransitionState::new(self, noah_state));
-            return Ok(transition_state);
+            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(NoahState::new(ctx)?)));
+            return Ok(Box::new(transition_state));
         }
 
         if self.snek_trigger.is_triggered() {
             println!("Time to test some people!");
-            let snek_state = Box::new(SnekState::new(ctx)?);
-            let transition_state = Box::new(TransitionState::new(self, snek_state));
-            return Ok(transition_state);
+            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(SnekState::new(ctx)?)));
+            return Ok(Box::new(transition_state));
         }
 
         if self.hell_trigger.is_triggered() {
             println!("Time to test some people!");
-            let hell_state = Box::new(HellState::new(ctx)?);
-            let transition_state = Box::new(TransitionState::new(self, hell_state));
-            return Ok(transition_state);
+            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(HellState::new(ctx)?)));
+            return Ok(Box::new(transition_state));
         }
 
         if self.space_trigger.is_triggered() {
             println!("[Balex]: You're going to space, bitches!",);
-            let space_state = Box::new(SpaceState::new(ctx)?);
-            let transition_state = Box::new(TransitionState::new(self, space_state));
-            return Ok(transition_state);
+            let transition_state = TransitionState::new(self, |hub_state, ctx| Ok(Box::new(SpaceState::new(ctx)?)));
+            return Ok(Box::new(transition_state));
         }
 
         Ok(self)

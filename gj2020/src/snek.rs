@@ -112,7 +112,7 @@ impl GameObject for Snek {
 
         self.sprite.set_mode(mode);
         self.sprite.set_transform(&sprite_transform);
-        self.sprite.step_time(dt * self.velocity.len() * 0.02);
+        self.sprite.step_time(dt * self.velocity.len() * 0.002);
 
         if self.interact_trigger.poll(ctx) {
 

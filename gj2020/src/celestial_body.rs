@@ -40,7 +40,7 @@ impl CelestialBody {
 	pub fn gravitate(&mut self, bodies: &Vec::<CelestialBodyPhysics>, dt: f32) {
 		for body in bodies {
 			if body.position != self.position {
-				let self_to_body = (body.position - self.position);
+				let self_to_body = body.position - self.position;
 				let dist_sq = self_to_body.len_sq();
 				let direction = self_to_body.normalize();
 				let force = GRAV_CONST * (body.mass * self.mass) / dist_sq as f64;
@@ -59,8 +59,8 @@ impl CelestialBody {
 	}
 
 	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool) {
-		let self_ratio = (self.mass / (self.mass + other.mass));
-		let other_ratio = (other.mass / (self.mass + other.mass));
+		let self_ratio = self.mass / (self.mass + other.mass);
+		let other_ratio = other.mass / (self.mass + other.mass);
 		let barycenter = self.position + (other.position - self.position) * other_ratio as f32;
 		let bary_to_self = self.position - barycenter;
 		let bary_to_other = other.position - barycenter;

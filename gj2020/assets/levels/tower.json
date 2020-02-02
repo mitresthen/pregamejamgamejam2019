@@ -1,0 +1,526 @@
+{
+  "object_instances": [
+    {
+      "object_id": 8,
+      "position": {
+        "x": -535.0,
+        "y": 555.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -430.0,
+        "y": 555.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -305.0,
+        "y": 555.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -180.0,
+        "y": 555.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -56.0,
+        "y": 554.68005
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": 69.0,
+        "y": 554.68005
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 9,
+      "position": {
+        "x": 173.0,
+        "y": 554.68005
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -409.0,
+        "y": 460.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -247.0,
+        "y": 460.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -118.0,
+        "y": 461.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": 13.0,
+        "y": 460.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": 48.0,
+        "y": 381.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -82.0,
+        "y": 383.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -209.0,
+        "y": 382.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -339.0,
+        "y": 382.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -436.0,
+        "y": 382.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": -392.0,
+        "y": 275.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": -252.0,
+        "y": 275.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": -125.0,
+        "y": 275.68008
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 1,
+      "position": {
+        "x": -426.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -361.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -302.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -243.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -184.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -66.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -7.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 3,
+      "position": {
+        "x": 59.0,
+        "y": 179.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -12.0,
+        "y": 113.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -351.0,
+        "y": 112.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -182.0,
+        "y": 113.71011
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -379.0,
+        "y": 34.710114
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -248.0,
+        "y": 34.710114
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 6,
+      "position": {
+        "x": -120.0,
+        "y": 35.710114
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": 8.0,
+        "y": 34.710114
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 8,
+      "position": {
+        "x": -385.0,
+        "y": -60.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -280.79068,
+        "y": -59.998013
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -155.99483,
+        "y": -59.998013
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 4,
+      "position": {
+        "x": -31.198967,
+        "y": -59.998013
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 10,
+      "position": {
+        "x": -287.99045,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 12,
+      "position": {
+        "x": -242.39197,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 10,
+      "position": {
+        "x": -196.79347,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 12,
+      "position": {
+        "x": -149.99503,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 10,
+      "position": {
+        "x": -104.39654,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 11,
+      "position": {
+        "x": -52.79825,
+        "y": -189.59372
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 0,
+      "position": {
+        "x": -165.59451,
+        "y": -290.39038
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": -253.1916,
+        "y": -388.76755
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": -98.396736,
+        "y": -386.3676
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -251.99165,
+        "y": -500.36383
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -89.99702,
+        "y": -500.36383
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 5,
+      "position": {
+        "x": -177.5,
+        "y": -580.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 2,
+      "position": {
+        "x": -125.0,
+        "y": 180.0
+      },
+      "rotation": 0.0
+    },
+    {
+      "object_id": 7,
+      "position": {
+        "x": 0.0,
+        "y": 275.0
+      },
+      "rotation": 0.0
+    }
+  ],
+  "object_types": [
+    {
+      "file": "tower/floor.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_middle.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/floor_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/foundation.png",
+      "density": 1,
+      "fixed": true,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/large_block.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/medium_block.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/pillar.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/slope_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/slope_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_middle_left.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    },
+    {
+      "file": "tower/top_arch_middle_right.png",
+      "density": 1,
+      "fixed": false,
+      "layers": [
+        1
+      ]
+    }
+  ]
+}

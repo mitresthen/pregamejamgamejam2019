@@ -155,7 +155,7 @@ pub struct Manifold {
 }
 
 impl Manifold {
-    pub fn from_points(mut v: Vec<Vec2>) -> Manifold {
+    pub fn from_points(v: Vec<Vec2>) -> Manifold {
 
         if v.len() == 0 {
             panic!("Cannot create manifold from zero points!");
@@ -252,7 +252,7 @@ pub trait CollisionShape {
         let epsilon = 0.1;
 
         let points : Vec<Vec2> = points.into_iter()
-            .filter(|(d, p)| *d >= maximum - epsilon)
+            .filter(|(d, _p)| *d >= maximum - epsilon)
             .map(|(_, p)| *p)
             .collect();
 
