@@ -80,6 +80,24 @@ impl SpaceState {
         }
     }
 
+    fn get_most_forceful_body(&self, position: Vec2, skip_first: bool) -> Option<usize> {
+        let mut max_force = 0.0;
+        let mut first: Option<usize> = None;
+        let mut second: Option<usize> = None;
+        for (i, body) in self.bodies.iter().enumerate() {
+            let force = body.get_force(position);
+            if force > max_force {
+                second = first;
+                first = Some(i);
+                max_force = force;
+            }
+        }
+        match skip_first {
+            false => first,
+            true => second,
+        }
+    }
+
     fn draw_bg(&mut self, ctx: &mut Engine) {
         let camera = ctx.get_camera();
         let x_factor = ctx.get_width() as f32 / 1280 as f32;
@@ -166,16 +184,23 @@ impl GameState for SpaceState {
         use std::f32;
         let click_pos = ctx.get_mouse_position().position;
         let index = self.get_closest_body(click_pos, 500.0, false);
-
+        let mut other_index: Option<usize> = None;
         match index {
-            Some(0) | None => (),
             Some(i) => {
-                self.fixed[i-1] = true;
                 println!("Clicked {:?}", index);
-                let (mut body, mut sun) = self.bodies.get_two_mut(i, 0);
-                body.stop();
-                body.init_orbit(&mut sun, 1.0, true, None);
+                let position = self.bodies[i].get_position();
+                other_index = self.get_most_forceful_body(position, true);
             }
+            None => println!("Clicked nothing ({:?})", click_pos)
+        }
+        match (index, other_index) {
+            (Some(i), Some(j)) => {
+                self.fixed[i-1] = true;
+                let (mut body, mut other_body) = self.bodies.get_two_mut(i, j);
+                body.stop();
+                body.init_orbit(&mut other_body, 1.0, true, None);
+            }
+            (_, _) => ()
         }
         
         Ok(())

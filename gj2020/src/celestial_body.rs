@@ -41,6 +41,11 @@ impl CelestialBody {
 		self.position
 	}
 
+	pub fn get_force(&self, pos: Vec2) -> f64 {
+		let r = (self.position - pos).len() as f64;
+		(GRAV_CONST * self.mass) / (r * r)
+	}
+
 	pub fn gravitate(&mut self, bodies: &Vec::<CelestialBodyPhysics>, dt: f32) {
 		for body in bodies {
 			if body.position != self.position {
