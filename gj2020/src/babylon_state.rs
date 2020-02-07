@@ -369,8 +369,8 @@ impl GameState for BabylonState {
 
         if self.remaining_victims == 0 {
             ctx.reset_sound()?;
-            let mut hub_state = Some(self.hub_state.take().unwrap());
-            let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
+            let mut hub_state = self.hub_state.take().unwrap();
+            let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state));
             let state =  Box::new(transition_state);
             let state =
                 MessageState::new(

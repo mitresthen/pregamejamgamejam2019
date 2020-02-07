@@ -62,9 +62,9 @@ impl God {
 
 impl GameObject for God {
     fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        let target_velocity = self.controller.poll(ctx) * 400.0;
-        
-        self.velocity.approach(target_velocity, 400.0 * dt);
+        let target_velocity = self.controller.poll(ctx) * 800.0;
+
+        self.velocity.approach(target_velocity, 2000.0 * dt);
 
         let is_walking =
             if target_velocity.len() > 0.1 {
@@ -95,7 +95,7 @@ impl GameObject for God {
 
         self.sprite.set_mode(mode);
         self.sprite.set_transform(&sprite_transform);
-        self.sprite.step_time(dt * self.velocity.len() * 0.02);
+        self.sprite.step_time(dt * self.velocity.len() * 0.01);
 
         if self.interact_trigger.poll(ctx) {
             
