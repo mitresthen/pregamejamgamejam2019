@@ -7,6 +7,7 @@ pub struct SpaceState {
     background: StaticSprite,
     bodies: Vec::<CelestialBody>,
     fixed: Vec::<bool>,
+    fixed_timer: f32,
     event_queue: EventQueue,
     camera: SmoothTransform,
     return_to_state: Option<Box<dyn GameState>>,
@@ -29,9 +30,9 @@ impl SpaceState {
         let mut planet = CelestialBody::new(ctx, planet_sprite, 5.0)?;
         let mut planet2 = CelestialBody::new(ctx, planet2_sprite, 1.0)?;
         let mut planet3 = CelestialBody::new(ctx, planet3_sprite, 0.3)?;
-        planet2.init_orbit(&mut sun, 1.7, true, Some(Polar2::deg(2500.0, 180.0)));
-        planet3.init_orbit(&mut sun, 0.8, false, Some(Polar2::deg(3000.0, 270.0)));
-        planet.init_orbit(&mut planet2, 0.2, false, Some(Polar2::deg(500.0, 45.0)));
+        planet.init_orbit(&mut sun, 3.0, false, Some(Polar2::deg(1000.0, 270.0)));
+        planet2.init_orbit(&mut sun, 0.2, true, Some(Polar2::deg(2500.0, 215.0)));
+        planet3.init_orbit(&mut sun, 0.4, false, Some(Polar2::deg(3000.0, 320.0)));
         bodies.push(sun);
         bodies.push(planet);
         bodies.push(planet2);
@@ -39,6 +40,7 @@ impl SpaceState {
         let mut state = SpaceState {
             bodies: bodies,
             fixed: vec![false, false, false],
+            fixed_timer: 2.0,
             background: background,
             event_queue: EventQueue::new(),
             camera: SmoothTransform::new(&Transform {
@@ -70,6 +72,24 @@ impl SpaceState {
                 second = first;
                 first = Some(i);
                 min_distance = distance;
+            }
+        }
+        match skip_first {
+            false => first,
+            true => second,
+        }
+    }
+
+    fn get_most_forceful_body(&self, position: Vec2, skip_first: bool) -> Option<usize> {
+        let mut max_force = 0.0;
+        let mut first: Option<usize> = None;
+        let mut second: Option<usize> = None;
+        for (i, body) in self.bodies.iter().enumerate() {
+            let force = body.get_force(position);
+            if force > max_force {
+                second = first;
+                first = Some(i);
+                max_force = force;
             }
         }
         match skip_first {
@@ -111,18 +131,23 @@ impl GameState for SpaceState {
             return Ok(Box::new(transition_state));
         }
 
+        let mut dt = dt;
         if self.fixed.iter().all(|x| *x) {
-            ctx.reset_sound()?;
-            let mut hub_state = Some(self.return_to_state.take().unwrap());
-            let mut message_state = Some(MessageState::new(
-                ctx,
-                hub_state.take().unwrap(),
-                Animation::PopInAndOut,
-                ProceedMode::Click,
-                "assets/images/space_enough.png"
-            )?);
-            let transition_state = TransitionState::new(self, move |_, _| Ok(message_state.take().unwrap()));
-            return Ok(Box::new(transition_state));
+            if self.fixed_timer <= 0.0 {
+                ctx.reset_sound()?;
+                let mut hub_state = Some(self.return_to_state.take().unwrap());
+                let mut message_state = Some(MessageState::new(
+                    ctx,
+                    hub_state.take().unwrap(),
+                    Animation::PopInAndOut,
+                    ProceedMode::Click,
+                    "assets/images/space_enough.png"
+                )?);
+                let transition_state = TransitionState::new(self, move |_, _| Ok(message_state.take().unwrap()));
+                return Ok(Box::new(transition_state));
+            }
+            self.fixed_timer -= dt;
+            dt *= 10.0;
         }
 
         let mut maxdist: f32 = 1.0;
@@ -164,7 +189,7 @@ impl GameState for SpaceState {
             Some(i) => {
                 println!("Clicked {:?}", index);
                 let position = self.bodies[i].get_position();
-                other_index = self.get_closest_body(position, f32::INFINITY, true);
+                other_index = self.get_most_forceful_body(position, true);
             }
             None => println!("Clicked nothing ({:?})", click_pos)
         }
