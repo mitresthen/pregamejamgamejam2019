@@ -10,7 +10,7 @@ For other levels change the filename to what you desire.
 
 ## Building
 
-While those are installed you simply run:
+While you have rust and cargo installed you simply run:
 
 `cargo build`
 

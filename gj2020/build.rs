@@ -14,6 +14,7 @@ fn main() {
     if std::fs::create_dir_all("./target/debug").is_ok() { };
     dir::copy("./assets", "./target/debug", &options).unwrap();
 
+    // TODO: Make this copy work with cargo build --release
     if Path::new("./target/release/assets").exists() {
         std::fs::remove_dir_all("./target/release/assets");
     }
