@@ -45,7 +45,7 @@ impl Texture {
             Texture {
                 index: self.index,
                 offset: self.offset + offset,
-                extent: extent
+                extent
             };
 
         Ok(texture)
@@ -66,11 +66,11 @@ impl<'t> TextureRegistry<'t> {
     pub fn new(texture_creator: &'t sdl::TextureCreator<sdl::WindowContext>) -> TextureRegistry<'t> {
         TextureRegistry {
             textures: BTreeMap::new(),
-            texture_creator: texture_creator
+            texture_creator
         }
     }
     pub fn load(&mut self, path: &str) -> Result<Texture, Error> {
-        return self.load2(path, sdl::BlendMode::Blend);
+        self.load2(path, sdl::BlendMode::Blend)
     }
 
     pub fn load2(&mut self, path: &str, blend_mode: sdl::BlendMode) -> Result<Texture, Error> {
@@ -104,7 +104,7 @@ impl<'t> TextureRegistry<'t> {
         let texture_data =
             TextureData {
     //            surface: surface,
-                texture: texture
+                texture
             };
 
         let index = self.textures.len();
@@ -112,7 +112,7 @@ impl<'t> TextureRegistry<'t> {
 
         let out_texture =
             Texture {
-                index: index,
+                index,
                 extent: Extent::new(png_img.width as i32, png_img.height as i32),
                 offset: Offset::new(),
             };

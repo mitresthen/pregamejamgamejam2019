@@ -1,9 +1,5 @@
 use engine::prelude::*;
 use audio_library::AudioLibrary;
-use crate::noah::Noah;
-use crate::plank::Plank;
-use crate::ladder::Ladder;
-use crate::ocean::Ocean;
 
 pub struct Background {
     texture: Texture,
@@ -22,13 +18,13 @@ impl Background {
 
 impl GameObject for Background {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
-        let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600 as f32;
+        let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600_f32;
         let mut transform = Transform::new();
-        let mut translation = _ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32);
+        let translation = _ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32);
         transform.set_translation(translation);
         transform.set_scale(_factor);
         self.set_transform(transform);
-        return true;
+        true
 
     }
 
@@ -40,12 +36,8 @@ impl GameObject for Background {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { None }
 
-    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        match event {
-            _ => {
-                false
-            }
-        }
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        false
     }
 
     fn get_z_index(&self) -> i32 { -69 }
@@ -57,7 +49,7 @@ pub struct EndState {
  }
 
 impl EndState {
-    pub fn new(_ctx: &mut Engine, hub_state: Box<dyn GameState>, file: &str) -> Result<Box<dyn GameState>, Error>  {
+    pub fn create(_ctx: &mut Engine, hub_state: Box<dyn GameState>, file: &str) -> Result<Box<dyn GameState>, Error>  {
         println!("Welcome to the end state");
         let tr = _ctx.get_texture_registry();
         let background_texture = tr.load(file)?;

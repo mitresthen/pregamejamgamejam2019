@@ -44,6 +44,12 @@ pub trait LevelCollider {
     fn get_collision_vector(&self, collision_shape: &dyn CollisionShape, transform: &Transform) -> Option<Vec2>;
 }
 
+impl Default for Scene {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Scene {
     pub fn new() -> Scene {
         Scene {
@@ -61,15 +67,15 @@ impl Scene {
 
         self.forces.push(Box::new(force));
 
-        return id;
+        id
     }
 
     pub fn remove_force(&mut self, id: SceneForceId) {
         self.forces.remove(id.id);
     }
 
-    pub fn get(&self, id: SceneObjectId) -> Option<&Box<dyn GameObject>> {
-        self.objects.get(&id)
+    pub fn get(&self, id: SceneObjectId) -> Option<&dyn GameObject> {
+        self.objects.get(&id).map(|boxed| boxed.as_ref())
     }
 
     pub fn get_mut(&mut self, id: SceneObjectId) -> Option<&mut Box<dyn GameObject>> {
@@ -88,7 +94,7 @@ impl Scene {
         let mut objects_with_distance : Vec<(f32, &mut Box<dyn GameObject>)> =
             self.objects.iter_mut().map(
                 |(_id, ob)| {
-                    let distance = 
+                    let distance =
                         if let Some(pob) = ob.get_physical_object() {
                             let position = pob.get_transform().get_translation();
                             (position - origin).len()
@@ -102,16 +108,16 @@ impl Scene {
 
         objects_with_distance.sort_by(|(d_a, _o_a), (d_b, _o_b)| d_a.partial_cmp(d_b).unwrap());
 
-        let mut it = objects_with_distance.iter_mut();
+        let it = objects_with_distance.iter_mut();
 
-        while let Some((distance, object)) = it.next() {
+        for (distance, object) in it {
             if *distance > max_distance.unwrap_or(f32::MAX) {
                 println!("Event lost because max distance was reached: distance={}", distance);
                 break;
             }
 
             if object.on_event(event.clone(), sender) {
-                // Object handlet the event. 
+                // Object handlet the event.
                 break;
             }
         }
@@ -129,7 +135,7 @@ impl Scene {
         let mut objects_with_distance : Vec<(f32, &mut Box<dyn GameObject>)> =
             self.objects.iter_mut().map(
                 |(_id, ob)| {
-                    let distance = 
+                    let distance =
                         if let Some(pob) = ob.get_physical_object() {
                             let position = pob.get_transform().get_translation();
                             (position - origin).len()
@@ -143,9 +149,9 @@ impl Scene {
 
         objects_with_distance.sort_by(|(d_a, _o_a), (d_b, _o_b)| d_a.partial_cmp(d_b).unwrap());
 
-        let mut it = objects_with_distance.iter_mut();
+        let it = objects_with_distance.iter_mut();
 
-        while let Some((distance, object)) = it.next() {
+        for (distance, object) in it {
             if *distance > max_distance.unwrap_or(f32::MAX) {
                 println!("Event lost because max distance was reached: distance={}", distance);
                 break;
@@ -218,7 +224,7 @@ impl Scene {
             },
             _ => { return false; }
         }
-        return true;
+        true
     }
 
     pub fn update(&mut self, engine: &mut Engine, collider: Option<&dyn LevelCollider>, dt: f32) -> Vec<GameEvent> {
@@ -321,7 +327,7 @@ impl Scene {
                 }
             }
         }
-        return events_for_parent;
+        events_for_parent
     }
 
     pub fn render(&self, engine: &mut Engine) {
@@ -329,8 +335,8 @@ impl Scene {
 
         let mut ctx =
             DrawContext::new(
-                &mut engine.canvas,
-                &mut engine.texture_registry,
+                engine.canvas,
+                &engine.texture_registry,
                 &engine.camera,
                 screen_bounds
             );
@@ -367,7 +373,7 @@ impl Scene {
         }
     }
 
-    pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&Box<dyn GameObject>> {
+    pub fn get_objects_in_rect(&self, rect: Rect2D) -> Vec<&dyn GameObject> {
         let mut result = Vec::new();
         for (_id, object) in self.objects.iter() {
             if let Some(physical_object) = object.get_physical_object() {
@@ -377,7 +383,7 @@ impl Scene {
                         .get_translation();
 
                 if rect.contains(translation) {
-                    result.push(object);
+                    result.push(object.as_ref());
                 }
             }
         }

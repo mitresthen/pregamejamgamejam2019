@@ -120,7 +120,7 @@ impl AudioMixer {
     pub fn play_sound(&mut self, sound: SoundInstance) -> usize {
         let mut vector = self.playing.lock().unwrap();
         vector.push(sound);
-        return vector.len() - 1;
+        vector.len() - 1
     }
 
     pub fn replace_sound(&mut self, sound: SoundInstance, id: usize) -> usize {
@@ -129,7 +129,7 @@ impl AudioMixer {
             vector.push(SoundInstance::new(Vec::new(), 0))
         }
         vector[id] = sound;
-        return id;
+        id
     }
 
     pub fn set_volume(&mut self, volume: f32, id: usize) {
@@ -233,13 +233,13 @@ impl AudioCallback for AudioMixer {
             }
 
         }
-        for i in 0..out.len() {
-            out[i] = 0.0;
+        for (i, out_i) in out.iter_mut().enumerate() {
+            *out_i = 0.0;
             if self.is_mute() {
                 continue;
             }
             for s in samples.iter() {
-                out[i] += self.get_master_volume() * (*s)[i];
+                *out_i += self.get_master_volume() * (*s)[i];
             }
         }
 
@@ -282,18 +282,18 @@ impl AudioEngine {
 
         AudioEngine {
             _audio_device: device,
-            mixer: mixer,
+            mixer,
             _sound_map: HashMap::new(),
         }
     }
 
     pub fn replace_sound<T: Hash>(&mut self, key: T, id: usize, repeats: i32) -> Result<usize, Error> {
         let pcm_mono_float = self._sound_map.get(&self.get_hash(key)).unwrap().to_vec();
-        return Ok(self.mixer.replace_sound(SoundInstance::new(pcm_mono_float, repeats), id));
+        Ok(self.mixer.replace_sound(SoundInstance::new(pcm_mono_float, repeats), id))
     }
 
     pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
-        return self.loop_sound(key, 0);
+        self.loop_sound(key, 0)
     }
 
     pub fn prepare_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
@@ -352,15 +352,15 @@ impl AudioEngine {
     fn get_hash<T: Hash>(&self, t: T) -> u64 {
         let mut hasher = DefaultHasher::new();
         t.hash(&mut hasher);
-        return hasher.finish();
+        hasher.finish()
     }
 
     pub fn play_sound_data(&mut self, data: Vec<f32>) -> usize {
-        return self.mixer.play_sound(SoundInstance::new(data, 0));
+        self.mixer.play_sound(SoundInstance::new(data, 0))
     }
 
     pub fn loop_sound_data(&mut self, data: Vec<f32>, repeats: i32) -> usize {
-        return self.mixer.play_sound(SoundInstance::new(data, repeats));
+        self.mixer.play_sound(SoundInstance::new(data, repeats))
     }
 
     pub fn set_volume(&mut self, volume: f32, id: usize) {

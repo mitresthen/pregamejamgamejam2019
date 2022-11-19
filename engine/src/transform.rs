@@ -7,6 +7,12 @@ pub struct Transform {
     pub angle: f32
 }
 
+impl Default for Transform {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Transform {
     pub fn new() -> Transform {
         Transform {
@@ -87,7 +93,7 @@ impl Transform {
     }
 
     pub fn translate(&mut self, p: Vec2) {
-        self.translation = self.translation + p;
+        self.translation += p;
     }
 
     pub fn interpolate(&self, other: &Transform, f: f32) -> Transform {

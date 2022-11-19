@@ -32,7 +32,7 @@ impl Plank {
         }
 
         let mut size = sprite.calculate_size();
-        size.x = size.x/4.0;
+        size.x /= 4.0;
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
 
         let mut rng = rand::thread_rng();
@@ -42,7 +42,7 @@ impl Plank {
 
         let mut plank =
             Plank {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
@@ -71,7 +71,7 @@ impl Plank {
                 let texture_off = tr.load("assets/images/Plank.png");
                 let sprite = AnimatedSprite::new(Extent::new(240, 240), texture_off.unwrap());
                 self.sprite = sprite.unwrap();
-                self.sprite.set_transform(&self.transform);    
+                self.sprite.set_transform(&self.transform);
             }
         }
 
@@ -95,8 +95,8 @@ impl GameObject for Plank {
                 let mut rng = rand::thread_rng();
                 let x: f32 = rng.gen();
                 self.time_since_last_trial -= dt;
-                if(self.time_since_last_trial < 0.0) {
-                    if(  x > 0.95){
+                if self.time_since_last_trial < 0.0 {
+                    if x > 0.95 {
                         println!("Plank broke {}", x);
                         self.plank_state = PlankState::Broken;
                         self.toggle_texture(ctx);
@@ -139,11 +139,8 @@ impl GameObject for Plank {
         match event {
             EventType::Interact => {
                 println!("Someone tried to fix the plank");
-                match self.plank_state {
-                    PlankState::Broken  => {
-                        self.plank_state = PlankState::Repairing;
-                    },
-                    _ => {}
+                if let PlankState::Broken = self.plank_state {
+                    self.plank_state = PlankState::Repairing;
                 }
                 true
             },

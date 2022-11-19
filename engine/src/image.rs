@@ -30,7 +30,7 @@ impl PixelType for RGBA {
 
             let pixel =
                 RGBA {
-                    r: r,
+                    r,
                     g: it.next().ok_or_else(|| err.clone())?,
                     b: it.next().ok_or_else(|| err.clone())?,
                     a: it.next().ok_or_else(|| err.clone())?

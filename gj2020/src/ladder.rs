@@ -2,14 +2,13 @@ extern crate rand;
 
 use std::rc::Rc;
 use engine::prelude::*;
-use self::rand::Rng;
 
 pub struct Ladder {
     sprite: AnimatedSprite,
     transform: Transform,
     velocity: Vec2,
     inv_mass: f32,
-    shape: Rc<CollisionShape>,
+    shape: Rc<dyn CollisionShape>,
 }
 
 impl Ladder {
@@ -26,7 +25,7 @@ impl Ladder {
 
         let mut ladder =
             Ladder {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
@@ -48,9 +47,7 @@ impl Ladder {
 }
 
 impl GameObject for Ladder {
-    fn update(&mut self, ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
-        
-
+    fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         true
     }
 
@@ -66,7 +63,7 @@ impl GameObject for Ladder {
         Some(self)
     }
 
-    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
         true
     }
 }

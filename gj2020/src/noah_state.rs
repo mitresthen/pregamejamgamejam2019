@@ -10,7 +10,7 @@ pub struct NoahState {
     level: Level2D,
     scene: Scene,
     noah_id: SceneObjectId,
-    sea_level: f32,
+    // sea_level: f32,
     ocean_id: SceneObjectId,
     broken_planks: u32,
     total_planks: u32,
@@ -19,7 +19,7 @@ pub struct NoahState {
  }
 
 impl NoahState {
-    pub fn new(_ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error>  {
+    pub fn create(_ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error>  {
         let level = Level2D::load_from_file(_ctx, "assets/levels/Ark4.json");
         let mut _scene = Scene::new();
         println!("Welcome to the ark");
@@ -65,7 +65,7 @@ impl NoahState {
 
         let ladders = level.level_instance.object_instances.iter()
         .filter(|x| level.level_instance.object_types[x.object_id as usize].file == "ladder.png");
-        
+
         for ladder in ladders {
             let mut new_ladder = Ladder::new(_ctx)?;
 
@@ -78,7 +78,7 @@ impl NoahState {
             _scene.add_object(new_ladder);
         }
 
-        let mut ocean = Ocean::new(_ctx)?;
+        let ocean = Ocean::new(_ctx)?;
         let ocean_id = _scene.add_object(ocean);
 
         let state =
@@ -86,7 +86,7 @@ impl NoahState {
                 level,
                 scene: _scene,
                 noah_id,
-                sea_level: 226.0,
+                // sea_level: 226.0,
                 ocean_id,
                 broken_planks: 0,
                 total_planks: plank_count as u32,
@@ -116,7 +116,7 @@ impl GameState for NoahState {
                 EventType::BoatSunk => {
                     let mut hub_state = Some(self.hub_state.take().unwrap());
                     let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state.take().unwrap()));
-                    return Ok(Box::new(transition_state));        
+                    return Ok(Box::new(transition_state));
                 }
                 _ => {}
             }
@@ -133,12 +133,12 @@ impl GameState for NoahState {
         }
 
         if ctx.key_is_down(Keycode::V) {
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(EndState::new(_ctx, _hub_state, "assets/images/noah_victory.png")?));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| EndState::create(_ctx, _hub_state, "assets/images/noah_victory.png"));
             return Ok(Box::new(transition_state));
         }
 
         if self.planks_repaired >= 10 {
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(EndState::new(_ctx, _hub_state, "assets/images/noah_victory.png")?));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| EndState::create(_ctx, _hub_state, "assets/images/noah_victory.png"));
             return Ok(Box::new(transition_state));
         }
 

@@ -4,7 +4,6 @@ use std::f32;
 
 use AudioLibrary;
 
-
 pub struct FuseBox {
     sprite: AnimatedSprite,
     transform: Transform,
@@ -25,7 +24,7 @@ impl FuseBox {
 
         let mut fuse_box =
             FuseBox {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 active: true,
@@ -118,9 +117,8 @@ impl PhysicalObject for FuseBox {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         let size = self.sprite.calculate_size() * 0.5;
-        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
+        Some(Rc::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
     }
 }
-

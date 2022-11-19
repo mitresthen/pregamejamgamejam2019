@@ -155,12 +155,13 @@ impl<'t> Engine<'t> {
         &mut self.texture_registry
     }
 
-    pub fn get_draw_context<'k>(&'k mut self) -> drawable::DrawContext<'k> {
+    // removed timestuff here
+    pub fn get_draw_context(&mut self) -> drawable::DrawContext {
         let bounds = self.get_screen_bounds();
 
         drawable::DrawContext::new(
-            &mut self.canvas,
-            &mut self.texture_registry,
+            self.canvas,
+            &self.texture_registry,
             &self.camera,
             bounds
         )
@@ -176,7 +177,7 @@ impl<'t> Engine<'t> {
     }
 
     pub fn set_camera(&mut self, camera: transform::Transform) {
-        self.camera = camera.clone();
+        self.camera = camera;
     }
 
     pub fn move_camera(&mut self, translation: vector::Vec2) {
@@ -244,22 +245,22 @@ impl<'t> Engine<'t> {
     }
 
     pub fn load_sounds<T: Hash + Eq>(&mut self, sounds: HashMap<T, &str>) -> Result<(), Error> {
-        Ok(self.audio_engine.pre_load_files(sounds)?)
+        self.audio_engine.pre_load_files(sounds)
     }
 
     pub fn play_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
-        Ok(self.audio_engine.play_sound(key)?)
+        self.audio_engine.play_sound(key)
     }
 
     pub fn prepare_sound<T: Hash>(&mut self, key: T) -> Result<usize, Error> {
-        Ok(self.audio_engine.prepare_sound(key)?)
+        self.audio_engine.prepare_sound(key)
     }
     pub fn loop_sound<T: Hash>(&mut self, key: T, repeats:i32) -> Result<usize, Error> {
-        Ok(self.audio_engine.loop_sound(key, repeats)?)
+        self.audio_engine.loop_sound(key, repeats)
     }
 
     pub fn reset_sound(&mut self) -> Result<(), Error> {
-        Ok(self.audio_engine.reset()?)
+        self.audio_engine.reset()
     }
 
     pub fn increase_volume(&mut self) {
@@ -315,7 +316,7 @@ impl<'t> Engine<'t> {
     }
 
     pub fn replace_sound<T: Hash>(&mut self, key: T, id: usize, repeats: i32) -> Result<usize, Error> {
-        Ok(self.audio_engine.replace_sound(key, id, repeats)?)
+        self.audio_engine.replace_sound(key, id, repeats)
     }
 
     // TODO: Make it work with moving camera
@@ -335,7 +336,8 @@ impl<'t> Engine<'t> {
 
         bounds *= self.camera.get_scale();
         bounds += self.camera.get_translation();
-        return bounds;
+
+        bounds
     }
 
     pub fn get_width(&self) -> u32 { self.width }
@@ -363,9 +365,9 @@ impl<'t> Engine<'t> {
         let mut engine =
             Engine {
                 canvas: &mut canvas,
-                width: width,
-                height: height,
-                texture_registry: texture_registry,
+                width,
+                height,
+                texture_registry,
                 audio_engine: audio_engine::AudioEngine::new(sdl_context.audio()?),
                 keys_down: HashSet::new(),
                 camera: transform::Transform::new(),

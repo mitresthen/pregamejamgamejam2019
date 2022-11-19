@@ -43,9 +43,9 @@ impl Grid2 {
     pub fn new(width: i32, height: i32, tile_size: u32) -> Grid2 {
         Grid2 {
             buffer: vec![0u32 as TileIndex; (width * height) as usize],
-            width: width,
-            height: height,
-            tile_size: tile_size,
+            width,
+            height,
+            tile_size,
             tile_list: Vec::new(),
             interleaved_scene: None
         }
@@ -78,7 +78,7 @@ impl Grid2 {
 
     pub fn save_to_file(&self, filename: &str) -> Result<(), Error> {
         if let Ok(mut f) = File::create(filename) {
-            let grid_data = 
+            let grid_data =
                 GridData {
                     width: self.width,
                     height: self.height,
@@ -87,7 +87,7 @@ impl Grid2 {
                 };
             let bytes = bincode::serialize(&grid_data).unwrap();
 
-            f.write(&bytes).unwrap();
+            let _ignored = f.write(&bytes).unwrap();
 
             Ok(())
         } else {
@@ -127,7 +127,7 @@ impl Grid2 {
 
                 if *tile_index == id {
                     let p = Vec2::from_coords(x as f32 + 0.5, y as f32 + 0.5) * (self.tile_size as f32);
-                    out.push((self.tile_list.iter().nth(*tile_index as usize).unwrap().clone(), p));
+                    out.push((self.tile_list.get(*tile_index as usize).unwrap().clone(), p));
                     *tile_index = 0;
                 }
             }
@@ -146,7 +146,7 @@ impl Grid2 {
         for y in 0..self.height {
             if let Some(scene) = interleaved_scene {
                 let row_rect = self.get_row_rect(y);
-                let mut objects : Vec<(&Box<dyn GameObject>, f32)> = scene.get_objects_in_rect(row_rect).into_iter().map(
+                let mut objects : Vec<(&dyn GameObject, f32)> = scene.get_objects_in_rect(row_rect).into_iter().map(
                     |o| {
                         let y = o.get_physical_object().unwrap().get_transform().get_translation().y;
                         (o, y)
@@ -162,7 +162,7 @@ impl Grid2 {
             for x in 0..self.width {
                 let id = it.next().unwrap();
 
-                if let Some(texture) = self.tile_list.iter().nth(*id as usize) {
+                if let Some(texture) = self.tile_list.get(*id as usize) {
                     let mut transform = Transform::new();
                     transform.set_translation(
                         Vec2::from_coords(
@@ -189,7 +189,7 @@ impl Grid2 {
                     let extra_width = texture.extent().width - self.tile_size as i32;
                     transform.translate(Vec2::from_coords(extra_width as f32 * -0.5, extra_height as f32 * -0.5));
 
-                    ctx.draw(&texture, &transform)
+                    ctx.draw(texture, &transform)
                 }
             }
         }
@@ -197,7 +197,7 @@ impl Grid2 {
 
     pub fn interleave_scene<'t>(&'t self, scene: &'t Scene) -> GridWithInterleavedScene<'t> {
         GridWithInterleavedScene {
-            scene: scene,
+            scene,
             grid: self
         }
     }
@@ -212,7 +212,7 @@ impl Grid2 {
 
         let index = ((iy * self.width) + ix) as usize;
 
-        Some(*self.buffer.iter().nth(index).unwrap())
+        Some(*self.buffer.get(index).unwrap())
     }
 
     pub fn set_tile_at(&mut self, p: Vec2, tile_index: TileIndex) -> Result<(), Error> {
@@ -225,7 +225,7 @@ impl Grid2 {
 
         let index = ((iy * self.width) + ix) as usize;
 
-        if let Some(dst) = self.buffer.iter_mut().nth(index) {
+        if let Some(dst) = self.buffer.get_mut(index) {
             *dst = tile_index;
             Ok(())
         } else {
@@ -258,7 +258,7 @@ impl LevelCollider for Grid2 {
             for x in start_x..end_x {
                 let index = (y * self.width) + x;
 
-                let tile_id = self.buffer.iter().nth(index as usize).unwrap();
+                let tile_id = self.buffer.get(index as usize).unwrap();
 
                 if *tile_id == empty {
                     continue;
@@ -269,7 +269,7 @@ impl LevelCollider for Grid2 {
                 let tile_rect = Rect2D::centered_square(tile_size) + tile_center;
                 let tile_shape = SquareShape::from_aabb(tile_rect);
 
-                if let Some(result) = shape.sat_collide(&transform, &tile_shape, &tile_transform) {
+                if let Some(result) = shape.sat_collide(transform, &tile_shape, &tile_transform) {
                     best_axis = Some(best_axis.map(|x| if x.depth > result.depth { x } else { result }).unwrap_or(result));
                 }
             }

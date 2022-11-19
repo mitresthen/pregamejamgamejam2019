@@ -12,7 +12,7 @@ pub enum Animation {
 
 pub struct MessageState {
     proceed_mode: ProceedMode,
-    animation_type: Animation,
+    // animation_type: Animation,
     next_state: Box<dyn GameState>,
     message_texture: Texture,
     done: bool,
@@ -23,10 +23,10 @@ pub struct MessageState {
 }
 
 impl MessageState {
-    pub fn new(
+    pub fn create(
         ctx: &mut Engine,
         next_state: Box<dyn GameState>,
-        animation_type: Animation,
+        // animation_type: Animation,
         proceed_mode: ProceedMode,
         message_image_path: &str
     ) -> Result<Box<dyn GameState>, Error> {
@@ -43,13 +43,13 @@ impl MessageState {
         let message_state =
             MessageState {
                 proceed_mode,
-                animation_type,
+                // animation_type,
                 message_texture,
                 next_state: next_state.update(ctx, 0.0001)?,
                 done: false,
                 animation: 0.0,
-                start_transform: start_transform,
-                target_transform: target_transform,
+                start_transform,
+                target_transform,
                 screen_height,
             };
 
@@ -79,14 +79,9 @@ impl GameState for MessageState {
             if self.animation >= 1.0 {
                 return Ok(self.next_state);
             }
-        } else {
-            match self.proceed_mode {
-                ProceedMode::Timer { .. } => {
-                    if self.animation >= 1.0 {
-                        self.trigger_out_animation();
-                    }
-                },
-                _ => { }
+        } else if let ProceedMode::Timer { .. } = self.proceed_mode {
+            if self.animation >= 1.0 {
+                self.trigger_out_animation();
             }
         }
 
@@ -100,7 +95,7 @@ impl GameState for MessageState {
     }
 
     fn draw(&mut self, ctx: &mut Engine, dt: f32) -> Result<(), Error> {
-        self.next_state.draw(ctx, dt);
+        let _ignored = self.next_state.draw(ctx, dt);
 
         let mut draw_ctx = ctx.get_draw_context();
         let ramp = (1.0 - (self.animation * std::f32::consts::PI).cos()) * 0.5;
@@ -111,16 +106,13 @@ impl GameState for MessageState {
 
     fn on_mouse_button_up(
         &mut self,
-        ctx: &mut Engine,
-        x: i32, y: i32,
-        button: MouseButton
+        _ctx: &mut Engine,
+        _x: i32, _y: i32,
+        _button: MouseButton
     ) -> Result<(), Error> {
         if self.animation > 0.999 {
-            match self.proceed_mode {
-                ProceedMode::Click => {
-                    self.trigger_out_animation();
-                },
-                _ => { }
+            if let ProceedMode::Click = self.proceed_mode {
+                self.trigger_out_animation();
             }
         }
 

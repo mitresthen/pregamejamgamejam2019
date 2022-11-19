@@ -23,7 +23,7 @@ impl Key {
 
         let mut key =
             Key {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 delete_me: false,
@@ -47,7 +47,7 @@ impl GameObject for Key {
                     EventType::Loot { item: Item{
                         item: Items::Key
                     }},
-                    EventReceiver::Nearest {  
+                    EventReceiver::Nearest {
                         origin: self.transform.get_translation(),
                         max_distance: Some(120.0)
                     }
@@ -120,11 +120,10 @@ impl PhysicalObject for Key {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         let size = self.sprite.calculate_size() * 0.5;
-        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
+        Some(Rc::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
     }
 
     fn should_block(&self) -> bool { false }
 }
-

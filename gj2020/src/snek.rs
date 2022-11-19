@@ -24,7 +24,7 @@ impl Snek {
         let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 240 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 240), walk_texture)?;
 
-        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240 * 1, 240 * 4))?;
+        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240, 240 * 4))?;
         let idle_sprite = AnimatedSprite::new(Extent::new(240, 240), idle_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
@@ -78,7 +78,7 @@ impl GameObject for Snek {
         self.velocity.approach(controller_input * 400.0, 400.0 * dt);
         self.velocity.y = preserved_y;
 
-        self.velocity = self.velocity + (gravity_force * (400.0 * dt));
+        self.velocity += gravity_force * (400.0 * dt);
         if self.velocity.y >= 0.5 && y_val < 0.0
         {
             if self.just_colided > 0
@@ -96,9 +96,7 @@ impl GameObject for Snek {
                 self.direction =
                     if controller_input.x.abs() > controller_input.y.abs() {
                         if controller_input.x > 0.0 { 1 } else { 3 }
-                    } else {
-                        if controller_input.y > 0.0 { 2 } else { 0 }
-                    };
+                    } else if controller_input.y > 0.0 { 2 } else { 0 };
                 true
             } else {
                 false
@@ -151,7 +149,7 @@ impl GameObject for Snek {
         match event {
             EventType::Collide { force } => {
                 self.just_colided = 32;
-                self.velocity.x = self.velocity.x + force.x * 150.0;
+                self.velocity.x += force.x * 150.0;
                 self.velocity.y = if self.velocity.y <= 0.0
                 {
                     self.just_colided = 0;

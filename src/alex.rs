@@ -22,7 +22,7 @@ impl Alex {
 
         let mut alex =
             Alex {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 prompted_for_response: false,
@@ -95,9 +95,8 @@ impl PhysicalObject for Alex {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         let size = self.sprite.calculate_size() * 0.5;
-        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
+        Some(Rc::new(SquareShape::from_aabb(Rect2D::centered_square(size.x) + self.transform.get_translation())))
     }
 }
-

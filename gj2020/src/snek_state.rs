@@ -48,15 +48,12 @@ impl GameState for SnekState {
     fn update(mut self: Box<Self>, ctx: &mut Engine, dt: f32) -> Result<Box<dyn GameState>, Error> {
         let events = self.scene.update(ctx, Some(&self.level.objects), dt);
         for event in events {
-            match event.event_type {
-                EventType::Suck => {
-                    let mut next_state = Some(self.return_to_state.take().unwrap());
-                    let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
-                    ctx.reset_sound()?;
-                    ctx.play_sound(AudioLibrary::Fall)?;
-                    return Ok(Box::new(transition_state));
-                },
-                _ => ()
+            if let EventType::Suck = event.event_type {
+                let mut next_state = Some(self.return_to_state.take().unwrap());
+                let transition_state = TransitionState::new(self, move |_, _| Ok(next_state.take().unwrap()));
+                ctx.reset_sound()?;
+                ctx.play_sound(AudioLibrary::Fall)?;
+                return Ok(Box::new(transition_state));
             }
         }
 
@@ -100,10 +97,10 @@ impl AppleTree {
         let tr = ctx.get_texture_registry();
         let texture = tr.load("assets/images/AppleTree/apple_tree_full.png")?;
 
-        let full_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(480 * 1, 480 * 1))?;
+        let full_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(480, 480))?;
         let full_sprite = AnimatedSprite::new(Extent::new(480, 480), full_texture)?;
 
-        let fall_texture = texture.sub_texture(Offset::from_coords(480, 0), Extent::new(480 * 1, 480 * 1))?;
+        let fall_texture = texture.sub_texture(Offset::from_coords(480, 0), Extent::new(480, 480))?;
         let fall_sprite = AnimatedSprite::new(Extent::new(480, 480), fall_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
@@ -112,7 +109,7 @@ impl AppleTree {
 
         let mut apple_tree =
         AppleTree {
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 touched: 0,
@@ -128,7 +125,7 @@ impl AppleTree {
 }
 
 impl GameObject for AppleTree {
-    fn update(&mut self, ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
+    fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         if self.touched == 1 {
             event_mailbox.submit_event(
                 EventType::Suck,

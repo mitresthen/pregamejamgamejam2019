@@ -13,9 +13,9 @@ impl SliderController {
         -> SliderController
     {
         SliderController {
-            increase: increase,
-            decrease: decrease,
-            limits: limits,
+            increase,
+            decrease,
+            limits,
             value: (limits.0 + limits.1) * 0.5
         }
     }

@@ -13,7 +13,7 @@ impl Dimmer {
     pub fn new(ctx: &mut Engine) -> Dimmer {
         let texture = { ctx.get_texture_registry().load("assets/images/black_gradient_wAlpha.png").unwrap() };
         Dimmer {
-            texture: texture,
+            texture,
             value: 1.0,
             target_value: 1.0
         }

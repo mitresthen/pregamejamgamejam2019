@@ -33,14 +33,11 @@ impl HubState {
             .next()
             .unwrap();
 
-
-        let minigame =
-            Minigame::new(
-                ctx,
-                texture,
-                position,
-            );
-        minigame
+        Minigame::new(
+            ctx,
+            texture,
+            position,
+        )
     }
 
     pub fn new(ctx: &mut Engine) -> Result<HubState, Error> {
@@ -78,7 +75,7 @@ impl HubState {
         let hub_state =
             HubState {
                 level,
-                god_id: god_id,
+                god_id,
                 scene,
                 babylon_trigger,
                 noah_trigger,
@@ -103,31 +100,31 @@ impl GameState for HubState {
 
         if self.babylon_trigger.is_triggered() {
             println!("Going to babylon bitches");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(BabylonState::new(_ctx, _hub_state)?));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| BabylonState::create(_ctx, _hub_state));
             return Ok(Box::new(transition_state));
         }
 
         if self.noah_trigger.is_triggered() {
             println!("Going to noah ");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(NoahState::new(_ctx, _hub_state)?));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| NoahState::create(_ctx, _hub_state));
             return Ok(Box::new(transition_state));
         }
 
         if self.snek_trigger.is_triggered() {
             println!("Time to test some people!");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(SnekState::new(_ctx, _hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(Some(SnekState::new(_ctx, _hub_state).unwrap()).take().unwrap())));
             return Ok(Box::new(transition_state));
         }
 
         if self.hell_trigger.is_triggered() {
             println!("Time to test some people!");
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(HellState::new(_ctx, _hub_state)?)));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(Box::new(Some(HellState::new(_ctx, _hub_state).unwrap()).take().unwrap())));
             return Ok(Box::new(transition_state));
         }
 
         if self.space_trigger.is_triggered() {
             println!("[Balex]: You're going to space, bitches!",);
-            let transition_state = TransitionState::new(self, |_hub_state, _ctx| Ok(SpaceState::new(_ctx, _hub_state)?));
+            let transition_state = TransitionState::new(self, |_hub_state, _ctx| SpaceState::create(_ctx, _hub_state));
             return Ok(Box::new(transition_state));
         }
 

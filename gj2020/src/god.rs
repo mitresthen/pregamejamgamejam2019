@@ -20,7 +20,7 @@ impl God {
         let walk_texture = texture.sub_texture(Offset::from_coords(240, 0), Extent::new(240 * 2, 480 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(240, 480), walk_texture)?;
 
-        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240 * 1, 480 * 4))?;
+        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(240, 480 * 4))?;
         let idle_sprite = AnimatedSprite::new(Extent::new(240, 480), idle_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
@@ -31,7 +31,7 @@ impl God {
         let rect = Rect2D::centered_rectangle(collision_size);
         let shape = SquareShape::from_aabb(rect);
 
-        let god = 
+        let god =
             God {
                 controller: AxisController::new(
                     Keycode::Up,
@@ -71,16 +71,14 @@ impl GameObject for God {
                 self.direction =
                     if target_velocity.x.abs() > target_velocity.y.abs() {
                         if target_velocity.x > 0.0 { 1 } else { 3 }
-                    } else {
-                        if target_velocity.y > 0.0 { 2 } else { 0 }
-                    };
+                    } else if target_velocity.y > 0.0 { 2 } else { 0 };
 
                 true
             } else {
                 false
             };
 
-       let mode = self.direction + if is_walking { 4 } else { 0 }; 
+       let mode = self.direction + if is_walking { 4 } else { 0 };
 
         let mut sprite_transform = self.transform.clone();
         let collision_height = self.collision_size.y;
@@ -98,7 +96,7 @@ impl GameObject for God {
         self.sprite.step_time(dt * self.velocity.len() * 0.01);
 
         if self.interact_trigger.poll(ctx) {
-            
+
             println!("Submitting interact event");
             event_mailbox.submit_event(
                 EventType::Interact,
@@ -125,7 +123,7 @@ impl GameObject for God {
     }
 
     fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        return true;
+        true
     }
 }
 

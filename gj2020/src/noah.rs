@@ -29,7 +29,7 @@ impl Noah {
         let rect = Rect2D::centered_rectangle(collision_size);
         let square = BevelShape::from_aabb(rect, rect.width() / 3.0);
 
-        let noah = 
+        let noah =
             Noah {
                 controller: AxisController::new(
                     Keycode::Up,
@@ -65,7 +65,7 @@ impl GameObject for Noah {
         let mut target_velocity = self.controller.poll(ctx) * 400.0;
 
         target_velocity.y = 0.0;
-        
+
         self.jump_timer -= dt;
 
         let old_velocity_y = self.velocity.y;
@@ -76,7 +76,7 @@ impl GameObject for Noah {
             if target_velocity.len() > 0.1 {
                 self.direction =
                     if target_velocity.x.abs() > target_velocity.y.abs() {
-                        if target_velocity.x > 0.0 { 1 } else { 0 }
+                        i32::from(target_velocity.x > 0.0)
                     } else {
                         1
                     };
@@ -91,7 +91,7 @@ impl GameObject for Noah {
             self.jump_timer = -1.0;
         }
 
-        let mode = self.direction + if is_walking { 2 } else { 0 }; 
+        let mode = self.direction + if is_walking { 2 } else { 0 };
 
         let mut sprite_transform = self.transform.clone();
         let collision_height = self.collision_size.y;
@@ -109,7 +109,7 @@ impl GameObject for Noah {
         self.sprite.step_time(dt * self.velocity.len() * 0.02);
 
         if self.interact_trigger.poll(ctx) {
-            
+
             println!("Submitting interact event");
             event_mailbox.submit_event(
                 EventType::Interact,

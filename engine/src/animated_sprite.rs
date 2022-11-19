@@ -50,12 +50,12 @@ impl AnimatedSprite {
 
         let animated_sprite =
             AnimatedSprite {
-                texture: texture,
-                tile_extent: tile_extent,
+                texture,
+                tile_extent,
                 current_mode: 0,
                 current_frame: 0.0,
-                mode_count: mode_count,
-                frame_count: frame_count,
+                mode_count,
+                frame_count,
                 transform: Transform::new(),
             };
 
@@ -93,7 +93,7 @@ impl SpriteTrait for AnimatedSprite {
         self.transform.set_translation(position);
     }
     fn get_position(&self) -> Vec2 {
-        return self.transform.get_translation()
+        self.transform.get_translation()
     }
 
     fn set_transform(&mut self, transform: &Transform) {
@@ -133,6 +133,12 @@ pub struct AggregatedAnimatedSprite {
     sprites: Vec<Box<dyn Aggregatable>>,
     sprite_index: i32,
     mode: i32,
+}
+
+impl Default for AggregatedAnimatedSprite {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl AggregatedAnimatedSprite {
@@ -190,7 +196,7 @@ impl SpriteTrait for AggregatedAnimatedSprite
         self.sprites[self.sprite_index as usize].set_position(position);
     }
     fn get_position(&self) -> Vec2 {
-        return self.sprites[self.sprite_index as usize].get_position();
+        self.sprites[self.sprite_index as usize].get_position()
     }
 
     fn set_transform(&mut self, transform: &Transform) {

@@ -44,7 +44,7 @@ impl MainMenuState {
 
         let state =
             MainMenuState {
-                main_menu_screen: main_menu_screen,
+                main_menu_screen,
                 next_game_state: None,
             };
 
@@ -83,20 +83,10 @@ impl GameState for MainMenuState {
         cbc = screen_transform.transform_point_inv(cbc);
         cbc = ctx.get_camera().transform_point(cbc);
 
-        match self.main_menu_screen.get_target_from_pos(cbc)
-        {
-            Some(game_state) => {
-                match game_state {
-                    menu_screen::GameState::Gameplay => {
-                        self.next_game_state = Some(Box::new(RunningGameState::new(ctx)?)); 
-                    },
-                    _ => { }
-                }
-            },
-            _ => { }
+        if let Some(menu_screen::GameState::Gameplay) = self.main_menu_screen.get_target_from_pos(cbc) {
+            self.next_game_state = Some(Box::new(RunningGameState::new(ctx)?));
         }
 
         Ok(())
     }
 }
-

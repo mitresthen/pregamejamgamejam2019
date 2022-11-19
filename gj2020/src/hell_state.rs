@@ -19,8 +19,8 @@ impl Background {
 impl GameObject for Background {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, _dt: f32) -> bool {
         //let screen = Vec2{x:(_ctx.get_width()/2) as f32, y: (_ctx.get_height()/2) as f32};
-        let x_factor = _ctx.get_width() as f32 / 1280 as f32;
-        let y_factor = _ctx.get_height() as f32 / 720 as f32;
+        let x_factor = _ctx.get_width() as f32 / 1280_f32;
+        let y_factor = _ctx.get_height() as f32 / 720_f32;
         let mut _factor = 1.0;
         if x_factor < y_factor {
             _factor = x_factor;
@@ -30,7 +30,7 @@ impl GameObject for Background {
         }
         self.transform.set_translation(_ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32));
         self.transform.set_scale(_factor);
-        return true;
+        true
     }
 
     fn render(&self, _ctx: &mut DrawContext) {
@@ -41,12 +41,8 @@ impl GameObject for Background {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { None }
 
-    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        match event {
-            _ => {
-                false
-            }
-        }
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        false
     }
 
     fn get_z_index(&self) -> i32 { -69 }
@@ -81,7 +77,7 @@ impl GameObject for Demon {
             _event_mailbox.submit_event(EventType::Attack{damage:1.0}, EventReceiver::Scene);
             _event_mailbox.submit_event(EventType::DeleteMe, EventReceiver::Scene);
         }
-        return true;
+        true
     }
 
     fn render(&self, _ctx: &mut DrawContext) {
@@ -166,7 +162,7 @@ impl GameObject for Club {
                 self.texture.set_mode(0);
             }
         }
-        return true;
+        true
     }
 
     fn render(&self, _ctx: &mut DrawContext) {
@@ -177,12 +173,8 @@ impl GameObject for Club {
 
     fn get_physical_object_mut(&mut self) -> Option<&mut dyn PhysicalObject> { None }
 
-    fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        match event {
-            _ => {
-                false
-            }
-        }
+    fn on_event(&mut self, _event: EventType, _sender: Option<SceneObjectId>) -> bool {
+        false
     }
 
     fn get_z_index(&self) -> i32 { 69 }
@@ -255,13 +247,10 @@ impl GameState for HellState {
         }
         let events = self.scene.update(_ctx, None, dt);
         for event in events {
-            match event.event_type {
-                EventType::Attack{damage} =>  {
-                    self.kills +=1;
-                    print!("{} monster killed!\n", damage);
-                    _ctx.play_sound(AudioLibrary::Kill)?;
-                    },
-                _ => ()
+            if let EventType::Attack{damage} = event.event_type {
+                self.kills +=1;
+                println!("{} monster killed!", damage);
+                _ctx.play_sound(AudioLibrary::Kill)?;
             }
         }
         if self.kills >=10 ||  _ctx.key_is_down(Keycode::Q) {

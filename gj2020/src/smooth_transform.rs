@@ -12,8 +12,8 @@ impl SmoothTransform {
 		SmoothTransform {
 			current: transform.clone(),
 			target: transform.clone(),
-			pan_speed: pan_speed,
-			scale_speed: scale_speed,
+			pan_speed,
+			scale_speed,
 		}
 	}
 

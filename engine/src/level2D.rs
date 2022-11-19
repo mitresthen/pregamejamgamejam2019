@@ -19,7 +19,7 @@ use transform::Transform;
 #[derive(Serialize, Deserialize)]
 pub struct LevelInstance {
     pub object_instances: Vec<ObjectInstance>,
-    pub object_types: Vec<ObjectType> 
+    pub object_types: Vec<ObjectType>
 }
 
 fn default_scale() -> f32 { 1.0 }
@@ -59,9 +59,9 @@ impl Drawable for Level2D {
                     transf.set_angle(object.rotation);
                     transf.set_translation(object.position);
                     transf.set_scale(object.scale);
-                    ctx.draw(&self.object_textures.get(&object_type.file).unwrap(), &transf);
+                    ctx.draw(self.object_textures.get(&object_type.file).unwrap(), &transf);
                     if object_type.fixed {
-                        ctx.draw_point(transf.get_translation(), Color::RGB(255, 0, 0));   
+                        ctx.draw_point(transf.get_translation(), Color::RGB(255, 0, 0));
                     }
                 }
             }
@@ -71,8 +71,8 @@ impl Drawable for Level2D {
 
 impl Level2D {
     pub fn load_from_file(ctx: &mut Engine, filename: &str) -> Level2D {
-        let mut file = File::open(&filename).unwrap();
-        
+        let mut file = File::open(filename).unwrap();
+
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
 
@@ -93,18 +93,15 @@ impl Level2D {
 
         for object in level_instance.object_types.iter() {
             let curr_max = object.layers.iter().max();
-            match curr_max {
-                Some(i) => {
-                    layer_max = layer_max.max(*i);
-                },
-                _ => {},
+            if let Some(i) = curr_max {
+                layer_max = layer_max.max(*i);
             };
             let mut object_filename = image_folder.clone();
             object_filename.push(object.file.clone());
             println!("Loading object texture: {:?}", object_filename);
-    
-            let texture = ctx.get_texture_registry().load(&object_filename.to_str().unwrap()).unwrap();
-    
+
+            let texture = ctx.get_texture_registry().load(object_filename.to_str().unwrap()).unwrap();
+
             object_textures.insert(object.file.clone(), texture);
         }
         println!("Layer max is {}", layer_max);
@@ -112,7 +109,7 @@ impl Level2D {
         for i in 0..(layer_max+1) {
             layers_to_draw.push(i);
         }
-    
+
         Level2D {
             level_instance,
             save_filename,
@@ -151,9 +148,9 @@ impl Level2D {
 
     pub fn save_to_file(&self) -> Result<(), Error> {
         if let Ok(mut f) = File::create(self.save_filename.clone()) {
-        
+
             let instance = serde_json::to_string_pretty(&self.level_instance).unwrap();
-            f.write_all(&instance.as_bytes()).unwrap();
+            f.write_all(instance.as_bytes()).unwrap();
 
             Ok(())
         } else {

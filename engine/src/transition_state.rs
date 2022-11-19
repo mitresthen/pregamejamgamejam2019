@@ -5,9 +5,11 @@ use crate::{
     Color,
 };
 
+type TransitionWithCallback = dyn FnOnce(Box<dyn GameState>, &mut Engine) -> Result<Box<dyn GameState>, Error>;
+
 pub struct TransitionState {
     current_state: Box<dyn GameState>,
-    create_target_callback: Option<Box<dyn FnOnce(Box<dyn GameState>, &mut Engine) -> Result<Box<dyn GameState>, Error>>>,
+    create_target_callback: Option<Box<TransitionWithCallback>>,
     time: f32,
     duration: f32,
 }
@@ -52,10 +54,10 @@ impl GameState for TransitionState {
 
         self.current_state.draw(ctx, dt)?;
 
-        let black_alpha = 
+        let black_alpha =
             if self.time > half_duration {
                 1.0 - ((self.time - half_duration) / half_duration)
-            } 
+            }
             else
             {
                 self.time / half_duration
@@ -64,7 +66,7 @@ impl GameState for TransitionState {
         {
             let screen_bounds = ctx.get_screen_bounds();
             let mut draw_context = ctx.get_draw_context();
-            draw_context.draw_rect(screen_bounds, Color::RGBA(0, 0, 0, (255 as f32 * black_alpha) as u8));
+            draw_context.draw_rect(screen_bounds, Color::RGBA(0, 0, 0, (255_f32 * black_alpha) as u8));
         }
 
         Ok(())

@@ -84,7 +84,7 @@ impl GameState for PauseScreenState {
         if self.resume || self.goto_main_menu {
             return Ok(());
         }
-        
+
 
         // Click as "visible" in regards to camera.
         let mut cbc = Vec2 {
@@ -96,20 +96,16 @@ impl GameState for PauseScreenState {
         cbc = screen_transform.transform_point_inv(cbc);
         cbc = ctx.get_camera().transform_point(cbc);
 
-        match self.pause_screen.get_target_from_pos(cbc)
-        {
-            Some(game_state) => {
-                match game_state {
-                    menu_screen::GameState::Gameplay => {
-                        self.resume = true;
-                    },
-                    menu_screen::GameState::Mainmenu => {
-                        self.goto_main_menu = true;
-                    }
-                    _ => { }
+        if let Some(game_state) = self.pause_screen.get_target_from_pos(cbc) {
+            match game_state {
+                menu_screen::GameState::Gameplay => {
+                    self.resume = true;
+                },
+                menu_screen::GameState::Mainmenu => {
+                    self.goto_main_menu = true;
                 }
-            },
-            _ => { }
+                _ => { }
+            }
         }
 
         Ok(())

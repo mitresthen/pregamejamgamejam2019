@@ -37,11 +37,11 @@ struct CollisionPair{
     torque_b: f32,
     r_a: f32,
     r_b: f32,
-    depth: f32,
+    // depth: f32,
     point: Vec2,
     force_limit: Option<(usize, f32)>,
     unidirectional: bool,
-    f_sum: f32,
+    // f_sum: f32,
 }
 
 impl CollisionPair {
@@ -61,8 +61,8 @@ impl CollisionPair {
         CollisionPair {
             a: ai,
             b: bi,
-            axis: axis,
-            depth: depth,
+            axis,
+            // depth,
             point,
             torque_a,
             torque_b,
@@ -72,7 +72,7 @@ impl CollisionPair {
             resistance,
             force_limit: None,
             unidirectional: false,
-            f_sum: 0.0,
+            // f_sum: 0.0,
         }
     }
 }
@@ -83,6 +83,12 @@ pub struct PhysicsSet {
     collision_pairs: Vec<CollisionPair>,
     force_sums: Vec<f32>,
     event_axes: HashMap<usize, Vec<Vec2>>
+}
+
+impl Default for PhysicsSet {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl PhysicsSet {
@@ -133,7 +139,7 @@ impl PhysicsSet {
     pub fn find_collision_pairs(&mut self) {
         for (ai, a) in self.bodies.iter().enumerate() {
             for (bi, b) in self.bodies.iter().enumerate() {
-                if (a.dst_mask & b.dst_mask != 0) {
+                if a.dst_mask & b.dst_mask != 0 {
                     continue
                 }
                 if ai <= bi {
@@ -147,9 +153,10 @@ impl PhysicsSet {
                 let radi_sum = a.radius + b.radius;
                 if distance < (radi_sum * radi_sum) {
                     if let Some(result) = a.shape.sat_collide(&a.transform, b.shape.as_ref(), &b.transform) {
-                        if (b.src_mask & a.src_mask != 0) {
-                            let mut result_vec: Vec<Vec2> = Vec::new();
-                            result_vec.push(result.axis);
+                        if b.src_mask & a.src_mask != 0 {
+                            // let mut result_vec: Vec<Vec2> = Vec::new();
+                            // result_vec.push(result.axis);
+                            let result_vec: Vec<Vec2> = vec![result.axis];
                             match self.event_axes.get_mut(&ai) {
                                 Some(i) => { i.push(result.axis) },
                                 None => { self.event_axes.insert(ai, result_vec.clone()); }
@@ -217,7 +224,7 @@ impl PhysicsSet {
                             0.0
                         };
 
-                    f -= adjust; 
+                    f -= adjust;
                 }
 
                 self.force_sums[i] += f;
@@ -233,11 +240,11 @@ impl PhysicsSet {
     }
 
     pub fn get_velocity(&self, id: BodyId) -> Vec2 {
-        self.bodies.get(id.id).unwrap().velocity        
+        self.bodies.get(id.id).unwrap().velocity
     }
 
     pub fn get_spin(&self, id: BodyId) -> f32 {
-        self.bodies.get(id.id).unwrap().spin        
+        self.bodies.get(id.id).unwrap().spin
     }
 
     pub fn get_collision_points(&self) -> Vec<Vec2> {
@@ -254,7 +261,7 @@ impl PhysicsSet {
         let mut pairs: Vec<Vec2> = self.collision_pairs.iter()
             .filter(|cp| cp.a == id.id || cp.b == id.id)
             .filter(|cp| !cp.unidirectional)
-            .map(|cp| cp.axis.clone() * if cp.b == id.id { -1.0 } else { 1.0 })
+            .map(|cp| cp.axis * if cp.b == id.id { -1.0 } else { 1.0 })
             .collect();
 
         axes_for_id.append(&mut pairs);

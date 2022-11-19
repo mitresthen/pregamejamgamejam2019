@@ -47,7 +47,7 @@ impl RigidBody {
             inv_inertia: 0.0,
             spin: 0.0,
             velocity: Vec2::from_coords(0.0, 0.0),
-            shape: shape,
+            shape,
             friction: 0.3,
             src_mask: 0,
             dst_mask: 0,
@@ -142,7 +142,7 @@ impl GameObject for RigidBody {
     }
 
     fn render(&self, ctx: &mut DrawContext) {
-        ctx.draw(&self.texture, &self.transform); 
+        ctx.draw(&self.texture, &self.transform);
     }
 
     fn get_physical_object(&self) -> Option<&dyn PhysicalObject> { Some(self) }

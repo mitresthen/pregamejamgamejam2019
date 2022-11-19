@@ -7,6 +7,7 @@ use grid2::Grid2;
 
 use std::fs::File;
 use std::io::Read;
+use std::path::Path;
 use std::path::PathBuf;
 //use serde_json::Map;
 
@@ -37,12 +38,12 @@ pub struct Level {
 
 fn load_layer(
     ctx: &mut Engine,
-    levels_folder: &PathBuf,
-    image_folder: &PathBuf,
+    levels_folder: &Path,
+    image_folder: &Path,
     layer_info: &LayerInfo,
     grid_size: u32,
 ) -> (Grid2, String) {
-    let mut filename = levels_folder.clone();
+    let mut filename = levels_folder.to_path_buf();
     filename.push(&layer_info.file);
 
     let mut grid =
@@ -54,11 +55,11 @@ fn load_layer(
         };
 
     for tile in layer_info.tiles.iter() {
-        let mut tile_filename = image_folder.clone();
+        let mut tile_filename = image_folder.to_path_buf();
         tile_filename.push(tile);
         println!("Loading tile texture: {:?}", tile_filename);
 
-        let texture = ctx.get_texture_registry().load(&tile_filename.to_str().unwrap()).unwrap();
+        let texture = ctx.get_texture_registry().load(tile_filename.to_str().unwrap()).unwrap();
 
         grid.add_tile_type(texture);
     }
@@ -72,7 +73,7 @@ impl Level {
         filename: &str,
         grid_size: u32,
     ) -> Level {
-        let mut file = File::open(&filename).unwrap();
+        let mut file = File::open(filename).unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
 

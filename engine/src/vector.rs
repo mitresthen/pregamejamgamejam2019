@@ -17,6 +17,12 @@ impl fmt::Display for Vec2 {
     }
 }
 
+impl Default for Vec2 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Vec2 {
     pub fn new() -> Vec2 {
         Vec2 { x: 0.0, y: 0.0 }
@@ -35,7 +41,7 @@ impl Vec2 {
 
     pub fn valid(&self) -> bool {
         use std::f32;
-        self.x != f32::NAN && self.y != f32::NAN
+        f32::is_nan(self.x) && f32::is_nan(self.y)
     }
 
     pub fn len(&self) -> f32 {
@@ -62,7 +68,7 @@ impl Vec2 {
             self.x = target.x;
             self.y = target.y;
         } else {
-            *self = *self + (diff * (acceleration / l));
+            *self += diff * (acceleration / l);
         }
     }
 
@@ -87,7 +93,7 @@ impl Vec2 {
         if self.len() == 0.0 {
             return Vec2::new()
         }
-        self.clone() * (1.0 / self.len())
+        *self * (1.0 / self.len())
     }
 
     pub fn perpendicular(&self) -> Vec2 {
@@ -168,11 +174,11 @@ impl Add<Polar2> for Vec2 {
 }
 
 
-const PI: f32 = 3.14159265359;
+const PI: f32 = std::f32::consts::PI;
 const TWO_PI: f32 = PI * 2.0;
 const PI_BY_TWO: f32 = PI / 2.0;
 const DEG_TO_RAD: f32 = TWO_PI / 360.0;
-const RAD_TO_DEG: f32 = 360.0 / TWO_PI;
+// const RAD_TO_DEG: f32 = 360.0 / TWO_PI;
 
 #[derive(Clone, Debug, Copy, PartialEq, Serialize, Deserialize)]
 pub struct Polar2 {
@@ -186,6 +192,12 @@ impl fmt::Display for Polar2 {
     }
 }
 
+impl Default for Polar2 {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Polar2 {
     pub fn new() -> Polar2 {
         Polar2 { r: 0.0, t: 0.0 }
@@ -193,7 +205,7 @@ impl Polar2 {
 
     pub fn deg(r: f32, d: f32) -> Polar2 {
         Polar2 {
-            r: r,
+            r,
             t: d * DEG_TO_RAD,
         }
     }
@@ -207,7 +219,7 @@ impl Polar2 {
 
     pub fn valid(&self) -> bool {
         use std::f32;
-        self.r != f32::NAN && self.t != f32::NAN
+        f32::is_nan(self.r) && f32::is_nan(self.t)
     }
 
     pub fn len(&self) -> f32 {
@@ -250,12 +262,12 @@ impl From<Vec2> for Polar2 {
     }
 }
 
-impl Into<Vec2> for Polar2 {
-    fn into(self) -> Vec2 {
+impl From<Polar2> for Vec2 {
+    fn from(p: Polar2) -> Vec2 {
         use std::f32;
         Vec2 {
-            x: self.r * f32::sin(self.t),
-            y: self.r * f32::cos(self.t),
+            x: p.r * f32::sin(p.t),
+            y: p.r * f32::cos(p.t),
         }
     }
 }

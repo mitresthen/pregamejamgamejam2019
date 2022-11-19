@@ -108,7 +108,7 @@ impl GameObject for Victim {
         }
 
         if self.standing_still > 1.0 {
-            self.direction = self.direction * -1.0;
+            self.direction *= -1.0;
             self.standing_still = 0.0;
             println!("Standing still!");
         }
@@ -191,7 +191,7 @@ pub struct BabylonState {
 
 
 impl BabylonState {
-    pub fn new(ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
+    pub fn create(ctx: &mut Engine, hub_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
         let mut scene = Scene::new();
 
         let level = Level2D::load_from_file(ctx, "assets/levels/tower.json");
@@ -231,7 +231,7 @@ impl BabylonState {
             }
         }
 
-        let bounds = ctx.get_visible_area() * 2.0;
+        // let bounds = ctx.get_visible_area() * 2.0;
 
         use self::rand::Rng;
         let mut rng = rand::thread_rng();
@@ -279,39 +279,39 @@ impl BabylonState {
         let state = Box::new(state);
 
         let state =
-            MessageState::new(
+            MessageState::create(
                 ctx,
                 state,
-                Animation::PopInAndOut,
-                ProceedMode::Timer(1.0), 
+                // Animation::PopInAndOut,
+                ProceedMode::Timer(1.0),
                 "assets/images/tower/smite.png"
             )?;
 
         let state =
-            MessageState::new(
+            MessageState::create(
                 ctx,
                 state,
-                Animation::PopInAndOut,
-                ProceedMode::Timer(1.0), 
+                // Animation::PopInAndOut,
+                ProceedMode::Timer(1.0),
                 "assets/images/tower/two.png"
             )?;
 
         let state =
-            MessageState::new(
+            MessageState::create(
                 ctx,
                 state,
-                Animation::PopInAndOut,
-                ProceedMode::Timer(1.0), 
+                // Animation::PopInAndOut,
+                ProceedMode::Timer(1.0),
                 "assets/images/tower/one.png"
             )?;
 
 
         let state =
-            MessageState::new(
+            MessageState::create(
                 ctx,
                 state,
-                Animation::PopInAndOut,
-                ProceedMode::Click, 
+                // Animation::PopInAndOut,
+                ProceedMode::Click,
                 "assets/images/tower/mission_info.png"
             )?;
 
@@ -325,7 +325,7 @@ impl BabylonState {
         use self::rand::Rng;
         let mut rng = rand::thread_rng();
 
-        for i in 0..20 {
+        for _i in 0..20 {
             let mut rigid_body =
                 RigidBody::new(
                     self.blood_texture.clone(),
@@ -369,15 +369,15 @@ impl GameState for BabylonState {
 
         if self.remaining_victims == 0 {
             ctx.reset_sound()?;
-            let mut hub_state = self.hub_state.take().unwrap();
+            let hub_state = self.hub_state.take().unwrap();
             let transition_state = TransitionState::new(self, move |_, _| Ok(hub_state));
             let state =  Box::new(transition_state);
             let state =
-                MessageState::new(
+                MessageState::create(
                     ctx,
                     state,
-                    Animation::PopInAndOut,
-                    ProceedMode::Click, 
+                    // Animation::PopInAndOut,
+                    ProceedMode::Click,
                     "assets/images/tower/mission_success.png"
                 )?;
 

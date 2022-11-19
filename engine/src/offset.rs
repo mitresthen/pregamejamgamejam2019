@@ -8,6 +8,12 @@ pub struct Offset {
     pub y: i32
 }
 
+impl Default for Offset {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Offset {
     pub fn new() -> Offset {
         Offset { x: 0, y: 0 }

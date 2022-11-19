@@ -34,7 +34,7 @@ impl MinigameTrigger {
             return true;
         }
 
-        return false;
+        false
     }
 }
 
@@ -71,7 +71,7 @@ impl Minigame {
 impl GameObject for Minigame {
     fn update(&mut self, _ctx: &mut Engine, _event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
         self.transform.translate(self.velocity * dt);
-        return true;
+        true
     }
 
     fn render(&self, ctx: &mut DrawContext) {

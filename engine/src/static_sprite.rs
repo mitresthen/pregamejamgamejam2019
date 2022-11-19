@@ -19,9 +19,9 @@ impl StaticSprite {
     pub fn new(x_size: i32, y_size: i32, texture: Texture) -> Result<StaticSprite, Error> {
         let static_sprite =
             StaticSprite {
-                texture: texture,
-                x_size: x_size,
-                y_size: y_size,
+                texture,
+                x_size,
+                y_size,
                 position: Vec2::new(),
                 scale: 1.0
             };

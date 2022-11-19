@@ -28,7 +28,7 @@ impl Player {
         let walk_texture = texture.sub_texture(Offset::from_coords(120, 0), Extent::new(120 * 2, 240 * 4))?;
         let walk_sprite = AnimatedSprite::new(Extent::new(120, 240), walk_texture)?;
 
-        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(120 * 1, 240 * 4))?;
+        let idle_texture = texture.sub_texture(Offset::from_coords(0, 0), Extent::new(120, 240 * 4))?;
         let idle_sprite = AnimatedSprite::new(Extent::new(120, 240), idle_texture)?;
 
         let mut sprite = AggregatedAnimatedSprite::new();
@@ -45,7 +45,7 @@ impl Player {
                 ),
                 interact_trigger: Trigger::new(Keycode::Space),
                 inventory_trigger: Trigger::new(Keycode::I),
-                sprite: sprite,
+                sprite,
                 transform: Transform::new(),
                 velocity: Vec2::new(),
                 direction: 1,
@@ -85,7 +85,7 @@ impl GameObject for Player {
         }
 
         if self.interact_trigger.poll(ctx) {
-            
+
             println!("Submitting loot event");
             event_mailbox.submit_event(
                 EventType::Interact,
@@ -117,9 +117,7 @@ impl GameObject for Player {
             self.direction =
                 if target_velocity.x.abs() > target_velocity.y.abs() {
                     if target_velocity.x > 0.0 { 1 } else { 3 }
-                } else {
-                    if target_velocity.y > 0.0 { 2 } else { 0 }
-                };
+                } else if target_velocity.y > 0.0 { 2 } else { 0 };
 
             is_walking = true;
         }
@@ -212,9 +210,8 @@ impl PhysicalObject for Player {
         &mut self.velocity
     }
 
-    fn get_bounding_box(&self) -> Option<Box<dyn CollisionShape>> {
+    fn get_collision_shape(&self) -> Option<Rc<dyn CollisionShape>> {
         let size = self.collision_size;
-        Some(Box::new(SquareShape::from_aabb(Rect2D::centered_square(size) + self.transform.get_translation())))
+        Some(Rc::new(SquareShape::from_aabb(Rect2D::centered_square(size) + self.transform.get_translation())))
     }
 }
-

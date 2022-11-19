@@ -33,7 +33,7 @@ impl MenuScreen {
             let click_for_options = click - Vec2 { x: 0.0, y: (128.0 * no)};
             if choice.sprite.is_clicked(click_for_options)
             {
-                return Some(choice.target_game_state.clone());
+                return Some(choice.target_game_state);
             }
             no += 1.0;
         }

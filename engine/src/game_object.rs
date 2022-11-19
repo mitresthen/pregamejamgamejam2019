@@ -70,6 +70,12 @@ pub struct EventQueue {
     queue: Vec<GameEvent>
 }
 
+impl Default for EventQueue {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl EventQueue {
     pub fn new() -> EventQueue {
         EventQueue {
@@ -84,7 +90,7 @@ impl EventQueue {
     pub fn bind_to_sender(&mut self, sender_id: SceneObjectId) -> SenderBoundEventQueue {
         SenderBoundEventQueue {
             event_queue: self,
-            sender_id: sender_id
+            sender_id
         }
     }
 }
@@ -93,7 +99,7 @@ impl EventMailbox for EventQueue {
     fn submit_event(&mut self, event: EventType, receiver: EventReceiver) {
         let game_event = GameEvent {
             event_type: event,
-            receiver: receiver,
+            receiver,
             sender: None
         };
         self.queue.push(game_event);
@@ -109,7 +115,7 @@ impl<'t> EventMailbox for SenderBoundEventQueue<'t> {
     fn submit_event(&mut self, event: EventType, receiver: EventReceiver) {
         let game_event = GameEvent {
             event_type: event,
-            receiver: receiver,
+            receiver,
             sender: Some(self.sender_id)
         };
 
@@ -164,7 +170,7 @@ pub struct Manifold {
 impl Manifold {
     pub fn from_points(v: Vec<Vec2>) -> Manifold {
 
-        if v.len() == 0 {
+        if v.is_empty() {
             panic!("Cannot create manifold from zero points!");
         }
 
@@ -203,23 +209,20 @@ impl Manifold {
         let depth = depth_range.center();
         let width = range_a.overlap(&range_b);
 
-        let manifold = 
-            if width.size() <= 0.0 {
-                Manifold {
-                    point_count: 1,
-                    points: [(perp * width.center()) + (axis * depth), Vec2::new()]
-                }
-            } else {
-                Manifold {
-                    point_count: 2,
-                    points: [
-                        (perp * width.start()) + (axis * depth),
-                        (perp * width.end()) + (axis * depth),
-                    ]
-                }
-            };
-
-        manifold
+        if width.size() <= 0.0 {
+            Manifold {
+                point_count: 1,
+                points: [(perp * width.center()) + (axis * depth), Vec2::new()]
+            }
+        } else {
+            Manifold {
+                point_count: 2,
+                points: [
+                    (perp * width.start()) + (axis * depth),
+                    (perp * width.end()) + (axis * depth),
+                ]
+            }
+        }
     }
 }
 

@@ -5,6 +5,12 @@ pub struct Timer
     time: SystemTime
 }
 
+impl Default for Timer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Timer
 {
     pub fn new() -> Timer
@@ -18,7 +24,7 @@ impl Timer
         let sec = duration.as_secs();
         let nsec = duration.subsec_nanos();
 
-        return (sec as f32) + ((nsec as f32) / 1000000000.0);
+        (sec as f32) + ((nsec as f32) / 1000000000.0)
     }
 
     pub fn reset(&mut self)

@@ -14,7 +14,7 @@ pub struct SpaceState {
 }
 
 impl SpaceState {
-    pub fn new(ctx: &mut Engine, return_to_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
+    pub fn create(ctx: &mut Engine, return_to_state: Box<dyn GameState>) -> Result<Box<dyn GameState>, Error> {
         let mut bodies = Vec::<CelestialBody>::new();
         let tr = ctx.get_texture_registry();
         let background = StaticSprite::new(1200, 1200, tr.load("assets/images/starrySky.png")?)?;
@@ -37,11 +37,11 @@ impl SpaceState {
         bodies.push(planet);
         bodies.push(planet2);
         bodies.push(planet3);
-        let mut state = SpaceState {
-            bodies: bodies,
+        let state = SpaceState {
+            bodies,
             fixed: vec![false, false, false],
             fixed_timer: 2.0,
-            background: background,
+            background,
             event_queue: EventQueue::new(),
             camera: SmoothTransform::new(&Transform {
                 translation: Vec2::new(),
@@ -51,15 +51,15 @@ impl SpaceState {
             return_to_state: Some(return_to_state),
         };
 
-        let state = MessageState::new(
+        let state = MessageState::create(
                 ctx,
                 Box::new(state),
-                Animation::PopInAndOut,
-                ProceedMode::Click, 
+                // Animation::PopInAndOut,
+                ProceedMode::Click,
                 "assets/images/space_mission.png"
             )?;
 
-        return Ok(state);
+        Ok(state)
     }
 
     fn get_closest_body(&self, position: Vec2, max_dist: f32, skip_first: bool) -> Option<usize> {
@@ -100,8 +100,8 @@ impl SpaceState {
 
     fn draw_bg(&mut self, ctx: &mut Engine) {
         let camera = ctx.get_camera();
-        let x_factor = ctx.get_width() as f32 / 1280 as f32;
-        let y_factor = ctx.get_height() as f32 / 720 as f32;
+        let x_factor = ctx.get_width() as f32 / 1280_f32;
+        let y_factor = ctx.get_height() as f32 / 720_f32;
         let mut _factor = 1.0;
         if x_factor < y_factor {
             _factor = x_factor;
@@ -136,10 +136,10 @@ impl GameState for SpaceState {
             if self.fixed_timer <= 0.0 {
                 ctx.reset_sound()?;
                 let mut hub_state = Some(self.return_to_state.take().unwrap());
-                let mut message_state = Some(MessageState::new(
+                let mut message_state = Some(MessageState::create(
                     ctx,
                     hub_state.take().unwrap(),
-                    Animation::PopInAndOut,
+                    // Animation::PopInAndOut,
                     ProceedMode::Click,
                     "assets/images/space_enough.png"
                 )?);
@@ -155,7 +155,7 @@ impl GameState for SpaceState {
         for body in &self.bodies {
             maxdist = f32::max(maxdist, (origin - body.get_position()).len());
         }
-        let mut camera = &mut self.camera;
+        let camera = &mut self.camera;
         camera.set_pan_target(origin);
         camera.set_scale_target(maxdist / 333.0);
         camera.update(dt);
@@ -172,16 +172,15 @@ impl GameState for SpaceState {
         Ok(self)
     }
 
-    fn draw(&mut self, engine: &mut Engine, dt: f32) -> Result<(), Error> {
+    fn draw(&mut self, engine: &mut Engine, _dt: f32) -> Result<(), Error> {
         self.draw_bg(engine);
         self.draw_fg(engine);
 
         Ok(())
     }
 
-    fn on_mouse_button_down(&mut self, ctx: &mut Engine, x: i32, y: i32, button: MouseButton) -> Result<(), Error>
+    fn on_mouse_button_down(&mut self, ctx: &mut Engine, _x: i32, _y: i32, _button: MouseButton) -> Result<(), Error>
     {
-        use std::f32;
         let click_pos = ctx.get_mouse_position().position;
         let index = self.get_closest_body(click_pos, 500.0, false);
         let mut other_index: Option<usize> = None;
@@ -193,16 +192,14 @@ impl GameState for SpaceState {
             }
             None => println!("Clicked nothing ({:?})", click_pos)
         }
-        match (index, other_index) {
-            (Some(i), Some(j)) => {
-                self.fixed[i-1] = true;
-                let (mut body, mut other_body) = self.bodies.get_two_mut(i, j);
-                body.stop();
-                body.init_orbit(&mut other_body, 1.0, true, None);
-            }
-            (_, _) => ()
+
+        if let (Some(i), Some(j)) = (index, other_index) {
+            self.fixed[i-1] = true;
+            let (body, other_body) = self.bodies.get_two_mut(i, j);
+            body.stop();
+            body.init_orbit(other_body, 1.0, true, None);
         }
-        
+
         Ok(())
     }
 }

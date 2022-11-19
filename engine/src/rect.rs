@@ -72,11 +72,11 @@ impl Rect2D {
     }
 
     pub fn width(&self) -> f32 {
-        return self.max.x - self.min.x;
+        self.max.x - self.min.x
     }
 
     pub fn height(&self) -> f32 {
-        return self.max.y - self.min.y;
+        self.max.y - self.min.y
     }
 
     pub fn set_height(&mut self, height: f32) {

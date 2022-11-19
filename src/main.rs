@@ -21,11 +21,10 @@ mod pause_screen;
 
 use audio_library::AudioLibrary;
 
-enum TransitionLogic {
-    ActiveLevel,
-    FadingOutLevel { target_level: i32 },
-    FadingInLevel { target_level: i32 }
-
+enum TransitionLogicLevel {
+    Active,
+    FadingOut { target_level: i32 },
+    FadingIn { target_level: i32 }
 }
 
 pub struct RunningGameState {
@@ -35,7 +34,7 @@ pub struct RunningGameState {
     scene: Scene,
     zoom_controller: SliderController,
     dimmer: Dimmer,
-    transition_logic: TransitionLogic,
+    transition_logic: TransitionLogicLevel,
     intro_played: bool,
     go_to_pause: bool
 }
@@ -47,17 +46,17 @@ impl RunningGameState {
 
         let game =
             RunningGameState {
-                low_level: low_level,
-                mid_level: mid_level,
-                scene: scene,
-                player_id: player_id,
+                low_level,
+                mid_level,
+                scene,
+                player_id,
                 zoom_controller: SliderController::new(
                     Keycode::Minus,
                     Keycode::Plus,
                     (0.5, 2.0)
                 ),
-                dimmer: dimmer,
-                transition_logic: TransitionLogic::ActiveLevel,
+                dimmer,
+                transition_logic: TransitionLogicLevel::Active,
                 intro_played: false,
                 go_to_pause: false,
             };
@@ -76,7 +75,7 @@ impl RunningGameState {
 
         let mut player = player::Player::new(ctx)?;
         player.get_transform_mut().set_translation(Vec2::from_coords(300.0, 300.0));
-        
+
         let mut scene = Scene::new();
 
         let alex_in_level = mid_level.take_tile_with_id(*level.special_blocks.get("alex").unwrap());
@@ -160,23 +159,23 @@ impl GameState for RunningGameState {
         }
 
         match self.transition_logic {
-            TransitionLogic::FadingOutLevel { target_level: next_level } => {
+            TransitionLogicLevel::FadingOut { target_level: next_level } => {
                 self.dimmer.set_target(0.0);
 
                 if self.dimmer.get_value() == 0.0 {
-                    self.transition_logic = TransitionLogic::FadingInLevel { target_level: next_level };
+                    self.transition_logic = TransitionLogicLevel::FadingIn { target_level: next_level };
 
                     self.change_level(ctx, next_level);
                 }
             },
-            TransitionLogic::FadingInLevel { target_level: _next_level } => {
+            TransitionLogicLevel::FadingIn { target_level: _next_level } => {
                 self.dimmer.set_target(1.0);
 
                 if self.dimmer.get_value() == 1.0 {
-                    self.transition_logic = TransitionLogic::ActiveLevel;
+                    self.transition_logic = TransitionLogicLevel::Active;
                 }
             },
-            TransitionLogic::ActiveLevel => { }
+            TransitionLogicLevel::Active => { }
         };
 
         let player_position = self.scene.get(self.player_id)
@@ -205,7 +204,7 @@ impl GameState for RunningGameState {
     fn draw(&mut self, ctx: &mut Engine, dt: f32)
         -> Result<(), Error>
     {
-        let zoom = self.zoom_controller.poll(&ctx, dt);
+        let zoom = self.zoom_controller.poll(ctx, dt);
         ctx.set_camera_zoom(zoom);
 
         ctx.draw(&self.low_level);
@@ -245,7 +244,7 @@ impl GameState for RunningGameState {
 
     fn on_key_up(&mut self, ctx: &mut Engine, keycode: Keycode) -> Result<(), Error> {
         if keycode == Keycode::M {
-            self.transition_logic = TransitionLogic::FadingOutLevel { target_level: 1 };
+            self.transition_logic = TransitionLogicLevel::FadingOut { target_level: 1 };
         }
 
         self.on_key_down(ctx, keycode, true)?;
@@ -318,7 +317,7 @@ impl GameInterface for GoogleHomeopathicMedicine {
 
         ctx.loop_sound(AudioLibrary::Music, -1)?;
 
-        return Ok(Box::new(title_screen::TitleScreenState::new(ctx)?));
+        Ok(Box::new(title_screen::TitleScreenState::new(ctx)?))
     }
 }
 

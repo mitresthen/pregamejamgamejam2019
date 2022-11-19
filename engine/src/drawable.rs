@@ -30,7 +30,7 @@ impl Origin {
         }
     }
     fn br(&self) -> Vec2 {
-        return Vec2::from_coords(1.0, 1.0) + self.tl();
+        Vec2::from_coords(1.0, 1.0) + self.tl()
     }
 }
 
@@ -55,17 +55,17 @@ impl<'t> DrawContext<'t> {
         -> DrawContext<'t>
     {
         DrawContext {
-            canvas: canvas,
-            texture_registry: texture_registry,
-            camera: camera,
-            screen_bounds: screen_bounds
+            canvas,
+            texture_registry,
+            camera,
+            screen_bounds
         }
     }
 
 
     pub fn copy_ex(&mut self, texture: &Texture, src: Rect, dst: Rect, rotation: f64) {
         self.canvas.copy_ex(
-            self.texture_registry.get_internal_texture(&texture),
+            self.texture_registry.get_internal_texture(texture),
             Some(src),
             Some(dst),
             -rotation,

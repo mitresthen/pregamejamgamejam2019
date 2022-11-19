@@ -24,7 +24,7 @@ impl CelestialBody {
 		let body = CelestialBody {
 			position: Vec2::new(),
 			velocity: Vec2::new(),
-			sprite: sprite,
+			sprite,
 			mass: mass * MASS_SCALE,
 		};
 		Ok(body)
@@ -72,10 +72,7 @@ impl CelestialBody {
 	}
 
 	pub fn init_orbit(&mut self, other: &mut CelestialBody, eccentricity: f64, ccw: bool, offset: Option<Polar2>) {
-		match offset {
-			Some(o) => self.place(other.position + o),
-			None => (),
-		}
+		if let Some(o) = offset { self.place(other.position + o) }
 		let self_ratio = self.mass / (self.mass + other.mass);
 		let other_ratio = other.mass / (self.mass + other.mass);
 		let barycenter = self.position + (other.position - self.position) * other_ratio as f32;

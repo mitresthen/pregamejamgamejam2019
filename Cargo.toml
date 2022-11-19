@@ -1,16 +1,25 @@
 [package]
 name = "gamejam"
 version = "0.1.0"
-authors = ["are"]
+authors = [
+    "Anders Rein <andersrein87@gmail.com>",
+    "Faxmachinen <mail@faxmachinen.com>",
+    "Håvard Haug <haavardhaug@gmail.com>",
+    "Julian P.M. Ertel <me@julian-ertel.de>",
+    "Marcin Mateusz Hanc<marcin.mateusz.hanc@gmail.com>",
+    "Marius Tendeland Horne <Marius_t_h@hotmail.com>",
+    "Mohammed Ahmed Abdellatief <mabdellatief@gmail.com>",
+    "TheFabHawk <sljeide9@gmail.com>",
+]
 
 [target.'cfg(windows)'.dependencies]
-sdl2 = { version = "0.34.5", features = ["bundled"] }
+sdl2 = { version = "0.35.2", features = ["bundled"] }
 [target.'cfg(unix)'.dependencies]
-sdl2 = { version = "0.31.0" }
+sdl2 = { version = "0.35.2" }
 
 [dependencies]
-rand = "0.8.4"
-stb_image = "0.2.3"
+rand = "0.8.5"
+stb_image = "0.2.4"
 engine = { path = "engine" }
 
 [build-dependencies]

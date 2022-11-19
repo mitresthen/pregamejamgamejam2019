@@ -2,7 +2,6 @@ extern crate rand;
 
 use std::rc::Rc;
 use engine::prelude::*;
-use self::rand::Rng;
 
 pub struct Ocean {
     sprite: AnimatedSprite,
@@ -23,15 +22,15 @@ impl Ocean {
             sprite = AnimatedSprite::new(Extent::new(1600,1200), texture_on)?;
         }
 
-        let mut size = sprite.calculate_size();
+        let size = sprite.calculate_size();
         let shape = SquareShape::from_aabb(Rect2D::centered_rectangle(size));
         let mut transform = Transform::new();
         transform.set_translation(Vec2{x:0.0, y:1950.0});
 
-        let mut ocean =
+        let ocean =
             Ocean {
-                sprite: sprite,
-                transform: transform,
+                sprite,
+                transform,
                 velocity: Vec2::new(),
                 inv_mass: 0.0,
                 shape: Rc::new(shape),
@@ -54,7 +53,7 @@ impl Ocean {
 impl GameObject for Ocean {
     fn update(&mut self, _ctx: &mut Engine, event_mailbox: &mut dyn EventMailbox, dt: f32) -> bool {
 
-        let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600 as f32;
+        let _factor = _ctx.get_camera().get_scale() * _ctx.get_width() as f32 / 1600_f32;
         let mut transform = Transform::new();
         let mut translation = _ctx.screen_to_world((_ctx.get_width()/2) as i32, (_ctx.get_height()/2) as i32);
         translation.y = self.transform.get_translation().y - self.change*dt;
@@ -62,14 +61,14 @@ impl GameObject for Ocean {
         transform.set_scale(_factor);
         self.set_transform(transform);
 
-        if(self.sprite.get_position().y < 365.0) {
+        if self.sprite.get_position().y < 365.0 {
             event_mailbox.submit_event(
                 EventType::BoatSunk,
                 EventReceiver::Scene
             );
         }
 
-        return true;
+        true
     }
 
     fn render(&self, ctx: &mut DrawContext) {
@@ -85,13 +84,10 @@ impl GameObject for Ocean {
     }
 
     fn on_event(&mut self, event: EventType, _sender: Option<SceneObjectId>) -> bool {
-        match event {
-            EventType::OceanRiseRate{rate} => {
-                self.change = rate*42.0;
-            },
-            _ => {} 
+        if let EventType::OceanRiseRate{rate} = event {
+            self.change = rate*42.0;
         }
-       true
+        true
     }
 }
 
